@@ -10,6 +10,7 @@ COPY package-lock.json ./
 RUN npm install
 # add app
 COPY . ./
+ENV NODE_OPTIONS=--openssl-legacy-provider
 EXPOSE 3000
 # start app
 CMD ["npm", "start"]
