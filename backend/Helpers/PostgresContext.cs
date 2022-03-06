@@ -1,11 +1,10 @@
-﻿using System;
+﻿namespace WebApi.Helpers;
+using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using WebApi.Entities;
 
-namespace WebApi
-{
     public partial class PostgresContext : DbContext
     {
         protected readonly IConfiguration Configuration;
@@ -31,4 +30,3 @@ namespace WebApi
         partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
         public DbSet<User> Users { get; set; }
     }
-}
