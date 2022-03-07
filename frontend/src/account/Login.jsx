@@ -12,7 +12,7 @@ function Login() {
 
     // form validation rules 
     const validationSchema = Yup.object().shape({
-        username: Yup.string().required('Имя пользователя обязательно к заполнеию'),
+        username: Yup.string().required('Имя пользователя обязательно к заполнению'),
         password: Yup.string().required('Пароль обязателен к заполнению')
     });
     const formOptions = { resolver: yupResolver(validationSchema) };

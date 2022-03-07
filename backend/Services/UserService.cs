@@ -39,7 +39,7 @@ public class UserService : IUserService
 
         // validate
         if (user == null || !BCrypt.Verify(model.Password, user.PasswordHash))
-            throw new AppException("Username or password is incorrect");
+            throw new AppException("Вы ввели неверное имя пользователя или неверный пароль");
 
         // authentication successful
         var response = _mapper.Map<AuthenticateResponse>(user);
@@ -61,7 +61,7 @@ public class UserService : IUserService
     {
         // validate
         if (_context.Users.Any(x => x.Username == model.Username))
-            throw new AppException("Username '" + model.Username + "' is already taken");
+            throw new AppException("Имя пользователя '" + model.Username + "' уже занято");
 
         // map model to new user object
         var user = _mapper.Map<User>(model);
@@ -80,7 +80,7 @@ public class UserService : IUserService
 
         // validate
         if (model.Username != user.Username && _context.Users.Any(x => x.Username == model.Username))
-            throw new AppException("Username '" + model.Username + "' is already taken");
+            throw new AppException("Имя пользователя '" + model.Username + "' уже занято");
 
         // hash password if it was entered
         if (!string.IsNullOrEmpty(model.Password))
@@ -104,7 +104,7 @@ public class UserService : IUserService
     private User getUser(int id)
     {
         var user = _context.Users.Find(id);
-        if (user == null) throw new KeyNotFoundException("User not found");
+        if (user == null) throw new KeyNotFoundException("Пользователь не найден");
         return user;
     }
 }

@@ -20,10 +20,13 @@ public partial class DataContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<UserRole>().HasKey(ur => new { ur.UserId, ur.RoleId });
         OnModelCreatingPartial(modelBuilder);
     }
 
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
 
     public DbSet<User> Users { get; set; }
+    public DbSet<Role> Roles { get; set; }
+    public DbSet<UserRole> UserRoles { get; set; }
 }

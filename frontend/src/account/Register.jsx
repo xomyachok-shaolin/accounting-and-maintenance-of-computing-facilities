@@ -33,7 +33,7 @@ function Register({ history }) {
         return userActions.register(data)
             .then(() => {
                 history.push('/account/login');
-                alertActions.success('Регистрация успешна');
+                alertActions.success('Регистрация успешно выполнена');
             })
     }
 
