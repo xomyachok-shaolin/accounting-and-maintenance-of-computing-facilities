@@ -10,9 +10,10 @@ services:
       - POSTGRES_DB=postgres
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
-      - PGDATA=/var/lib/postgresql/data/db
+      - PGDATA=/var/lib/postgresql/data/pgdata
     volumes:
-      - ./pgdata:/var/lib/postgresql/data
+      - ..a/2. Init Database:/docker-entrypoint-initdb.d
+      - .:/var/lib/postgresql/data
   api:
     container_name: api
     build: 
