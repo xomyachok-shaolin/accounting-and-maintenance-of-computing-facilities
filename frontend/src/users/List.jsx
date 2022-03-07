@@ -23,13 +23,13 @@ function List({ match }) {
     return (
         <div>
             <h1>Users</h1>
-            <Link to={`${path}/add`} className="btn btn-sm btn-success mb-2">Add User</Link>
+            <Link to={`${path}/add`} className="btn btn-sm btn-success mb-2">Добавить пользователя</Link>
             <table className="table table-striped">
                 <thead>
                     <tr>
-                        <th style={{ width: '30%' }}>First Name</th>
-                        <th style={{ width: '30%' }}>Last Name</th>
-                        <th style={{ width: '30%' }}>Username</th>
+                        <th style={{ width: '30%' }}>Имя</th>
+                        <th style={{ width: '30%' }}>Фамилия</th>
+                        <th style={{ width: '30%' }}>Имя пользователя</th>
                         <th style={{ width: '10%' }}></th>
                     </tr>
                 </thead>
@@ -40,11 +40,11 @@ function List({ match }) {
                             <td>{user.lastName}</td>
                             <td>{user.username}</td>
                             <td style={{ whiteSpace: 'nowrap' }}>
-                                <Link to={`${path}/edit/${user.id}`} className="btn btn-sm btn-primary mr-1">Edit</Link>
+                                <Link to={`${path}/edit/${user.id}`} className="btn btn-sm btn-primary mr-1">Редактировать</Link>
                                 <button onClick={() => userActions.delete(user.id)} className="btn btn-sm btn-danger" style={{ width: '60px' }} disabled={user.isDeleting}>
                                     {user.isDeleting 
                                         ? <span className="spinner-border spinner-border-sm"></span>
-                                        : <span>Delete</span>
+                                        : <span>Удалить</span>
                                     }
                                 </button>
                             </td>

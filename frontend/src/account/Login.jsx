@@ -12,8 +12,8 @@ function Login() {
 
     // form validation rules 
     const validationSchema = Yup.object().shape({
-        username: Yup.string().required('Username is required'),
-        password: Yup.string().required('Password is required')
+        username: Yup.string().required('Имя пользователя обязательно к заполнеию'),
+        password: Yup.string().required('Пароль обязателен к заполнению')
     });
     const formOptions = { resolver: yupResolver(validationSchema) };
 
@@ -23,24 +23,24 @@ function Login() {
 
     return (
         <div className="card m-3">
-            <h4 className="card-header">Login</h4>
+            <h4 className="card-header">Вход</h4>
             <div className="card-body">
                 <form onSubmit={handleSubmit(userActions.login)}>
                     <div className="form-group">
-                        <label>Username</label>
+                        <label>Имя пользователя</label>
                         <input name="username" type="text" {...register('username')} className={`form-control ${errors.username ? 'is-invalid' : ''}`} />
                         <div className="invalid-feedback">{errors.username?.message}</div>
                     </div>
                     <div className="form-group">
-                        <label>Password</label>
+                        <label>Пароль</label>
                         <input name="password" type="password" {...register('password')} className={`form-control ${errors.password ? 'is-invalid' : ''}`} />
                         <div className="invalid-feedback">{errors.password?.message}</div>
                     </div>
                     <button disabled={isSubmitting} className="btn btn-primary">
                         {isSubmitting && <span className="spinner-border spinner-border-sm mr-1"></span>}
-                        Login
+                        Вход
                     </button>
-                    <Link to="register" className="btn btn-link">Register</Link>
+                    <Link to="register" className="btn btn-link">Регистрация</Link>
                 </form>
             </div>
         </div>

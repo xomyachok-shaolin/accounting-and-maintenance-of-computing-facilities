@@ -20,15 +20,15 @@ function AddEdit({ history, match }) {
     // form validation rules 
     const validationSchema = Yup.object().shape({
         firstName: Yup.string()
-            .required('First Name is required'),
+            .required('Имя обязательно'),
         lastName: Yup.string()
-            .required('Last Name is required'),
+            .required('Фамилия обязательна'),
         username: Yup.string()
-            .required('Username is required'),
+            .required('Имя пользователя обязательно'),
         password: Yup.string()
             .transform(x => x === '' ? undefined : x)
-            .concat(mode.add ? Yup.string().required('Password is required') : null)
-            .min(6, 'Password must be at least 6 characters')
+            .concat(mode.add ? Yup.string().required('Пароль обязателен') : null)
+            .min(6, 'Пароль должен быть не менее 6 символов')
     });
     const formOptions = { resolver: yupResolver(validationSchema) };
 
@@ -66,7 +66,7 @@ function AddEdit({ history, match }) {
         return userActions.register(data)
             .then(() => {
                 history.push('/users');
-                alertActions.success('User added');
+                alertActions.success('Пользователь добавлен');
             });
     }
 
@@ -74,7 +74,7 @@ function AddEdit({ history, match }) {
         return userActions.update(id, data)
             .then(() => {
                 history.push('/users');
-                alertActions.success('User updated');
+                alertActions.success('Информация о пользователе обновлена');
             });
     }
 
@@ -86,26 +86,26 @@ function AddEdit({ history, match }) {
                 <form onSubmit={handleSubmit(onSubmit)}>
                     <div className="form-row">
                         <div className="form-group col">
-                            <label>First Name</label>
+                            <label>Имя</label>
                             <input name="firstName" type="text" {...register('firstName')} className={`form-control ${errors.firstName ? 'is-invalid' : ''}`} />
                             <div className="invalid-feedback">{errors.firstName?.message}</div>
                         </div>
                         <div className="form-group col">
-                            <label>Last Name</label>
+                            <label>Фамилия</label>
                             <input name="lastName" type="text" {...register('lastName')} className={`form-control ${errors.lastName ? 'is-invalid' : ''}`} />
                             <div className="invalid-feedback">{errors.lastName?.message}</div>
                         </div>
                     </div>
                     <div className="form-row">
                         <div className="form-group col">
-                            <label>Username</label>
+                            <label>Имя пользователя</label>
                             <input name="username" type="text" {...register('username')} className={`form-control ${errors.username ? 'is-invalid' : ''}`} />
                             <div className="invalid-feedback">{errors.email?.message}</div>
                         </div>
                         <div className="form-group col">
                             <label>
-                                Password
-                                {mode.edit && <em className="ml-1">(Leave blank to keep the same password)</em>}
+                                Пароль
+                                {mode.edit && <em className="ml-1">(Оставьте пустым, чтобы сохранить тот же пароль)</em>}
                             </label>
                             <input name="password" type="password" {...register('password')} className={`form-control ${errors.password ? 'is-invalid' : ''}`} />
                             <div className="invalid-feedback">{errors.password?.message}</div>
@@ -114,10 +114,10 @@ function AddEdit({ history, match }) {
                     <div className="form-group">
                         <button type="submit" disabled={isSubmitting} className="btn btn-primary mr-2">
                             {isSubmitting && <span className="spinner-border spinner-border-sm mr-1"></span>}
-                            Save
+                            Сохранить
                         </button>
-                        <button onClick={() => reset(user)} type="button" disabled={isSubmitting} className="btn btn-secondary">Reset</button>
-                        <Link to="/users" className="btn btn-link">Cancel</Link>
+                        <button onClick={() => reset(user)} type="button" disabled={isSubmitting} className="btn btn-secondary">Сбросить</button>
+                        <Link to="/users" className="btn btn-link">Отмена</Link>
                     </div>
                 </form>
             }

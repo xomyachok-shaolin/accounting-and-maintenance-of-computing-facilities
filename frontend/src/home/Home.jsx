@@ -13,7 +13,7 @@ function Home() {
             <div className="container">
                 <h1>Hi {auth?.firstName}!</h1>
                 <p>You're logged in with React + Recoil & JWT!!</p>
-                <p><Link to="/users">Manage Users</Link></p>
+                <p><Link to="/users">Управление пользователями</Link></p>
             </div>
         </div>
     );
