@@ -40,10 +40,9 @@ public class UsersController : ControllerBase
     public IActionResult Register(RegisterRequest model)
     {
         _userService.Register(model);
-        return Ok(new { message = "Регистрация успешно осуществлена" });
+        return Ok(new { message = "Регистрация успешно выполнена" });
     }
 
-    [Authorize(Role.Admin)]
     [HttpGet]
     public IActionResult GetAll()
     {
@@ -54,11 +53,6 @@ public class UsersController : ControllerBase
     [HttpGet("{id}")]
     public IActionResult GetById(int id)
     {
-        // only admins can access other user records
-        var currentUser = (User)HttpContext.Items["User"];
-        if (id != currentUser.Id && currentUser.Role != Role.Admin)
-            return Unauthorized(new { message = "Unauthorized" });
-
         var user = _userService.GetById(id);
         return Ok(user);
     }

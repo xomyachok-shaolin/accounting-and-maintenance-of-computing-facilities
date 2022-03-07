@@ -1,7 +1,4 @@
 namespace WebApi.Entities;
-
-using System.Text.Json.Serialization;
-
 public class UserRole
 {
     public int UserId { get; set; }
