@@ -43,6 +43,7 @@ public class UsersController : ControllerBase
         return Ok(new { message = "Регистрация успешно выполнена" });
     }
 
+    // [Authorize(Role.Admin)]
     [HttpGet]
     public IActionResult GetAll()
     {
