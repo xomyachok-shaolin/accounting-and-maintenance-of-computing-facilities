@@ -11,8 +11,7 @@ function Home() {
     return (
         <div className="p-4">
             <div className="container">
-                <h1>Hi {auth?.firstName}!</h1>
-                <p>You're logged in with React + Recoil & JWT!!</p>
+                <h1>Привет {auth?.firstName}!</h1>
                 <p><Link to="/users">Управление пользователями</Link></p>
             </div>
         </div>

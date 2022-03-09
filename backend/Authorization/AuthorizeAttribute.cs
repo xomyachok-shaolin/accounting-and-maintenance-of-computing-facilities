@@ -7,8 +7,6 @@ using WebApi.Entities;
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
 public class AuthorizeAttribute : Attribute, IAuthorizationFilter
 {
-    public string Roles { get; set; }
-
     public void OnAuthorization(AuthorizationFilterContext context)
     {
         // skip authorization if action is decorated with [AllowAnonymous] attribute

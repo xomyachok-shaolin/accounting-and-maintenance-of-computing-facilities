@@ -105,7 +105,7 @@ public class UserService : IUserService
 
     private User getUser(int id)
     {
-        var user = _context.Users.Find(id);
+        var user = _context.Users.Include(ur => ur.Roles).FirstOrDefault(u => u.Id == id); ; 
         if (user == null) throw new KeyNotFoundException("Пользователь не найден");
         return user;
     }
