@@ -1,7 +1,7 @@
 import { NavLink } from 'react-router-dom';
 import { useRecoilValue } from 'recoil';
 
-import { adminAtom, authAtom } from '_state';
+import { authAtom } from '_state';
 import { useUserActions } from '_actions';
 
 export { Nav };
@@ -10,12 +10,15 @@ function Nav() {
     const auth = useRecoilValue(authAtom);
     const userActions = useUserActions();
 
-    const isAdmin = true;
+    let isAdmin = false;
 
     // only show nav when logged in
     if (!auth) return null;
     
-    // console.log(isAdmin);
+    auth.roles.forEach(r => {
+        if (r.name === "Administrator")
+            isAdmin = true;
+    });
 
     return (
         <nav className="navbar navbar-expand navbar-dark bg-dark">

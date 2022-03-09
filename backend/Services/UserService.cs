@@ -45,6 +45,9 @@ public class UserService : IUserService
         // authentication successful
         var response = _mapper.Map<AuthenticateResponse>(user);
         response.Token = _jwtUtils.GenerateToken(user);
+        //response.Roles = 
+        foreach (Role r in GetById(user.Id).Roles)
+            response.Roles.Add(r);
         return response;
     }
 

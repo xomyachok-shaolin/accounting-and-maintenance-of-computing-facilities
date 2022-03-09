@@ -1,7 +1,7 @@
 import { useRecoilState, useSetRecoilState, useResetRecoilState } from 'recoil';
 
 import { history, useFetchWrapper } from '_helpers';
-import { authAtom, usersAtom, userAtom, adminAtom } from '_state';
+import { authAtom, usersAtom, userAtom } from '_state';
 
 export { useUserActions };
 
