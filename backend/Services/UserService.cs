@@ -2,6 +2,7 @@ namespace WebApi.Services;
 
 using AutoMapper;
 using BCrypt.Net;
+using Microsoft.EntityFrameworkCore;
 using WebApi.Authorization;
 using WebApi.Entities;
 using WebApi.Helpers;
@@ -49,7 +50,8 @@ public class UserService : IUserService
 
     public IEnumerable<User> GetAll()
     {
-        return _context.Users;
+        return _context.Users
+            .Include(ur => ur.Roles);
     }
 
     public User GetById(int id)

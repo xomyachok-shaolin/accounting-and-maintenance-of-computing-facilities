@@ -81,7 +81,7 @@ function AddEdit({ history, match }) {
     const loading = mode.edit && !user;
     return (
         <>
-            <h1>{mode.add ? 'Add User' : 'Edit User'}</h1>
+            <h1>{mode.add ? 'Добавить пользователя' : 'Редактировать пользователя'}</h1>
             {!loading &&
                 <form onSubmit={handleSubmit(onSubmit)}>
                     <div className="form-row">

@@ -1,5 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using BCryptNet = BCrypt.Net.BCrypt;
+
+using Microsoft.EntityFrameworkCore;
 using WebApi.Authorization;
+using WebApi.Entities;
 using WebApi.Helpers;
 using WebApi.Services;
 
@@ -33,7 +36,7 @@ using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
 
-    var context = services.GetRequiredService<DataContext>();
+    var context = services.GetRequiredService<DataContext>();   
     if (context.Database.GetPendingMigrations().Any())
     {
         context.Database.Migrate();
@@ -57,5 +60,21 @@ using (var scope = app.Services.CreateScope())
 
     app.MapControllers();
 }
+/*
+// create hardcoded test users in db on startup
+{
+    var role1 = new Role { Name = "Administrator" };
+    var role2 = new Role { Name = "User" };
+
+    var testUsers = new List<User>
+    {
+        new User { Id = 1, FirstName = "Admin", LastName = "User", Username = "admin", PasswordHash = BCryptNet.HashPassword("admin"), Roles = new List<Role>{ role1, role2 } },
+        new User { Id = 2, FirstName = "Normal", LastName = "User", Username = "user", PasswordHash = BCryptNet.HashPassword("user"), Roles =  new List<Role>{ role2 } }
+    };
+    using var scope = app.Services.CreateScope();
+    var dataContext = scope.ServiceProvider.GetRequiredService<DataContext>();
+    dataContext.Users.AddRange(testUsers);
+    dataContext.SaveChanges();
+}*/
 
 app.Run();

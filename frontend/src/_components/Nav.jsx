@@ -17,7 +17,7 @@ function Nav() {
         <nav className="navbar navbar-expand navbar-dark bg-dark">
             <div className="navbar-nav">
                 <NavLink exact to="/" className="nav-item nav-link">Главная</NavLink>
-                <NavLink to="/users" className="nav-item nav-link">Пользователи</NavLink>
+                {auth && <NavLink to="/users" className="nav-item nav-link">Пользователи</NavLink>}
                 <a onClick={userActions.logout} className="nav-item nav-link">Выход</a>
             </div>
         </nav>
