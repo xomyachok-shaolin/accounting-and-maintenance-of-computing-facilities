@@ -10,7 +10,7 @@ function Nav() {
     const auth = useRecoilValue(authAtom);
     const userActions = useUserActions();
 
-    // const isAdmin = useRecoilValue(adminAtom);
+    const isAdmin = true;
 
     // only show nav when logged in
     if (!auth) return null;
