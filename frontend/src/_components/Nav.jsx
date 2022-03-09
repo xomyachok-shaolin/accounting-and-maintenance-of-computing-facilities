@@ -15,7 +15,7 @@ function Nav() {
     // only show nav when logged in
     if (!auth) return null;
     
-    console.log(isAdmin);
+    // console.log(isAdmin);
 
     return (
         <nav className="navbar navbar-expand navbar-dark bg-dark">
