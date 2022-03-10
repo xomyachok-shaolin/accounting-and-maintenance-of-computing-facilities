@@ -16,7 +16,7 @@ function Nav() {
     if (!auth) return null;
     
     auth.roles.forEach(r => {
-        if (r.name === "Administrator")
+        if (r.name === "Администратор")
             isAdmin = true;
     });
 

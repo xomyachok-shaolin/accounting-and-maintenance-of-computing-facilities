@@ -60,16 +60,18 @@ using (var scope = app.Services.CreateScope())
 
     app.MapControllers();
 }
-/*
+
 // create hardcoded test users in db on startup
-{
-    var role1 = new Role { Name = "Administrator" };
-    var role2 = new Role { Name = "User" };
+/*{
+    var role1 = new Role { Name = "Администратор", isEdit = 'y', isTransfer = 'y', isUpgrade = 'y', isWriteOff = 'y' };
+    var role2 = new Role { Name = "Ответственный за списание", isEdit = 'y', isTransfer = 'n', isUpgrade = 'n', isWriteOff = 'n' };
 
     var testUsers = new List<User>
     {
-        new User { Id = 1, FirstName = "Admin", LastName = "User", Username = "admin", PasswordHash = BCryptNet.HashPassword("admin"), Roles = new List<Role>{ role1, role2 } },
-        new User { Id = 2, FirstName = "Normal", LastName = "User", Username = "user", PasswordHash = BCryptNet.HashPassword("user"), Roles =  new List<Role>{ role2 } }
+        new User { Id = 1, FirstName = "Admin", LastName = "Admin", Patronymic = "", 
+            Mail = "admin", Username = "admin", PasswordHash = BCryptNet.HashPassword("admin"), Roles = new List<Role>{ role1, role2 } },
+        new User { Id = 2, FirstName = "User", LastName = "User", Patronymic = "", 
+            Mail = "user@mail.ru", Username = "user", PasswordHash = BCryptNet.HashPassword("user"), Roles =  new List<Role>{ role2 } }
     };
     using var scope = app.Services.CreateScope();
     var dataContext = scope.ServiceProvider.GetRequiredService<DataContext>();

@@ -47,6 +47,18 @@ namespace WebApi.Migrations
                     b.Property<string>("Name")
                         .HasColumnType("text");
 
+                    b.Property<char>("isEdit")
+                        .HasColumnType("character(1)");
+
+                    b.Property<char>("isTransfer")
+                        .HasColumnType("character(1)");
+
+                    b.Property<char>("isUpgrade")
+                        .HasColumnType("character(1)");
+
+                    b.Property<char>("isWriteOff")
+                        .HasColumnType("character(1)");
+
                     b.HasKey("Id");
 
                     b.ToTable("Roles");
@@ -66,13 +78,25 @@ namespace WebApi.Migrations
                     b.Property<string>("LastName")
                         .HasColumnType("text");
 
+                    b.Property<string>("Mail")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<string>("PasswordHash")
                         .HasColumnType("text");
 
+                    b.Property<string>("Patronymic")
+                        .HasColumnType("text");
+
                     b.Property<string>("Username")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
+
+                    b.HasAlternateKey("Mail");
+
+                    b.HasAlternateKey("Username");
 
                     b.ToTable("Users");
                 });

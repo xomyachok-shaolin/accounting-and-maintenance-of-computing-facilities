@@ -20,6 +20,11 @@ public partial class DataContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<Role>().HasAlternateKey(r => r.Name);
+        
+        modelBuilder.Entity<User>().HasAlternateKey(u => u.Username);
+        modelBuilder.Entity<User>().HasAlternateKey(u => u.Mail);
+
         OnModelCreatingPartial(modelBuilder);
     }
 
