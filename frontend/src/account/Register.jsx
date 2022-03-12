@@ -14,13 +14,17 @@ function Register({ history }) {
     // form validation rules 
     const validationSchema = Yup.object().shape({
         firstName: Yup.string()
-            .required('Имя'),
+            .required('Пожалуйста, введите имя'),
+        patronymic: Yup.string()
+            .required('Пожалуйста, введите отчество'),
         lastName: Yup.string()
-            .required('Фамилия'),
+            .required('Пожалуйста, введите фамилию'),
+        mail: Yup.string()
+            .required('Электронная почта обязательна').email('Пожалуйста, введите действующий электронный адрес'),
         username: Yup.string()
             .required('Имя пользователя обязательно'),
         password: Yup.string()
-            .required('Пароль обязательно')
+            .required('Пароль обязателен')
             .min(6, 'Пароль должен быть не менее 6 символов')
     });
     const formOptions = { resolver: yupResolver(validationSchema) };
@@ -43,9 +47,14 @@ function Register({ history }) {
             <div className="card-body">
                 <form onSubmit={handleSubmit(onSubmit)}>
                     <div className="form-group">
-                        <label>Имя</label>
-                        <input name="firstName" type="text" {...register('firstName')} className={`form-control ${errors.firstName ? 'is-invalid' : ''}`} />
-                        <div className="invalid-feedback">{errors.firstName?.message}</div>
+                        <label>Имя пользователя</label>
+                        <input name="username" type="text" {...register('username')} className={`form-control ${errors.username ? 'is-invalid' : ''}`} />
+                        <div className="invalid-feedback">{errors.username?.message}</div>
+                    </div>
+                    <div className="form-group">
+                        <label>Электронная почта</label>
+                        <input name="mail" type="text" {...register('mail')} className={`form-control ${errors.mail ? 'is-invalid' : ''}`} />
+                        <div className="invalid-feedback">{errors.mail?.message}</div>
                     </div>
                     <div className="form-group">
                         <label>Фамилия</label>
@@ -53,9 +62,14 @@ function Register({ history }) {
                         <div className="invalid-feedback">{errors.lastName?.message}</div>
                     </div>
                     <div className="form-group">
-                        <label>Имя пользователя</label>
-                        <input name="username" type="text" {...register('username')} className={`form-control ${errors.username ? 'is-invalid' : ''}`} />
-                        <div className="invalid-feedback">{errors.username?.message}</div>
+                        <label>Имя</label>
+                        <input name="firstName" type="text" {...register('firstName')} className={`form-control ${errors.firstName ? 'is-invalid' : ''}`} />
+                        <div className="invalid-feedback">{errors.firstName?.message}</div>
+                    </div>
+                    <div className="form-group">
+                        <label>Отчество</label>
+                        <input name="patronymic" type="text" {...register('patronymic')} className={`form-control ${errors.patronymic ? 'is-invalid' : ''}`} />
+                        <div className="invalid-feedback">{errors.patronymic?.message}</div>
                     </div>
                     <div className="form-group">
                         <label>Пароль</label>

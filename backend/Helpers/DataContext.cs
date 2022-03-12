@@ -20,10 +20,10 @@ public partial class DataContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<Role>().HasAlternateKey(r => r.Name);
+        modelBuilder.Entity<Role>().HasIndex(r => r.Name).IsUnique();
         
-        modelBuilder.Entity<User>().HasAlternateKey(u => u.Username);
-        modelBuilder.Entity<User>().HasAlternateKey(u => u.Mail);
+        modelBuilder.Entity<User>().HasIndex(u => u.Username).IsUnique();
+        modelBuilder.Entity<User>().HasIndex(u => u.Mail).IsUnique();
 
         OnModelCreatingPartial(modelBuilder);
     }

@@ -27,18 +27,22 @@ function List({ match }) {
             <table className="table table-striped">
                 <thead>
                     <tr>
-                        <th style={{ width: '30%' }}>Имя</th>
-                        <th style={{ width: '30%' }}>Фамилия</th>
-                        <th style={{ width: '30%' }}>Имя пользователя</th>
+                        <th style={{ width: '20%' }}>Электронная почта</th>
+                        <th style={{ width: '20%' }}>Имя пользователя</th>
+                        <th style={{ width: '15%' }}>Фамилия</th>
+                        <th style={{ width: '15%' }}>Имя</th>
+                        <th style={{ width: '15%' }}>Отчество</th>
                         <th style={{ width: '10%' }}></th>
                     </tr>
                 </thead>
                 <tbody>
                     {users?.map(user =>
                         <tr key={user.id}>
-                            <td>{user.firstName}</td>
-                            <td>{user.lastName}</td>
+                            <td>{user.mail}</td>
                             <td>{user.username}</td>
+                            <td>{user.lastName}</td>
+                            <td>{user.firstName}</td>
+                            <td>{user.patronymic}</td>
                             <td style={{ whiteSpace: 'nowrap' }}>
                                 <Link to={`${path}/edit/${user.id}`} className="btn btn-sm btn-primary mr-1">Редактировать</Link>
                                 <button onClick={() => userActions.delete(user.id)} className="btn btn-sm btn-danger" style={{ width: '70px' }} disabled={user.isDeleting}>
