@@ -27,7 +27,7 @@ function List({ match }) {
             <table className="table table-striped">
                 <thead>
                     <tr>
-                        <th style={{ width: '20%' }}>Электронная почта</th>
+                        <th style={{ width: '20%' }}>Адрес электронной почты</th>
                         <th style={{ width: '20%' }}>Имя пользователя</th>
                         <th style={{ width: '15%' }}>Фамилия</th>
                         <th style={{ width: '15%' }}>Имя</th>

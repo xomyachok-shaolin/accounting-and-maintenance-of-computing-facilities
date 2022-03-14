@@ -20,7 +20,7 @@ function Register({ history }) {
         lastName: Yup.string()
             .required('Пожалуйста, введите фамилию'),
         mail: Yup.string()
-            .required('Электронная почта обязательна').email('Пожалуйста, введите действующий электронный адрес'),
+            .required('Адрес электронной почты обязателен').email('Пожалуйста, введите действующий адрес электронной почты'),
         username: Yup.string()
             .required('Имя пользователя обязательно'),
         password: Yup.string()
@@ -52,7 +52,7 @@ function Register({ history }) {
                         <div className="invalid-feedback">{errors.username?.message}</div>
                     </div>
                     <div className="form-group">
-                        <label>Электронная почта</label>
+                        <label>Адрес электронной почты</label>
                         <input name="mail" type="text" {...register('mail')} className={`form-control ${errors.mail ? 'is-invalid' : ''}`} />
                         <div className="invalid-feedback">{errors.mail?.message}</div>
                     </div>

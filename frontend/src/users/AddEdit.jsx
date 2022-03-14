@@ -108,7 +108,7 @@ function AddEdit({ history, match }) {
                     </div>
                     <div className="form-row">
                         <div className="form-group col">
-                            <label>Электронная почта</label>
+                            <label>Адрес электронной почты</label>
                             <input name="mail" type="text" {...register('mail')} className={`form-control ${errors.mail ? 'is-invalid' : ''}`} />
                             <div className="invalid-feedback">{errors.mail?.message}</div>
                         </div>
