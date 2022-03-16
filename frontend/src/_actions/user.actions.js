@@ -1,7 +1,7 @@
 import { useRecoilState, useSetRecoilState, useResetRecoilState } from 'recoil';
 
 import { history, useFetchWrapper } from '_helpers';
-import { authAtom, usersAtom, userAtom } from '_state';
+import { adminAtom, authAtom, usersAtom, userAtom } from '_state';
 
 export { useUserActions };
 
@@ -9,6 +9,7 @@ function useUserActions () {
     const baseUrl = `${process.env.REACT_APP_API_URL}/users`;
     const fetchWrapper = useFetchWrapper();
     const [auth, setAuth] = useRecoilState(authAtom);
+    const [admin, setAdmin] = useRecoilState(adminAtom);
     const setUsers = useSetRecoilState(usersAtom);
     const setUser = useSetRecoilState(userAtom);
 
@@ -31,6 +32,11 @@ function useUserActions () {
                 localStorage.setItem('user', JSON.stringify(user));
                 setAuth(user);
 
+                user.roles.forEach(r => {
+                    if (r.name === "Администратор")
+                        setAdmin(true);
+                });
+
                 // get return url from location state or default to home page
                 const { from } = history.location.state || { from: { pathname: '/' } };
                 history.push(from);
@@ -41,6 +47,7 @@ function useUserActions () {
         // remove user from local storage, set auth state to null and redirect to login page
         localStorage.removeItem('user');
         setAuth(null);
+        setAdmin(null);
         history.push('/account/login');
     }
 
