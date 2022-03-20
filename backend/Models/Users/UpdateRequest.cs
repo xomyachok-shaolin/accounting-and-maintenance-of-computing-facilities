@@ -8,4 +8,7 @@ public class UpdateRequest
     public string FirstName { get; set; }
     public string Patronymic { get; set; }
     public string Password { get; set; }
+
+    public string ImageName { get; set; }
+    public IFormFile ImageFile { get; set; }
 }

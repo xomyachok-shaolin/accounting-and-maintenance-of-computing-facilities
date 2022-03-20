@@ -1,88 +1,190 @@
-import { Link } from 'react-router-dom';
+/* eslint-disable react/react-in-jsx-scope */
+import { Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
-import { yupResolver } from '@hookform/resolvers/yup';
-import * as Yup from 'yup';
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as Yup from "yup";
 
-import { useUserActions, useAlertActions } from '_actions';
+import { useUserActions, useAlertActions } from "_actions";
+
+import { Avatar } from "./Avatar";
+import { Card } from "antd";
+import { Space } from "antd";
+import { Form } from "antd";
+import { Input } from "antd";
+import { Button } from "antd";
+import { Spin } from "antd";
+import { avatarAtom } from "_state";
+import { useRecoilValue } from "recoil";
+import { useRecoilState } from "recoil";
+import { useState } from "react";
 
 export { Register };
 
 function Register({ history }) {
-    const userActions = useUserActions();
-    const alertActions = useAlertActions();
+  const userActions = useUserActions();
+  const alertActions = useAlertActions();
 
-    // form validation rules 
-    const validationSchema = Yup.object().shape({
-        firstName: Yup.string()
-            .required('Пожалуйста, введите имя'),
-        patronymic: Yup.string()
-            .required('Пожалуйста, введите отчество'),
-        lastName: Yup.string()
-            .required('Пожалуйста, введите фамилию'),
-        mail: Yup.string()
-            .required('Адрес электронной почты обязателен').email('Пожалуйста, введите действующий адрес электронной почты'),
-        username: Yup.string()
-            .required('Имя пользователя обязательно'),
-        password: Yup.string()
-            .required('Пароль обязателен')
-            .min(6, 'Пароль должен быть не менее 6 символов')
+  const [avatar] = useRecoilState(avatarAtom);
+
+  const [form] = Form.useForm();
+
+  const { isSubmitting } = useState();
+
+  const formItemLayout = {
+    labelCol: {
+      xs: { span: 24 },
+      sm: { span: 8 },
+    },
+    wrapperCol: {
+      xs: { span: 24 },
+      sm: { span: 16 },
+    },
+  };
+
+  const tailFormItemLayout = {
+    wrapperCol: {
+      xs: {
+        span: 24,
+        offset: 0,
+      },
+      sm: {
+        span: 16,
+        offset: 8,
+      },
+    },
+  };
+
+  function onSubmit(data) {
+    console.log(data);
+    return userActions.register(data).then(() => {
+      history.push("/account/login");
+      alertActions.success("Регистрация успешно выполнена");
     });
-    const formOptions = { resolver: yupResolver(validationSchema) };
+  }
 
-    // get functions to build form with useForm() hook
-    const { register, handleSubmit, formState } = useForm(formOptions);
-    const { errors, isSubmitting } = formState;
-
-    function onSubmit(data) {
-        return userActions.register(data)
-            .then(() => {
-                history.push('/account/login');
-                alertActions.success('Регистрация успешно выполнена');
-            })
+  const onFinish = (values) => {
+    if (avatar == null) {
+      values.imageName = "null";
+      values.imageFile = "null";
+    } else {
+      values.imageName = avatar.name;
+      values.imageFile = avatar.imageUrl;
     }
+    onSubmit(values);
+  };
 
-    return (
-        <div className="card m-3">
-            <h4 className="card-header">Регистрация</h4>
-            <div className="card-body">
-                <form onSubmit={handleSubmit(onSubmit)}>
-                    <div className="form-group">
-                        <label>Имя пользователя</label>
-                        <input name="username" type="text" {...register('username')} className={`form-control ${errors.username ? 'is-invalid' : ''}`} />
-                        <div className="invalid-feedback">{errors.username?.message}</div>
-                    </div>
-                    <div className="form-group">
-                        <label>Адрес электронной почты</label>
-                        <input name="mail" type="text" {...register('mail')} className={`form-control ${errors.mail ? 'is-invalid' : ''}`} />
-                        <div className="invalid-feedback">{errors.mail?.message}</div>
-                    </div>
-                    <div className="form-group">
-                        <label>Фамилия</label>
-                        <input name="lastName" type="text" {...register('lastName')} className={`form-control ${errors.lastName ? 'is-invalid' : ''}`} />
-                        <div className="invalid-feedback">{errors.lastName?.message}</div>
-                    </div>
-                    <div className="form-group">
-                        <label>Имя</label>
-                        <input name="firstName" type="text" {...register('firstName')} className={`form-control ${errors.firstName ? 'is-invalid' : ''}`} />
-                        <div className="invalid-feedback">{errors.firstName?.message}</div>
-                    </div>
-                    <div className="form-group">
-                        <label>Отчество</label>
-                        <input name="patronymic" type="text" {...register('patronymic')} className={`form-control ${errors.patronymic ? 'is-invalid' : ''}`} />
-                        <div className="invalid-feedback">{errors.patronymic?.message}</div>
-                    </div>
-                    <div className="form-group">
-                        <label>Пароль</label>
-                        <input name="password" type="password" {...register('password')} className={`form-control ${errors.password ? 'is-invalid' : ''}`} />
-                        <div className="invalid-feedback">{errors.password?.message}</div>
-                    </div>
-                    <button disabled={isSubmitting} className="btn btn-primary">
-                        {isSubmitting && <span className="spinner-border spinner-border-sm mr-1"></span>}
-                        Регистрация
-                    </button>
-                    <Link to="login" className="btn btn-link">Отмена</Link>
-                </form>
-            </div>
-        </div>
-    )
+  return (
+    <Card
+      hoverable
+      style={{ width: 800 }}
+      title="Форма регистрации"
+      bordered={false}
+    >
+      {/* <form onSubmit={}> */}
+      <Form
+        form={form}
+        {...formItemLayout}
+        name="register"
+        onFinish={onFinish}
+        scrollToFirstError
+      >
+        <Form.Item
+          label="Имя пользователя"
+          name="username"
+          rules={[
+            {
+              required: true,
+              message: "Пожалуйста, введите имя пользователя!",
+            },
+          ]}
+        >
+          <Input />
+        </Form.Item>
+        <Form.Item
+          label="Пароль"
+          name="password"
+          rules={[{ required: true, message: "Пожалуйста, введите пароль!" }]}
+        >
+          <Input.Password />
+        </Form.Item>
+
+        <Form.Item
+          label="Фамилия"
+          name="lastName"
+          rules={[
+            {
+              required: true,
+              message: "Пожалуйста, введите фамилию!",
+            },
+          ]}
+        >
+          <Input />
+        </Form.Item>
+
+        <Form.Item
+          label="Имя"
+          name="firstName"
+          rules={[
+            {
+              required: true,
+              message: "Пожалуйста, введите имя!",
+            },
+          ]}
+        >
+          <Input />
+        </Form.Item>
+
+        <Form.Item
+          label="Отчество"
+          name="patronymic"
+          rules={[
+            {
+              required: true,
+              message: "Пожалуйста, введите отчество!",
+            },
+          ]}
+        >
+          <Input />
+        </Form.Item>
+
+        <Form.Item
+          name="mail"
+          label="Адрес электронной почты"
+          rules={[
+            {
+              type: "email",
+              message:
+                "Пожалуйста, введите действительный адрес электронной почты!",
+            },
+            {
+              required: true,
+              message: "Пожалуйста, введите адрес электронной почты!",
+            },
+          ]}
+        >
+          <Input />
+        </Form.Item>
+
+        <Form.Item label="Фотография профиля">
+          <Avatar />
+        </Form.Item>
+
+        <Form.Item {...tailFormItemLayout}>
+          <Space>
+            {!isSubmitting && (
+              <Button htmlType="submit">Зарегистрироваться</Button>
+            )}
+            {isSubmitting && (
+              <Button htmlType="submit">
+                <Spin size="small" />
+              </Button>
+            )}
+            <Button>
+              <Link to="login">Отмена</Link>
+            </Button>
+          </Space>
+        </Form.Item>
+      </Form>
+    </Card>
+  );
 }

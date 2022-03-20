@@ -44,6 +44,14 @@ using (var scope = app.Services.CreateScope())
 
 }
 
+/*app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(
+        Path.Combine(builder.Environment.ContentRootPath, "Photos")),
+    RequestPath = "/Photos"
+});*/
+
+
 // configure HTTP request pipeline
 {
     // global cors policy
@@ -69,9 +77,9 @@ using (var scope = app.Services.CreateScope())
     var testUsers = new List<User>
     {
         new User { Id = 1, FirstName = "Admin", LastName = "Admin", Patronymic = "", 
-            Mail = "admin", Username = "admin", PasswordHash = BCryptNet.HashPassword("admin"), Roles = new List<Role>{ role1, role2 } },
+            Mail = "admin", Username = "admin", PasswordHash = BCryptNet.HashPassword("admin"), ImageName ="avatar.png", Roles = new List<Role>{ role1, role2 } },
         new User { Id = 2, FirstName = "User", LastName = "User", Patronymic = "", 
-            Mail = "user@mail.ru", Username = "user", PasswordHash = BCryptNet.HashPassword("user"), Roles =  new List<Role>{ role2 } }
+            Mail = "user@mail.ru", Username = "user", PasswordHash = BCryptNet.HashPassword("user"), ImageName ="avatar.png", Roles =  new List<Role>{ role2 } }
     };
     using var scope = app.Services.CreateScope();
     var dataContext = scope.ServiceProvider.GetRequiredService<DataContext>();

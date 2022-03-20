@@ -16,12 +16,15 @@ public class UsersController : ControllerBase
     private IUserService _userService;
     private IMapper _mapper;
     private readonly AppSettings _appSettings;
+    private readonly IWebHostEnvironment _webHostEnvironment;
 
     public UsersController(
         IUserService userService,
         IMapper mapper,
-        IOptions<AppSettings> appSettings)
+        IOptions<AppSettings> appSettings,
+        IWebHostEnvironment webHostEnvironment)
     {
+        _webHostEnvironment = webHostEnvironment;
         _userService = userService;
         _mapper = mapper;
         _appSettings = appSettings.Value;
@@ -37,8 +40,9 @@ public class UsersController : ControllerBase
 
     [AllowAnonymous]
     [HttpPost("register")]
-    public IActionResult Register(RegisterRequest model)
+    public async Task<ActionResult<RegisterRequest>> Register(RegisterRequest model)
     {
+        model.ImageName = await SaveImage(model.ImageFile, model.ImageName);
         _userService.Register(model);
         return Ok(new { message = "Регистрация успешно выполнена" });
     }
@@ -70,5 +74,23 @@ public class UsersController : ControllerBase
     {
         _userService.Delete(id);
         return Ok(new { message = "Информация о пользователе успешно удалена" });
+    }
+
+    [NonAction]
+    public async Task<string> SaveImage(string img, string imgName)
+    {
+        if (img == "null" && imgName == "null") return "anonymous.png";
+
+        byte[] bytes = Convert.FromBase64String(img.Substring(img.LastIndexOf(',') + 1));
+        MemoryStream stream = new MemoryStream(bytes);
+        IFormFile imageFile = new FormFile(stream, 0, bytes.Length, imgName, imgName);
+        string imageName = new String(Path.GetFileNameWithoutExtension(imageFile.FileName).Take(10).ToArray()).Replace(' ', '-');
+        imageName += DateTime.Now.ToString("yymmssfff")+ Path.GetExtension(imageFile.FileName);
+        var imagePath = Path.Combine(_webHostEnvironment.ContentRootPath,"Images",imageName);
+        using (var fileStream = new FileStream(imagePath, FileMode.Create))
+        {
+            await imageFile.CopyToAsync(fileStream);
+        }
+        return imageName;
     }
 }

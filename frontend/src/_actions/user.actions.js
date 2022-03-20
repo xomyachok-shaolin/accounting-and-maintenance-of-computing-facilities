@@ -1,7 +1,9 @@
 import { useRecoilState, useSetRecoilState, useResetRecoilState } from 'recoil';
 
 import { history, useFetchWrapper } from '_helpers';
-import { adminAtom, authAtom, usersAtom, userAtom } from '_state';
+import { adminAtom, authAtom, usersAtom, userAtom, collapseAtom } from '_state';
+import { submitAtom } from '_state';
+import { avatarAtom } from '_state';
 
 export { useUserActions };
 
@@ -9,12 +11,17 @@ function useUserActions () {
     const baseUrl = `${process.env.REACT_APP_API_URL}/users`;
     const fetchWrapper = useFetchWrapper();
     const [auth, setAuth] = useRecoilState(authAtom);
+    const [collapse, setCollapse] = useRecoilState(collapseAtom);
+    const [submit, setSubmit] = useRecoilState(submitAtom);
     const [admin, setAdmin] = useRecoilState(adminAtom);
     const setUsers = useSetRecoilState(usersAtom);
     const setUser = useSetRecoilState(userAtom);
+    const setAvatar = useSetRecoilState(avatarAtom);
 
     return {
         login,
+        switchMenu,
+        switchLoading,
         logout,
         register,
         getAll,
@@ -26,6 +33,7 @@ function useUserActions () {
     }
 
     function login({ username, password }) {
+        setSubmit(true);
         return fetchWrapper.post(`${baseUrl}/authenticate`, { username, password })
             .then(user => {
                 // store user details and jwt token in local storage to keep user logged in between page refreshes
@@ -40,7 +48,19 @@ function useUserActions () {
                 // get return url from location state or default to home page
                 const { from } = history.location.state || { from: { pathname: '/' } };
                 history.push(from);
-            });
+            })
+            .finally(()=> {
+                setSubmit(false);
+            })
+    }
+
+
+    function switchMenu() {
+        setCollapse(!collapse);
+    }
+
+    function switchLoading() {
+        setSubmit(!submit);
     }
 
     function logout() {

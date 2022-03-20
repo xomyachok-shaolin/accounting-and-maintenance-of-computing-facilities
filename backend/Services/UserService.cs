@@ -112,4 +112,5 @@ public class UserService : IUserService
         if (user == null) throw new KeyNotFoundException("Пользователь не найден");
         return user;
     }
+
 }

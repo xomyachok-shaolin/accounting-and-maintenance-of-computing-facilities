@@ -28,7 +28,7 @@ function useFetchWrapper() {
                 requestOptions.body = JSON.stringify(body);
             }
             return fetch(url, requestOptions).then(handleResponse);
-        }
+        };
     }
     
     // helper functions

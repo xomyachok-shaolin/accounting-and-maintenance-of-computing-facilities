@@ -19,15 +19,13 @@ function Account({ history, match }) {
     }, []);
 
     return (
-        <div className="container">
-            <div className="row">
-                <div className="col-sm-8 offset-sm-2 mt-5">
+        <div className='flex-container' style={{margin:70}}>
+            
                     <Switch>
                         <Route path={`${path}/login`} component={Login} />
                         <Route path={`${path}/register`} component={Register} />
                     </Switch>
-                </div>
-            </div>
+         
         </div>
     );
 }

@@ -11,5 +11,6 @@ public class AuthenticateResponse
     public string Mail { get; set; }
     public string Username { get; set; }
     public string Token { get; set; }
+    public string ImageName { get; set; }
     public ICollection<Role> Roles { get; set; }
 }
