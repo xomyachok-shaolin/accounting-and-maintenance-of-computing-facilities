@@ -60,9 +60,11 @@ function Login() {
                 <Spin size="small" />
               </Button>
             )}
+            <Link to="register">
             <Button>
-              <Link to="register">Зарегистрироваться</Link>
+              Зарегистрироваться
             </Button>
+            </Link>
           </Space>
         </Form.Item>
       </Form>
