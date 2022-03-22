@@ -52,6 +52,12 @@ public class UsersController : ControllerBase
     public IActionResult GetAll()
     {
         var users = _userService.GetAll();
+
+        foreach (var user in users)
+        {
+            user.ImageFile = String.Format("{0}://{1}{2}/Images/{3}", Request.Scheme, Request.Host, Request.PathBase, user.ImageName);
+        }
+
         return Ok(users);
     }
 

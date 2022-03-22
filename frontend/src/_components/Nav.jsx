@@ -10,9 +10,12 @@ import {
   DesktopOutlined,
   PieChartOutlined,
   FileOutlined,
-  TeamOutlined,
-  UserOutlined,
+  SettingOutlined,
+  StarOutlined,
   PoweroffOutlined,
+  HomeOutlined,
+  TeamOutlined,
+  BookOutlined
 } from "@ant-design/icons";
 
 import Icon from "@ant-design/icons";
@@ -22,6 +25,7 @@ import { Space } from "antd";
 import { Avatar } from "antd";
 import { Image } from "antd";
 import Title from "antd/lib/typography/Title";
+import { Link } from 'react-router-dom';
 
 const { Sider } = Layout;
 const { SubMenu } = Menu;
@@ -32,7 +36,7 @@ function Nav() {
   const auth = useRecoilValue(authAtom);
   const userActions = useUserActions();
 
-  // const isAdmin = useRecoilValue(adminAtom);
+  const isAdmin = useRecoilValue(adminAtom);
   const collapsed = useRecoilValue(collapseAtom);
 
   // only show nav when logged in
@@ -44,10 +48,9 @@ function Nav() {
       style={{
         overflow: "auto",
         height: "100vh",
-        left: 0,
-        top: 10,
-        bottom: 0,
+        margin:7,
       }}
+      width="225"
       collapsible
       collapsed={collapsed}
       onCollapse={userActions.switchMenu}
@@ -63,25 +66,30 @@ function Nav() {
           </Title>}
         </Space>
         <Divider />
-        <Menu.Item key="0" icon={<Icon component={LogoSvg} />}>
+        <Menu.Item key="0" icon={<HomeOutlined />}>
           <NavLink exact to="/">
             Главная
           </NavLink>
         </Menu.Item>
+        {!isAdmin && <SubMenu key="sub1" icon={<SettingOutlined />} title="Администрирование">
+        <Menu.Item icon={<TeamOutlined/>} key="6" >
+          <Link to="/users">Пользователи</Link>
+          </Menu.Item>
+          <Menu.Item icon={<StarOutlined />} key="8">Роли</Menu.Item>
+        </SubMenu>}
+        <SubMenu key="sub3" icon={<BookOutlined/>} title="Справочники">
+          
+        </SubMenu>
         <Menu.Item key="1" icon={<PieChartOutlined />}>
           Option 1
         </Menu.Item>
         <Menu.Item key="2" icon={<DesktopOutlined />}>
           Option 2
         </Menu.Item>
-        <SubMenu key="sub1" icon={<FileOutlined />} title="User">
+        <SubMenu key="sub2" icon={<FileOutlined />} title="User">
           <Menu.Item key="3">Tom</Menu.Item>
           <Menu.Item key="4">Bill</Menu.Item>
           <Menu.Item key="5">Alex</Menu.Item>
-        </SubMenu>
-        <SubMenu key="sub2" icon={<TeamOutlined />} title="Team">
-          <Menu.Item key="6">Team 1</Menu.Item>
-          <Menu.Item key="8">Team 2</Menu.Item>
         </SubMenu>
         <Menu.Item key="9" icon={<PoweroffOutlined />}>
           <a onClick={userActions.logout}>Выход</a>

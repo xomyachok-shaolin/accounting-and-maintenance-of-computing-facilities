@@ -24,27 +24,20 @@ function App() {
   const auth = useRecoilValue(authAtom);
 
   return (
-    <Layout style={{ minHeight: "100vh" }}>
+    <Layout className="layout" style={{ minHeight: "100vh" }}>
       <Router history={history}>
         <Nav />
 
-        {/* <Button icon={<PoweroffOutlined />}>
-                <a onClick={userActions.logout}>Выход</a>
-              </Button> */}
-
         {auth && (
           <Layout className="site-layout">
-          
             <Content style={{ margin: "16px 16px" }}>
-
               <Alert />
 
-                <Switch>
-                  <PrivateRoute exact path="/" component={Home} />
-                  <PrivateRoute path="/users" component={Users} />
-                  <Route path="/account" component={Account} />
-                  <Redirect from="*" to="/" />
-                </Switch>
+              <Switch>
+                <PrivateRoute exact path="/" component={Home} />
+                <PrivateRoute path="/users" component={Users} />
+                <Redirect from="*" to="/" />
+              </Switch>
             </Content>
             <Footer style={{ textAlign: "center" }}>
               Учет и техническое обслуживание вычислительных средств ©2022

@@ -5,3 +5,4 @@ export * from './admin';
 export * from './collapse';
 export * from './submit';
 export * from './avatar';
+export * from './image';

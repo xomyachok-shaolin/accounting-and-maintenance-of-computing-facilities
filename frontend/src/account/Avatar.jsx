@@ -4,16 +4,19 @@ import React, {useState} from "react";
 import ImgCrop from "antd-img-crop";
 
 import { useRecoilState } from 'recoil';
-import { avatarAtom } from "_state";
+import { avatarAtom, imageAtom } from "_state";
 
 
 
 
 function Avatar(){
 
-  const [setImageFile] = useRecoilState(avatarAtom);
-  const [imageUrl,setImageUrl] = useState(false);
+  const [imageFile,setImageFile] = useRecoilState(avatarAtom);
+  
+  const [imageUrl,setImageUrl] = useRecoilState(imageAtom);
+  
   const [loading,setLoading] = useState(false);
+
 
   const handleChange = (info) => {
     if (info.file.status === "uploading") {
@@ -38,6 +41,7 @@ function Avatar(){
   }
   
   function beforeUpload(file) {
+
     const isJpgOrPng = file.type === "image/jpeg" || file.type === "image/png";
     if (!isJpgOrPng) {
       message.error("Вы можете загружать только JPG/PNG файлы!");
@@ -48,12 +52,6 @@ function Avatar(){
     }
     return isJpgOrPng && isLt2M;
   }
-  
-
-    // if (imageUrl === 'undefined')
-    //   imageUrl = defaultImageSrc;
-
-    
     
     const uploadButton = (
       <div>

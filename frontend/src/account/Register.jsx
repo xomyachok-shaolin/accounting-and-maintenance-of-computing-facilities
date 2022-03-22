@@ -14,9 +14,9 @@ import { Input } from "antd";
 import { Button } from "antd";
 import { Spin } from "antd";
 import { avatarAtom } from "_state";
-import { useRecoilValue } from "recoil";
 import { useRecoilState } from "recoil";
 import { useState } from "react";
+import { imageAtom } from '_state';
 
 export { Register };
 
