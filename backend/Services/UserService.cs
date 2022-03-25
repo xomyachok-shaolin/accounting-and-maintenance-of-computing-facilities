@@ -13,7 +13,7 @@ public interface IUserService
     AuthenticateResponse Authenticate(AuthenticateRequest model);
     IEnumerable<User> GetAll();
     User GetById(int id);
-    void Register(RegisterRequest model);
+    User Register(RegisterRequest model);
     void Update(int id, UpdateRequest model);
     void Delete(int id);
 }
@@ -62,14 +62,25 @@ public class UserService : IUserService
         return getUser(id);
     }
 
-    public void Register(RegisterRequest model)
+    public User Register(RegisterRequest model)
     {
         // validate
         if (_context.Users.Any(x => x.Username == model.Username))
             throw new AppException("Имя пользователя '" + model.Username + "' уже занято");
 
         // map model to new user object
-        var user = _mapper.Map<User>(model);
+        //var user = _mapper.Map<User>(model);
+        User user = new User();
+
+        user.FirstName = model.FirstName;
+        user.LastName = model.LastName;
+        user.Username = model.Username;
+        user.Mail = model.Mail;
+        user.ImageFile = model.ImageFile;
+        user.ImageName = model.ImageName;
+        user.Mail = user.Mail;
+        user.Patronymic = model.Patronymic;
+
 
         // hash password
         user.PasswordHash = BCrypt.HashPassword(model.Password);
@@ -77,6 +88,8 @@ public class UserService : IUserService
         // save user
         _context.Users.Add(user);
         _context.SaveChanges();
+
+        return user;
     }
 
     public void Update(int id, UpdateRequest model)
@@ -92,7 +105,16 @@ public class UserService : IUserService
             user.PasswordHash = BCrypt.HashPassword(model.Password);
 
         // copy model to user and save
-        _mapper.Map(model, user);
+        // _mapper.Map(model, user);
+        user.FirstName = model.FirstName;
+        user.LastName = model.LastName; 
+        user.Username = model.Username; 
+        user.Mail = model.Mail;
+        user.ImageFile = model.ImageFile;
+        user.ImageName = model.ImageName;
+        user.Mail = user.Mail;
+        user.Patronymic = model.Patronymic;
+
         _context.Users.Update(user);
         _context.SaveChanges();
     }

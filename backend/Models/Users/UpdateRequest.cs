@@ -1,3 +1,6 @@
+using System.ComponentModel.DataAnnotations.Schema;
+using WebApi.Entities;
+
 namespace WebApi.Models.Users;
 
 public class UpdateRequest
@@ -10,5 +13,9 @@ public class UpdateRequest
     public string Password { get; set; }
 
     public string ImageName { get; set; }
-    public IFormFile ImageFile { get; set; }
+
+    [NotMapped]
+    public string ImageFile { get; set; }
+    [NotMapped]
+    public int[] Roles { get; set; }
 }

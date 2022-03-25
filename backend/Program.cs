@@ -28,6 +28,8 @@ var builder = WebApplication.CreateBuilder(args);
     // configure DI for application services
     services.AddScoped<IJwtUtils, JwtUtils>();
     services.AddScoped<IUserService, UserService>();
+    services.AddScoped<IRoleService, RoleService>();
+
 }
 
 var app = builder.Build();
@@ -39,9 +41,7 @@ using (var scope = app.Services.CreateScope())
 
     var context = services.GetRequiredService<DataContext>();   
     if (context.Database.GetPendingMigrations().Any())
-    {
         context.Database.Migrate();
-    }
 
 }
 

@@ -4,6 +4,7 @@ using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using WebApi.Authorization;
+using WebApi.Entities;
 using WebApi.Helpers;
 using WebApi.Models.Users;
 using WebApi.Services;
@@ -14,18 +15,21 @@ using WebApi.Services;
 public class UsersController : ControllerBase
 {
     private IUserService _userService;
+    private IRoleService _roleService;
     private IMapper _mapper;
     private readonly AppSettings _appSettings;
     private readonly IWebHostEnvironment _webHostEnvironment;
 
     public UsersController(
         IUserService userService,
+        IRoleService roleService,
         IMapper mapper,
         IOptions<AppSettings> appSettings,
         IWebHostEnvironment webHostEnvironment)
     {
         _webHostEnvironment = webHostEnvironment;
         _userService = userService;
+        _roleService = roleService;
         _mapper = mapper;
         _appSettings = appSettings.Value;
     }
@@ -43,7 +47,17 @@ public class UsersController : ControllerBase
     public async Task<ActionResult<RegisterRequest>> Register(RegisterRequest model)
     {
         model.ImageName = await SaveImage(model.ImageFile, model.ImageName);
-        _userService.Register(model);
+
+        User user = _userService.Register(model);
+        if (model.Roles.Length != 0)
+        {
+            if (user.Roles != null) user.Roles.Clear();
+            else user.Roles = new List<Role>(); 
+
+            foreach (int r in model.Roles)
+                user.Roles.Add(_roleService.GetById(r));
+        }
+
         return Ok(new { message = "Регистрация успешно выполнена" });
     }
 
@@ -69,8 +83,19 @@ public class UsersController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    public IActionResult Update(int id, UpdateRequest model)
+    public async Task<ActionResult<UpdateRequest>>Update(int id, UpdateRequest model)
     {
+        if (!(model.ImageFile.Equals("null") && model.ImageName.Equals("null")))
+            model.ImageName = await SaveImage(model.ImageFile, model.ImageName);
+
+        if (model.Roles.Length != 0)
+        {
+            if (_userService.GetById(id).Roles != null) _userService.GetById(id).Roles.Clear();
+            else _userService.GetById(id).Roles = new List<Role>();
+            foreach (int r in model.Roles)
+                _userService.GetById(id).Roles.Add(_roleService.GetById(r));
+        }
+
         _userService.Update(id, model);
         return Ok(new { message = "Информация о пользователе успешно обновлена" });
     }

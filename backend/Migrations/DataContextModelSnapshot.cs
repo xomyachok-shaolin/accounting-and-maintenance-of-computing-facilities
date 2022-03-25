@@ -98,9 +98,6 @@ namespace WebApi.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Mail")
-                        .IsUnique();
-
                     b.HasIndex("Username")
                         .IsUnique();
 

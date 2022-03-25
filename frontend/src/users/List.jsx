@@ -1,56 +1,72 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { useRecoilValue, useRecoilState } from "recoil";
+import { useRecoilValue, useRecoilState, DefaultValue } from "recoil";
 
-import { usersAtom, userAtom, imageAtom } from "_state";
+import { usersAtom, userAtom, imageAtom, avatarAtom } from "_state";
 import { useUserActions, useAlertActions } from "_actions";
-import { Form, Modal, Spin, Table, Tag, Input, Image } from "antd";
+import { Form, Modal, Spin, Table, Tag, Input, Select } from "antd";
 import { Space } from "antd";
 import { Button } from "antd";
 import { Avatar } from "account/Avatar";
+import { useForm } from "react-hook-form";
+import { ExclamationCircleOutlined } from '@ant-design/icons';
+import { Option } from "antd/lib/mentions";
+import { rolesAtom } from "_state/roles";
 
 export { List };
 
 function List({ match }) {
   const [form] = Form.useForm();
 
-  const { path } = match;
   const users = useRecoilValue(usersAtom);
   const userActions = useUserActions();
   const alertActions = useAlertActions();
 
-  const [loading, setLoading] = useState(false);
-
-  const user = useRecoilValue(userAtom);
+  const [loading] = useState(false);
 
   const [visible, setVisible] = useState(false);
-  const [confirmLoading, setConfirmLoading] = useState(false);
+  const [confirmLoading] = useState(false);
 
   const [mode, setMode] = useState(false);
+  const [isResetAll, setIsResetAll] = useState(false);
 
-  const [image,setImage] = useRecoilState(imageAtom);
+  const [avatar] = useRecoilState(avatarAtom);
+  const [image, setImage] = useRecoilState(imageAtom);
+
+  const { confirm } = Modal;
+
+  const roles = useRecoilValue(rolesAtom);;
+const [selectedRoles, setSelectedRoles] = useState(
+  // Initial state
+  roles
+);
 
   useEffect(() => {
+
     userActions.getAll();
+    userActions.getAllRoles();
 
-    return userActions.resetUsers;
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
-    // fetch user details into recoil state in edit mode
-    if (mode) {
-      userActions.getById(mode);
+    if (isResetAll) {
+      userActions.getAll();
+      setIsResetAll(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [isResetAll]);
+
+
+
+  
 
   const columns = [
     {
       title: '',
-      dataIndex: "imageFile",
-      render:  () => <img src="imageFile" />
+      dataIndex: 'imageUrl',
+      width: 25,
+      maxWidth: 25,
+      render: (t, r) => <img src={`${r.imageUrl}`}
+        style={{ width: '50px', height: '50px', borderRadius: '50% ' }} />
     },
     {
       title: "Имя пользователя",
@@ -107,7 +123,7 @@ function List({ match }) {
           </Button>
           <Button
             danger
-            onClick={() => userActions.delete(record.key)}
+            onClick={() => showDeleteModal(record.key)}
             disabled={record.isDeleting}
           >
             {record.isDeleting ? <Spin /> : <span>Удалить</span>}
@@ -116,8 +132,6 @@ function List({ match }) {
       ),
     },
   ];
-
-  console.log(users);
 
   const data = users?.map(function (row) {
     return {
@@ -128,7 +142,7 @@ function List({ match }) {
       patronymic: row.patronymic,
       mail: row.mail,
       roles: row.roles,
-      imageFile: row.imageFile
+      imageUrl: row.imageFile
     };
   });
 
@@ -138,59 +152,94 @@ function List({ match }) {
 
   const showAddModal = () => {
     setMode(false);
+    setImage(null);
+    setSelectedRoles(null);
+    form.setFieldsValue({
+      username: "",
+      password: "",
+      firstName: "",
+      lastName: "",
+      mail: "",
+      patronymic: "",
+      imageFile: "",
+      imageName: "",
+      roles:[]
+    });
     showModal();
   };
 
-  
+  const showDeleteModal = (id) => {
+    confirm({
+      title: 'Вы уверены что хотите удалить запись?',
+      icon: <ExclamationCircleOutlined />,
+      okText: 'Да',
+      cancelText: 'Отмена',
+      onOk() {
+        userActions.delete(id);
+      },
+      onCancel() { },
+    });
+  }
+
+
 
   const showEditModal = (id) => {
-    userActions.getById(id);
 
     users.forEach(user => {
       if (user.id == id) {
         form.setFieldsValue({
+          username: user.username,
+          password: user.password,
           firstName: user.firstName,
           lastName: user.lastName,
-          userame: user.username,
-          password: user.password,
           mail: user.mail,
           patronymic: user.patronymic,
-          imageFile: user.imageFile
+          imageFile: user.imageFile,
+          imageName: user.imageName,
+          roles: user.roles.map(r=>r.id)
         });
         setImage(user.imageFile);
-        setMode(id);
-        showModal();
+        setMode(user);
+        
+      showModal();
       }
     });
   };
 
-  const handleOk = () => {
-    setConfirmLoading(true);
-    setTimeout(() => {
-      setVisible(false);
-      setConfirmLoading(false);
-    }, 2000);
+
+  function onSubmit(values) {
+    setVisible(false);
+    if (avatar == null) {
+      values.imageName = "null";
+      values.imageFile = "null";
+    } else {
+      values.imageName = avatar.name;
+      values.imageFile = avatar.imageUrl;
+    }
+    setImage(null);
+    setSelectedRoles(null);
+    return !mode ? createUser(values) : updateUser(mode.id, values);
   };
 
   const handleCancel = () => {
     setVisible(false);
-    setImage(null);
+    setSelectedRoles(null);
+    form.resetFields();
   };
-
-  function onSubmit(data) {
-    setImage(null);
-    return !mode ? createUser(data) : updateUser(user.id, data);
-  }
 
   function createUser(data) {
     return userActions.register(data).then(() => {
+      setIsResetAll(true);
       alertActions.success("Пользователь добавлен");
     });
   }
 
   function updateUser(id, data) {
+    //data.imageFile = avatar.imageFile;
     return userActions.update(id, data).then(() => {
+      setIsResetAll(true);
       alertActions.success("Информация о пользователе обновлена");
+
     });
   }
 
@@ -217,8 +266,8 @@ function List({ match }) {
       <Modal
         title={!mode ? "Добавить пользователя" : "Редактировать пользователя"}
         visible={visible}
-        onOk={handleOk}
         confirmLoading={confirmLoading}
+        onOk={form.submit}
         onCancel={handleCancel}
         okText="Сохранить"
         cancelText="Отмена"
@@ -227,10 +276,10 @@ function List({ match }) {
           {!loading && (
             <Form
               {...formItemLayout}
-              onFinish={onSubmit}
               form={form}
-              name="dataUser"
               scrollToFirstError
+              name="formName"
+              onFinish={onSubmit}
             >
               <Form.Item
                 label="Имя пользователя"
@@ -252,7 +301,6 @@ function List({ match }) {
                 ]}
               >
                 <Input.Password />
-                {mode && <em className="ml-1">(Оставьте пустым, чтобы сохранить тот же пароль)</em>}
               </Form.Item>
 
               <Form.Item
@@ -315,6 +363,20 @@ function List({ match }) {
               <Form.Item label="Фотография профиля">
                 <Avatar />
               </Form.Item>
+
+              <Form.Item
+                name="roles"
+                label="Роли"
+                rules={[{ required: true, message: 'Пожалуйста, выберите роли!', type: 'array' }]}
+              >
+                <Select defaultValue={selectedRoles?.map(r => r.id)} mode="multiple" value={roles} placeholder="Пожалуйста, выберите роли"
+                onChange={(text, index) => {
+                  setSelectedRoles(index);
+                  }}>
+                    {roles?.map((role) => <Option value={role.id} key={role.id}>{role.name}</Option>)}
+                  
+                </Select>
+              </Form.Item>
               {/* <div className="form-group">
                         <button type="submit" disabled={confirmLoading} className="btn btn-primary mr-2">
                             {confirmLoading && <span className="spinner-border spinner-border-sm mr-1"></span>}
@@ -324,14 +386,14 @@ function List({ match }) {
                     </div> */}
             </Form>
           )}
-          {loading && (
+          {confirmLoading && (
             <div className="text-center p-3">
               <Spin size="large" />
             </div>
           )}
         </>
       </Modal>
-      <Table columns={columns} dataSource={data}></Table>
+      <Table columns={columns} dataSource={data} ></Table>
     </>
   );
 }

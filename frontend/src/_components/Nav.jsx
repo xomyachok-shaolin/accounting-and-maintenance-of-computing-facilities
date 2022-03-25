@@ -92,7 +92,7 @@ function Nav() {
           <Menu.Item key="5">Alex</Menu.Item>
         </SubMenu>
         <Menu.Item key="9" icon={<PoweroffOutlined />}>
-          <a onClick={userActions.logout}>Выход</a>
+          <Link to="" onClick={userActions.logout}>Выход</Link>
         </Menu.Item>
       </Menu>
     </Sider>

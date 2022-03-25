@@ -81,12 +81,6 @@ namespace WebApi.Migrations
                 column: "UsersId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Users_Mail",
-                table: "Users",
-                column: "Mail",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Users_Username",
                 table: "Users",
                 column: "Username",

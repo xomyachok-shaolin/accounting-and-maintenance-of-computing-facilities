@@ -1,8 +1,5 @@
 /* eslint-disable react/react-in-jsx-scope */
 import { Link } from "react-router-dom";
-import { useForm } from "react-hook-form";
-import { yupResolver } from "@hookform/resolvers/yup";
-import * as Yup from "yup";
 
 import { useUserActions, useAlertActions } from "_actions";
 
@@ -16,7 +13,6 @@ import { Spin } from "antd";
 import { avatarAtom } from "_state";
 import { useRecoilState } from "recoil";
 import { useState } from "react";
-import { imageAtom } from '_state';
 
 export { Register };
 

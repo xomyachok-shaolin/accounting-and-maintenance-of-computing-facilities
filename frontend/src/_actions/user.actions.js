@@ -4,19 +4,21 @@ import { history, useFetchWrapper } from '_helpers';
 import { adminAtom, authAtom, usersAtom, userAtom, collapseAtom } from '_state';
 import { submitAtom } from '_state';
 import { avatarAtom } from '_state';
+import { rolesAtom } from '_state/roles';
 
 export { useUserActions };
 
 function useUserActions () {
     const baseUrl = `${process.env.REACT_APP_API_URL}/users`;
+    const baseRoleUrl = `${process.env.REACT_APP_API_URL}/roles`;
     const fetchWrapper = useFetchWrapper();
     const [auth, setAuth] = useRecoilState(authAtom);
     const [collapse, setCollapse] = useRecoilState(collapseAtom);
     const [submit, setSubmit] = useRecoilState(submitAtom);
     const [admin, setAdmin] = useRecoilState(adminAtom);
     const setUsers = useSetRecoilState(usersAtom);
+    const setRoles = useSetRecoilState(rolesAtom);
     const setUser = useSetRecoilState(userAtom);
-    const setAvatar = useSetRecoilState(avatarAtom);
 
     return {
         login,
@@ -25,6 +27,7 @@ function useUserActions () {
         logout,
         register,
         getAll,
+        getAllRoles,
         getById,
         update,
         delete: _delete,
@@ -77,6 +80,9 @@ function useUserActions () {
 
     function getAll() {
         return fetchWrapper.get(baseUrl).then(setUsers);
+    }
+    function getAllRoles() {
+        return fetchWrapper.get(baseRoleUrl).then(setRoles);
     }
 
     function getById(id) {
