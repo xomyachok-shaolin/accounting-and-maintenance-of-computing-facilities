@@ -8,8 +8,9 @@ public class Role
     public char isWriteOff{ get; set; }
     public char isTransfer{ get; set; }
     public char isUpgrade{ get; set; }
-    public char isEdit{ get; set; }   
-    
+    public char isEditWS{ get; set; }
+    public char isEditTask { get; set; }
+
     [JsonIgnore]
     /* EF Relations */
     public ICollection<User> Users { get; set; }

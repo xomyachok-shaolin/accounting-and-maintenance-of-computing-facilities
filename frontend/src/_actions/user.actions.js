@@ -3,7 +3,6 @@ import { useRecoilState, useSetRecoilState, useResetRecoilState } from 'recoil';
 import { history, useFetchWrapper } from '_helpers';
 import { adminAtom, authAtom, usersAtom, userAtom, collapseAtom } from '_state';
 import { submitAtom } from '_state';
-import { avatarAtom } from '_state';
 import { rolesAtom } from '_state/roles';
 
 export { useUserActions };
@@ -17,20 +16,23 @@ function useUserActions () {
     const [submit, setSubmit] = useRecoilState(submitAtom);
     const [admin, setAdmin] = useRecoilState(adminAtom);
     const setUsers = useSetRecoilState(usersAtom);
-    const setRoles = useSetRecoilState(rolesAtom);
     const setUser = useSetRecoilState(userAtom);
+    const setRoles = useSetRecoilState(rolesAtom);
 
     return {
         login,
         switchMenu,
         switchLoading,
         logout,
+        createRole,
         register,
         getAll,
         getAllRoles,
         getById,
         update,
+        updateRole,
         delete: _delete,
+        deleteRole: _deleteRole,
         resetUsers: useResetRecoilState(usersAtom),
         resetUser: useResetRecoilState(userAtom)
     }
@@ -78,6 +80,10 @@ function useUserActions () {
         return fetchWrapper.post(`${baseUrl}/register`, user);
     }
 
+    function createRole(role) {
+        return fetchWrapper.post(`${baseRoleUrl}/create`, role);
+    }
+
     function getAll() {
         return fetchWrapper.get(baseUrl).then(setUsers);
     }
@@ -119,6 +125,35 @@ function useUserActions () {
             .then(() => {
                 // remove user from list after deleting
                 setUsers(users => users.filter(x => x.id !== id));
+
+                // auto logout if the logged in user deleted their own record
+                if (id === auth?.id) {
+                    logout();
+                }
+            });
+    }
+
+    function updateRole(id, params) {
+        return fetchWrapper.put(`${baseRoleUrl}/${id}`, params)
+            .then(x => {
+                return x;
+            });
+    }
+
+    // prefixed with underscored because delete is a reserved word in javascript
+    function _deleteRole(id) {
+        setRoles(roles => roles.map(x => {
+            // add isDeleting prop to user being deleted
+            if (x.id === id) 
+                return { ...x, isDeleting: true };
+
+            return x;
+        }));
+
+        return fetchWrapper.delete(`${baseRoleUrl}/${id}`)
+            .then(() => {
+                // remove user from list after deleting
+                setRoles(roles => roles.filter(x => x.id !== id));
 
                 // auto logout if the logged in user deleted their own record
                 if (id === auth?.id) {

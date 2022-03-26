@@ -15,6 +15,7 @@ import { PoweroffOutlined } from "@ant-design/icons";
 import { Card } from "antd";
 import { Header } from "antd/lib/layout/layout";
 import Title from "antd/lib/typography/Title";
+import { Roles } from "roles/Roles";
 
 const { Content, Footer } = Layout;
 
@@ -36,6 +37,7 @@ function App() {
               <Switch>
                 <PrivateRoute exact path="/" component={Home} />
                 <PrivateRoute path="/users" component={Users} />
+                <PrivateRoute path="/roles" component={Roles} />
                 <Redirect from="*" to="/" />
               </Switch>
             </Content>
@@ -51,6 +53,7 @@ function App() {
             <Switch>
               <PrivateRoute exact path="/" component={Home} />
               <PrivateRoute path="/users" component={Users} />
+              <PrivateRoute path="/roles" component={Roles} />
               <Route path="/account" component={Account} />
               <Redirect from="*" to="/" />
             </Switch>

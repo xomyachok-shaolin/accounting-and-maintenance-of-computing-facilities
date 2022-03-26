@@ -15,17 +15,14 @@ import {
   PoweroffOutlined,
   HomeOutlined,
   TeamOutlined,
-  BookOutlined
+  BookOutlined,
 } from "@ant-design/icons";
 
-import Icon from "@ant-design/icons";
-
-import { ReactComponent as LogoSvg } from "../assets/maintenance.svg";
 import { Space } from "antd";
 import { Avatar } from "antd";
 import { Image } from "antd";
 import Title from "antd/lib/typography/Title";
-import { Link } from 'react-router-dom';
+import { Link } from "react-router-dom";
 
 const { Sider } = Layout;
 const { SubMenu } = Menu;
@@ -48,7 +45,7 @@ function Nav() {
       style={{
         overflow: "auto",
         height: "100vh",
-        margin:7,
+        margin: 7,
       }}
       width="225"
       collapsible
@@ -57,13 +54,20 @@ function Nav() {
     >
       <Menu theme="light" defaultSelectedKeys={["1"]} mode="inline">
         <Space>
-        <Avatar style={{marginLeft: 25,marginTop: 15}} src={<Image 
-            src="https://joeschmoe.io/api/v1/random"
-            style={{ width: 32}}
-          />}/>
-          {!collapsed && <Title style={{marginLeft: 10, marginTop: 25 }} level={5}>
-            {auth.username}
-          </Title>}
+          <Avatar
+            style={{ marginLeft: 25, marginTop: 15 }}
+            src={
+              <Image
+                src="https://joeschmoe.io/api/v1/random"
+                style={{ width: 32 }}
+              />
+            }
+          />
+          {!collapsed && (
+            <Title style={{ marginLeft: 10, marginTop: 25 }} level={5}>
+              {auth.username}
+            </Title>
+          )}
         </Space>
         <Divider />
         <Menu.Item key="0" icon={<HomeOutlined />}>
@@ -71,15 +75,25 @@ function Nav() {
             Главная
           </NavLink>
         </Menu.Item>
-        {!isAdmin && <SubMenu key="sub1" icon={<SettingOutlined />} title="Администрирование">
-        <Menu.Item icon={<TeamOutlined/>} key="6" >
-          <Link to="/users">Пользователи</Link>
-          </Menu.Item>
-          <Menu.Item icon={<StarOutlined />} key="8">Роли</Menu.Item>
-        </SubMenu>}
-        <SubMenu key="sub3" icon={<BookOutlined/>} title="Справочники">
-          
-        </SubMenu>
+        {!isAdmin && (
+          <SubMenu
+            key="sub1"
+            icon={<SettingOutlined />}
+            title="Администрирование"
+          >
+            <Menu.Item icon={<TeamOutlined />} key="6">
+              <Link to="/users">Пользователи</Link>
+            </Menu.Item>
+            <Menu.Item icon={<StarOutlined />} key="8">
+              <Link to="/roles">Роли</Link>
+            </Menu.Item>
+          </SubMenu>
+        )}
+        <SubMenu
+          key="sub3"
+          icon={<BookOutlined />}
+          title="Справочники"
+        ></SubMenu>
         <Menu.Item key="1" icon={<PieChartOutlined />}>
           Option 1
         </Menu.Item>
@@ -92,7 +106,9 @@ function Nav() {
           <Menu.Item key="5">Alex</Menu.Item>
         </SubMenu>
         <Menu.Item key="9" icon={<PoweroffOutlined />}>
-          <Link to="" onClick={userActions.logout}>Выход</Link>
+          <Link to="" onClick={userActions.logout}>
+            Выход
+          </Link>
         </Menu.Item>
       </Menu>
     </Sider>

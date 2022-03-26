@@ -1,10 +1,7 @@
-namespace WebApi.Models.Users;
-
-using Microsoft.AspNetCore.Http;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using WebApi.Entities;
 
+namespace WebApi.Models.Users;
 public class RegisterRequest
 {
     [Required]

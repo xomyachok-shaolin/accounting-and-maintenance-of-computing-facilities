@@ -65,7 +65,13 @@ public class RoleService : IRoleService
 
         
         // copy model to user and save
-        _mapper.Map(model, role);
+        //_mapper.Map(model, role);
+        role.Name = model.Name;
+        role.isEditTask = model.isEditTask;
+        role.isEditWS = model.isEditWS;
+        role.isTransfer = model.isTransfer;
+        role.isUpgrade = model.isUpgrade;
+        role.isWriteOff = model.isWriteOff;
         _context.Roles.Update(role);
         _context.SaveChanges();
     }
