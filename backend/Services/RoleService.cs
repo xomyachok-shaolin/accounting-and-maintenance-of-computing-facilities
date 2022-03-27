@@ -63,15 +63,14 @@ public class RoleService : IRoleService
         if (model.Name != role.Name && _context.Roles.Any(x => x.Name == model.Name))
             throw new AppException("Наименование для роли '" + model.Name + "' уже занято");
 
-        
-        // copy model to user and save
+       
         //_mapper.Map(model, role);
         role.Name = model.Name;
-        role.isEditTask = model.isEditTask;
-        role.isEditWS = model.isEditWS;
-        role.isTransfer = model.isTransfer;
-        role.isUpgrade = model.isUpgrade;
-        role.isWriteOff = model.isWriteOff;
+        role.IsEditTask = model.IsEditTask;
+        role.IsEditWS = model.IsEditWS;
+        role.IsTransfer = model.IsTransfer;
+        role.IsUpgrade = model.IsUpgrade;
+        role.IsWriteOff = model.IsWriteOff;
         _context.Roles.Update(role);
         _context.SaveChanges();
     }

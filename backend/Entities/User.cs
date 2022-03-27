@@ -21,4 +21,5 @@ public class User
 
     /* EF Relations */
     public ICollection<Role> Roles { get; set; }
+    public ICollection<Task> Tasks { get; set; }
 }

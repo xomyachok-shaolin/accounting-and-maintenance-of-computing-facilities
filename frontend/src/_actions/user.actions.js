@@ -144,7 +144,7 @@ function useUserActions () {
     function _deleteRole(id) {
         setRoles(roles => roles.map(x => {
             // add isDeleting prop to user being deleted
-            if (x.id === id) 
+            if (x.id === id)
                 return { ...x, isDeleting: true };
 
             return x;
@@ -152,13 +152,9 @@ function useUserActions () {
 
         return fetchWrapper.delete(`${baseRoleUrl}/${id}`)
             .then(() => {
-                // remove user from list after deleting
+                // remove role from list after deleting
                 setRoles(roles => roles.filter(x => x.id !== id));
 
-                // auto logout if the logged in user deleted their own record
-                if (id === auth?.id) {
-                    logout();
-                }
             });
     }
 }

@@ -5,11 +5,11 @@ public class Role
 {
     public int Id { get; set; }
     public string Name { get; set; }
-    public char isWriteOff{ get; set; }
-    public char isTransfer{ get; set; }
-    public char isUpgrade{ get; set; }
-    public char isEditWS{ get; set; }
-    public char isEditTask { get; set; }
+    public bool IsWriteOff{ get; set; }
+    public bool IsTransfer{ get; set; }
+    public bool IsUpgrade { get; set; }
+    public bool IsEditWS { get; set; }
+    public bool IsEditTask { get; set; }
 
     [JsonIgnore]
     /* EF Relations */

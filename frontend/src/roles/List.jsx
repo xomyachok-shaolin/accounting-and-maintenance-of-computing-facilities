@@ -54,27 +54,27 @@ function List({ match }) {
     {
       title: "Может списывать оборудование",
       key: "isWriteOff",
-      render: (t, r) => <Checkbox checked={r.isWriteOff == "y"}> </Checkbox>,
+      render: (t, r) => <Checkbox checked={r.isWriteOff}> </Checkbox>,
     },
     {
       title: "Может перемещать оборудование",
       key: "isTransfer",
-      render: (t, r) => <Checkbox checked={r.isTransfer == "y"}> </Checkbox>,
+      render: (t, r) => <Checkbox checked={r.isTransfer}> </Checkbox>,
     },
     {
       title: "Может модернизировать АРМ",
       key: "isUpgrade",
-      render: (t, r) => <Checkbox checked={r.isUpgrade == "y"}> </Checkbox>,
+      render: (t, r) => <Checkbox checked={r.isUpgrade}> </Checkbox>,
     },
     {
       title: "Может редактировать АРМ",
       key: "isEditWS",
-      render: (t, r) => <Checkbox checked={r.isEditWS == "y"}> </Checkbox>,
+      render: (t, r) => <Checkbox checked={r.isEditWS}> </Checkbox>,
     },
     {
       title: "Может редактировать задачи",
       key: "isEditTask",
-      render: (t, r) => <Checkbox checked={r.isEditTask == "y"}> </Checkbox>,
+      render: (t, r) => <Checkbox checked={r.isEditTask}> </Checkbox>,
     },
     {
       title: "",
@@ -143,11 +143,11 @@ function List({ match }) {
       if (role.id === id) {
         form.setFieldsValue({
           name: role.name,
-          isWriteOff: role.isWriteOff === "y" ? true : false,
-          isTransfer: role.isTransfer === "y" ? true : false,
-          isUpgrade: role.isUpgrade === "y" ? true : false,
-          isEditWS: role.isEditWS === "y" ? true : false,
-          isEditTask: role.isEditTask === "y" ? true : false,
+          isWriteOff: role.isWriteOff,
+          isTransfer: role.isTransfer,
+          isUpgrade: role.isUpgrade,
+          isEditWS: role.isEditWS,
+          isEditTask: role.isEditTask,
         });
         setMode(role);
 
@@ -158,19 +158,17 @@ function List({ match }) {
 
   function onSubmit(values) {
 
-    console.log(values);
-    if (!values.isEditTask) values.isEditTask = "n";
-    else values.isEditTask = "y";
-    if (!values.isEditWS) values.isEditWS = "n";
-    else values.isEditWS = "y";
-    if (!values.isTransfer) values.isTransfer = "n";
-    else values.isTransfer = "y";
-    if (!values.isUpgrade) values.isUpgrade = "n";
-    else values.isUpgrade = "y";
-    if (!values.isWriteOff) values.isWriteOff = "n";
-    else values.isWriteOff = "y";
+    if (!values.isEditTask) values.isEditTask = false;
+    else values.isEditTask = true;
+    if (!values.isEditWS) values.isEditWS = false;
+    else values.isEditWS = true;
+    if (!values.isTransfer) values.isTransfer = false;
+    else values.isTransfer = true;
+    if (!values.isUpgrade) values.isUpgrade = false;
+    else values.isUpgrade = true;
+    if (!values.isWriteOff) values.isWriteOff = false;
+    else values.isWriteOff = true;
 
-    console.log(values);
     setVisible(false);
 
     return !mode ? createRole(values) : updateRole(mode.id, values);

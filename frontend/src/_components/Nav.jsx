@@ -9,6 +9,7 @@ import { Button, Descriptions, Divider, Layout, Menu } from "antd";
 import {
   DesktopOutlined,
   PieChartOutlined,
+  CompassOutlined,
   FileOutlined,
   SettingOutlined,
   StarOutlined,
@@ -81,10 +82,10 @@ function Nav() {
             icon={<SettingOutlined />}
             title="Администрирование"
           >
-            <Menu.Item icon={<TeamOutlined />} key="6">
+            <Menu.Item icon={<TeamOutlined />} key="1">
               <Link to="/users">Пользователи</Link>
             </Menu.Item>
-            <Menu.Item icon={<StarOutlined />} key="8">
+            <Menu.Item icon={<StarOutlined />} key="2">
               <Link to="/roles">Роли</Link>
             </Menu.Item>
           </SubMenu>
@@ -93,10 +94,12 @@ function Nav() {
           key="sub3"
           icon={<BookOutlined />}
           title="Справочники"
-        ></SubMenu>
-        <Menu.Item key="1" icon={<PieChartOutlined />}>
-          Option 1
+        >
+        <Menu.Item key="3" icon={<CompassOutlined />}>
+        <Link to="/locations">Местоположения</Link>
         </Menu.Item>
+        </SubMenu>
+        
         <Menu.Item key="2" icon={<DesktopOutlined />}>
           Option 2
         </Menu.Item>

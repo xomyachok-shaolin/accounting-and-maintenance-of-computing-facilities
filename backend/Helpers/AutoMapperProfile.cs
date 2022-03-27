@@ -2,6 +2,7 @@ namespace WebApi.Helpers;
 
 using AutoMapper;
 using WebApi.Entities;
+using WebApi.Models.Locations;
 using WebApi.Models.Users;
 
 public class AutoMapperProfile : Profile
@@ -15,6 +16,10 @@ public class AutoMapperProfile : Profile
         CreateMap<RegisterRequest, User>();
 
         CreateMap<Role, User>();
+
+
+        // LocationRequest -> User
+        CreateMap<LocationRequest, Location>();
 
         // UpdateRequest -> User
         CreateMap<UpdateRequest, User>()

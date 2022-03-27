@@ -6,3 +6,4 @@ export * from './collapse';
 export * from './submit';
 export * from './avatar';
 export * from './image';
+export * from './locations';

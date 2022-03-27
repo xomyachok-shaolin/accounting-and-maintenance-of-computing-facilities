@@ -59,13 +59,13 @@ public class RolesController : ControllerBase
     public ActionResult<Role> Update(int id, Role model)
     {
         _roleService.Update(id, model);
-        return Ok(new { message = "Информация о пользователе успешно обновлена" });
+        return Ok(new { message = "Информация о роли успешно обновлена" });
     }
 
     [HttpDelete("{id}")]
     public IActionResult Delete(int id)
     {
         _roleService.Delete(id);
-        return Ok(new { message = "Информация о пользователе успешно удалена" });
+        return Ok(new { message = "Информация о роли успешно удалена" });
     }
 }

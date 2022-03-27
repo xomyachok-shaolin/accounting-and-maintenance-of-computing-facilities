@@ -16,6 +16,7 @@ import { Card } from "antd";
 import { Header } from "antd/lib/layout/layout";
 import Title from "antd/lib/typography/Title";
 import { Roles } from "roles/Roles";
+import { Locations } from "locations/Locations";
 
 const { Content, Footer } = Layout;
 
@@ -38,6 +39,7 @@ function App() {
                 <PrivateRoute exact path="/" component={Home} />
                 <PrivateRoute path="/users" component={Users} />
                 <PrivateRoute path="/roles" component={Roles} />
+                <PrivateRoute path="/locations" component={Locations} />
                 <Redirect from="*" to="/" />
               </Switch>
             </Content>
@@ -54,6 +56,7 @@ function App() {
               <PrivateRoute exact path="/" component={Home} />
               <PrivateRoute path="/users" component={Users} />
               <PrivateRoute path="/roles" component={Roles} />
+              <PrivateRoute path="/locations" component={Locations} />
               <Route path="/account" component={Account} />
               <Redirect from="*" to="/" />
             </Switch>

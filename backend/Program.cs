@@ -29,6 +29,7 @@ var builder = WebApplication.CreateBuilder(args);
     services.AddScoped<IJwtUtils, JwtUtils>();
     services.AddScoped<IUserService, UserService>();
     services.AddScoped<IRoleService, RoleService>();
+    services.AddScoped<ILocationService, LocationService>();
 
 }
 
@@ -74,8 +75,8 @@ app.UseStaticFiles(new StaticFileOptions
 
 // create hardcoded test users in db on startup
 /*{
-    var role1 = new Role { Name = "Администратор", isEdit = 'y', isTransfer = 'y', isUpgrade = 'y', isWriteOff = 'y' };
-    var role2 = new Role { Name = "Ответственный за списание", isEdit = 'y', isTransfer = 'n', isUpgrade = 'n', isWriteOff = 'n' };
+    var role1 = new Role { Name = "Администратор", IsEditWS = true, IsTransfer = true, IsUpgrade = true, IsWriteOff = true, IsEditTask = false };
+    var role2 = new Role { Name = "Ответственный за списание", IsEditWS = true, IsTransfer = false, IsUpgrade = false, IsWriteOff = false, IsEditTask = false };
 
     var testUsers = new List<User>
     {
