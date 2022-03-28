@@ -9,9 +9,10 @@ import { Space } from "antd";
 import { Button } from "antd";
 import { Avatar } from "account/Avatar";
 import { useForm } from "react-hook-form";
-import { ExclamationCircleOutlined } from '@ant-design/icons';
+import { ExclamationCircleOutlined } from "@ant-design/icons";
 import { Option } from "antd/lib/mentions";
 import { rolesAtom } from "_state/roles";
+import React from "react";
 
 export { List };
 
@@ -35,17 +36,15 @@ function List({ match }) {
 
   const { confirm } = Modal;
 
-  const roles = useRecoilValue(rolesAtom);;
-const [selectedRoles, setSelectedRoles] = useState(
-  // Initial state
-  roles
-);
+  const roles = useRecoilValue(rolesAtom);
+  const [selectedRoles, setSelectedRoles] = useState(
+    // Initial state
+    roles
+  );
 
   useEffect(() => {
-
     userActions.getAll();
     userActions.getAllRoles();
-
   }, []);
 
   useEffect(() => {
@@ -55,18 +54,18 @@ const [selectedRoles, setSelectedRoles] = useState(
     }
   }, [isResetAll]);
 
-
-
-  
-
   const columns = [
     {
-      title: '',
-      dataIndex: 'imageUrl',
+      title: "",
+      dataIndex: "imageUrl",
       width: 25,
       maxWidth: 25,
-      render: (t, r) => <img src={`${r.imageUrl}`}
-        style={{ width: '50px', height: '50px', borderRadius: '50% ' }} />
+      render: (t, r) => (
+        <img
+          src={`${r.imageUrl}`}
+          style={{ width: "50px", height: "50px", borderRadius: "50% " }}
+        />
+      ),
     },
     {
       title: "Имя пользователя",
@@ -142,7 +141,7 @@ const [selectedRoles, setSelectedRoles] = useState(
       patronymic: row.patronymic,
       mail: row.mail,
       roles: row.roles,
-      imageUrl: row.imageFile
+      imageUrl: row.imageFile,
     };
   });
 
@@ -163,29 +162,26 @@ const [selectedRoles, setSelectedRoles] = useState(
       patronymic: "",
       imageFile: "",
       imageName: "",
-      roles:[]
+      roles: [],
     });
     showModal();
   };
 
   const showDeleteModal = (id) => {
     confirm({
-      title: 'Вы уверены что хотите удалить запись?',
+      title: "Вы уверены что хотите удалить запись?",
       icon: <ExclamationCircleOutlined />,
-      okText: 'Да',
-      cancelText: 'Отмена',
+      okText: "Да",
+      cancelText: "Отмена",
       onOk() {
         userActions.delete(id);
       },
-      onCancel() { },
+      onCancel() {},
     });
-  }
-
-
+  };
 
   const showEditModal = (id) => {
-
-    users.forEach(user => {
+    users.forEach((user) => {
       if (user.id == id) {
         form.setFieldsValue({
           username: user.username,
@@ -196,16 +192,15 @@ const [selectedRoles, setSelectedRoles] = useState(
           patronymic: user.patronymic,
           imageFile: user.imageFile,
           imageName: user.imageName,
-          roles: user.roles.map(r=>r.id)
+          roles: user.roles.map((r) => r.id),
         });
         setImage(user.imageFile);
         setMode(user);
-        
-      showModal();
+
+        showModal();
       }
     });
   };
-
 
   function onSubmit(values) {
     setVisible(false);
@@ -219,7 +214,7 @@ const [selectedRoles, setSelectedRoles] = useState(
     setImage(null);
     setSelectedRoles(null);
     return !mode ? createUser(values) : updateUser(mode.id, values);
-  };
+  }
 
   const handleCancel = () => {
     setVisible(false);
@@ -239,7 +234,6 @@ const [selectedRoles, setSelectedRoles] = useState(
     return userActions.update(id, data).then(() => {
       setIsResetAll(true);
       alertActions.success("Информация о пользователе обновлена");
-
     });
   }
 
@@ -367,14 +361,28 @@ const [selectedRoles, setSelectedRoles] = useState(
               <Form.Item
                 name="roles"
                 label="Роли"
-                rules={[{ required: true, message: 'Пожалуйста, выберите роли!', type: 'array' }]}
+                rules={[
+                  {
+                    required: true,
+                    message: "Пожалуйста, выберите роли!",
+                    type: "array",
+                  },
+                ]}
               >
-                <Select defaultValue={selectedRoles?.map(r => r.id)} mode="multiple" value={roles} placeholder="Пожалуйста, выберите роли"
-                onChange={(text, index) => {
-                  setSelectedRoles(index);
-                  }}>
-                    {roles?.map((role) => <Option value={role.id} key={role.id}>{role.name}</Option>)}
-                  
+                <Select
+                  defaultValue={selectedRoles?.map((r) => r.id)}
+                  mode="multiple"
+                  value={roles}
+                  placeholder="Пожалуйста, выберите роли"
+                  onChange={(text, index) => {
+                    setSelectedRoles(index);
+                  }}
+                >
+                  {roles?.map((role) => (
+                    <Option value={role.id} key={role.id}>
+                      {role.name}
+                    </Option>
+                  ))}
                 </Select>
               </Form.Item>
               {/* <div className="form-group">
@@ -393,7 +401,7 @@ const [selectedRoles, setSelectedRoles] = useState(
           )}
         </>
       </Modal>
-      <Table columns={columns} dataSource={data} ></Table>
+      <Table columns={columns} dataSource={data}></Table>
     </>
   );
 }

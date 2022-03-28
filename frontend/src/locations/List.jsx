@@ -8,11 +8,12 @@ import { Space } from "antd";
 import { Button } from "antd";
 import { Avatar } from "account/Avatar";
 import { useForm } from "react-hook-form";
-import { ExclamationCircleOutlined } from "@ant-design/icons";
+import { ExclamationCircleOutlined, SearchOutlined  } from "@ant-design/icons";
 import { Option } from "antd/lib/mentions";
 import { rolesAtom } from "_state/roles";
 import Checkbox from "antd/lib/checkbox/Checkbox";
 import { locationsAtom } from "_state";
+import React from "react";
 
 export { List };
 
@@ -49,17 +50,12 @@ function List({ match }) {
 
   const columns = [
     {
-      title: "ИД",
-      dataIndex: "key",
-      id: "key",
-    },
-    {
-      title: "Здание",
+      title: "№ здания",
       dataIndex: "house",
       id: "house",
     },
     {
-      title: "Помещение",
+      title: "№ помещения",
       dataIndex: "room",
       id: "room",
     },
@@ -91,7 +87,6 @@ function List({ match }) {
   ];
 
   const data = locations?.map(function (row) {
-    console.log(row);
     return {
       key: row.id,
       house: row.house,
@@ -184,7 +179,7 @@ function List({ match }) {
     //data.imageFile = avatar.imageFile;
     return locationActions.updateRole(id, data).then(() => {
       setIsResetAll(true);
-      alertActions.success("Информация о роли обновлена");
+      alertActions.success("Информация о местоположении обновлена");
     });
   }
 
@@ -227,12 +222,12 @@ function List({ match }) {
               onFinish={onSubmit}
             >
               <Form.Item
-                label="Наименование"
-                name="name"
+                label="Здание"
+                name="house"
                 rules={[
                   {
                     required: true,
-                    message: "Пожалуйста, введите наименование!",
+                    message: "Пожалуйста, введите номер здания!",
                   },
                 ]}
               >
@@ -240,44 +235,44 @@ function List({ match }) {
               </Form.Item>
 
               <Form.Item
-                wrapperCol={{ offset: 5, span: 16 }}
-                name="isWriteOff"
-                valuePropName="checked"
+                label="Помещение"
+                name="room"
+                rules={[
+                  {
+                    required: true,
+                    message: "Пожалуйста, введите номер помещения!",
+                  },
+                ]}
               >
-                <Checkbox>Может списывать оборудование</Checkbox>
+                <Input />
               </Form.Item>
 
               <Form.Item
-                wrapperCol={{ offset: 5, span: 16 }}
-                name="isTransfer"
-                valuePropName="checked"
+                name="responsible"
+                label="Ответственный"
               >
-                <Checkbox>Может перемещать оборудование</Checkbox>
+                <Select
+                  showSearch
+                  placeholder="Выберите ответственного за помещение"
+                  optionFilterProp="children"
+                  filterOption={(input, option) =>
+                    option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                  }
+                  //defaultValue={selectedRoles?.map((r) => r.id)}
+                  //value={roles}
+                  onChange={(text, index) => {
+                    //setSelectedRoles(index);
+                  }}
+                >
+                  {/* {roles?.map((role) => (
+                    <Option value={role.id} key={role.id}>
+                      {role.name}
+                    </Option>
+                  ))} */}
+                </Select>
               </Form.Item>
 
-              <Form.Item
-                wrapperCol={{ offset: 5, span: 16 }}
-                name="isUpgrade"
-                valuePropName="checked"
-              >
-                <Checkbox>Может модернизировать АРМ</Checkbox>
-              </Form.Item>
 
-              <Form.Item
-                wrapperCol={{ offset: 5, span: 16 }}
-                name="isEditWS"
-                valuePropName="checked"
-              >
-                <Checkbox>Может редактировать АРМ</Checkbox>
-              </Form.Item>
-
-              <Form.Item
-                wrapperCol={{ offset: 5, span: 16 }}
-                name="isEditTask"
-                valuePropName="checked"
-              >
-                <Checkbox>Может редактировать задачи</Checkbox>
-              </Form.Item>
             </Form>
           )}
           {confirmLoading && (

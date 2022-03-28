@@ -53,7 +53,7 @@ function Nav() {
       collapsed={collapsed}
       onCollapse={userActions.switchMenu}
     >
-      <Menu theme="light" defaultSelectedKeys={["1"]} mode="inline">
+      <Menu theme="light" defaultSelectedKeys={["0"]} mode="inline">
         <Space>
           <Avatar
             style={{ marginLeft: 25, marginTop: 15 }}
@@ -100,15 +100,15 @@ function Nav() {
         </Menu.Item>
         </SubMenu>
         
-        <Menu.Item key="2" icon={<DesktopOutlined />}>
+        <Menu.Item key="4" icon={<DesktopOutlined />}>
           Option 2
         </Menu.Item>
         <SubMenu key="sub2" icon={<FileOutlined />} title="User">
-          <Menu.Item key="3">Tom</Menu.Item>
-          <Menu.Item key="4">Bill</Menu.Item>
-          <Menu.Item key="5">Alex</Menu.Item>
+          <Menu.Item key="5">Tom</Menu.Item>
+          <Menu.Item key="6">Bill</Menu.Item>
+          <Menu.Item key="7">Alex</Menu.Item>
         </SubMenu>
-        <Menu.Item key="9" icon={<PoweroffOutlined />}>
+        <Menu.Item key="8" icon={<PoweroffOutlined />}>
           <Link to="" onClick={userActions.logout}>
             Выход
           </Link>

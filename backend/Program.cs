@@ -30,6 +30,7 @@ var builder = WebApplication.CreateBuilder(args);
     services.AddScoped<IUserService, UserService>();
     services.AddScoped<IRoleService, RoleService>();
     services.AddScoped<ILocationService, LocationService>();
+    services.AddScoped<IEmployeeService, EmployeeService>();
 
 }
 
