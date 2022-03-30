@@ -15,7 +15,6 @@ using WebApi.Services;
 public class LocationsController : ControllerBase
 {
     private ILocationService _locationService;
-    private IEmployeeService _employeeService;
     private IMapper _mapper;
     private readonly AppSettings _appSettings;
     private readonly IWebHostEnvironment _webHostEnvironment;
@@ -29,7 +28,6 @@ public class LocationsController : ControllerBase
     {
         _webHostEnvironment = webHostEnvironment;
         _locationService = LocationService;
-        _employeeService = EmployeeService;
         _mapper = mapper;
         _appSettings = appSettings.Value;
     }
