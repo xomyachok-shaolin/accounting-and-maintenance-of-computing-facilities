@@ -21,7 +21,6 @@ public class LocationsController : ControllerBase
 
     public LocationsController(
         ILocationService LocationService,
-        IEmployeeService EmployeeService,
         IMapper mapper,
         IOptions<AppSettings> appSettings,
         IWebHostEnvironment webHostEnvironment)
