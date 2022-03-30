@@ -17,6 +17,8 @@ import { Header } from "antd/lib/layout/layout";
 import Title from "antd/lib/typography/Title";
 import { Roles } from "roles/Roles";
 import { Locations } from "locations/Locations";
+import { DeviceTypes } from "deviceTypes/DeviceTypes";
+import { DeviceParameters } from "deviceParameters/DeviceParameters";
 
 const { Content, Footer } = Layout;
 
@@ -40,6 +42,8 @@ function App() {
                 <PrivateRoute path="/users" component={Users} />
                 <PrivateRoute path="/roles" component={Roles} />
                 <PrivateRoute path="/locations" component={Locations} />
+                <PrivateRoute path="/deviceTypes" component={DeviceTypes} />
+                <PrivateRoute path="/deviceParameters" component={DeviceParameters} />
                 <Redirect from="*" to="/" />
               </Switch>
             </Content>
@@ -57,6 +61,8 @@ function App() {
               <PrivateRoute path="/users" component={Users} />
               <PrivateRoute path="/roles" component={Roles} />
               <PrivateRoute path="/locations" component={Locations} />
+              <PrivateRoute path="/deviceTypes" component={DeviceTypes} />
+              <PrivateRoute path="/deviceParameters" component={DeviceParameters} />
               <Route path="/account" component={Account} />
               <Redirect from="*" to="/" />
             </Switch>

@@ -8,3 +8,5 @@ export * from './avatar';
 export * from './image';
 export * from './locations';
 export * from './employees';
+export * from './deviceParameters';
+export * from './deviceTypes';

@@ -9,6 +9,8 @@ import { Button, Descriptions, Divider, Layout, Menu } from "antd";
 import {
   DesktopOutlined,
   PieChartOutlined,
+  FilterOutlined,
+  ControlOutlined,
   CompassOutlined,
   FileOutlined,
   SettingOutlined,
@@ -48,7 +50,7 @@ function Nav() {
         height: "100vh",
         margin: 7,
       }}
-      width="225"
+      width="250"
       collapsible
       collapsed={collapsed}
       onCollapse={userActions.switchMenu}
@@ -90,25 +92,29 @@ function Nav() {
             </Menu.Item>
           </SubMenu>
         )}
-        <SubMenu
-          key="sub3"
-          icon={<BookOutlined />}
-          title="Справочники"
-        >
-        <Menu.Item key="3" icon={<CompassOutlined />}>
-        <Link to="/locations">Местоположения</Link>
-        </Menu.Item>
-        </SubMenu>
         
-        <Menu.Item key="4" icon={<DesktopOutlined />}>
-          Option 2
+        {!isAdmin && (<SubMenu key="sub3" icon={<BookOutlined />} title="Справочники">
+          <Menu.Item key="3" icon={<CompassOutlined />}>
+            <Link to="/locations">Местоположения</Link>
+          </Menu.Item>
+          <Menu.Item key="4" icon={<FilterOutlined />}>
+            <Link to="/deviceTypes">Виды устройств</Link>
+          </Menu.Item>
+          <Menu.Item key="5" icon={<ControlOutlined />}>
+            <Link to="/deviceParameters">Параметры устройств</Link>
+          </Menu.Item>
+        </SubMenu>
+        )}
+
+        <Menu.Item key="6" icon={<DesktopOutlined />}>
+          <Link to="/deviceTypes">Виды устройств</Link>
         </Menu.Item>
         <SubMenu key="sub2" icon={<FileOutlined />} title="User">
-          <Menu.Item key="5">Tom</Menu.Item>
-          <Menu.Item key="6">Bill</Menu.Item>
-          <Menu.Item key="7">Alex</Menu.Item>
+          <Menu.Item key="7">Tom</Menu.Item>
+          <Menu.Item key="8">Bill</Menu.Item>
+          <Menu.Item key="9">Alex</Menu.Item>
         </SubMenu>
-        <Menu.Item key="8" icon={<PoweroffOutlined />}>
+        <Menu.Item key="10" icon={<PoweroffOutlined />}>
           <Link to="" onClick={userActions.logout}>
             Выход
           </Link>
