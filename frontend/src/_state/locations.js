@@ -1,12 +1,12 @@
 import { atom } from 'recoil';
 
 const locationsAtom = atom({
-    key: 'roles',
+    key: 'locations',
     default: null
 });
 
 const locationAtom = atom({
-    key: 'role',
+    key: 'location',
     default: null
 });
 

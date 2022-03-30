@@ -215,7 +215,7 @@ namespace WebApi.Migrations
                     b.Property<string>("House")
                         .HasColumnType("text");
 
-                    b.Property<int>("IdEmployee")
+                    b.Property<int?>("IdEmployee")
                         .HasColumnType("integer");
 
                     b.Property<string>("Room")
@@ -495,8 +495,7 @@ namespace WebApi.Migrations
                     b.HasOne("WebApi.Entities.Employee", "Employee")
                         .WithMany("Locations")
                         .HasForeignKey("IdEmployee")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Employee");
                 });

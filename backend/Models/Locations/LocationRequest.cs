@@ -9,5 +9,5 @@ public class LocationRequest
 
     [Required]
     public string Room { get; set; }
-    public int idEmployee { get; set; }
+    public int Responsible { get; set; }
 }

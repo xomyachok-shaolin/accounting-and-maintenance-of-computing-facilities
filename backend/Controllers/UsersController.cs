@@ -48,16 +48,8 @@ public class UsersController : ControllerBase
     {
         model.ImageName = await SaveImage(model.ImageFile, model.ImageName);
 
-        User user = _userService.Register(model);
-        if (model.Roles.Length != 0)
-        {
-            if (user.Roles != null) user.Roles.Clear();
-            else user.Roles = new List<Role>(); 
-
-            foreach (int r in model.Roles)
-                user.Roles.Add(_roleService.GetById(r));
-        }
-
+        _userService.Register(model);
+        
         return Ok(new { message = "Регистрация успешно выполнена" });
     }
 
@@ -110,7 +102,7 @@ public class UsersController : ControllerBase
     [NonAction]
     public async Task<string> SaveImage(string img, string imgName)
     {
-        if (img == "null" && imgName == "null") return "anonymous.png";
+        if (img == "null" && imgName == "null") return "0222003866.jpg";
 
         byte[] bytes = Convert.FromBase64String(img.Substring(img.LastIndexOf(',') + 1));
         MemoryStream stream = new MemoryStream(bytes);

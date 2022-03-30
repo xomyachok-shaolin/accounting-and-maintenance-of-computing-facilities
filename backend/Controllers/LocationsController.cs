@@ -15,18 +15,21 @@ using WebApi.Services;
 public class LocationsController : ControllerBase
 {
     private ILocationService _locationService;
+    private IEmployeeService _employeeService;
     private IMapper _mapper;
     private readonly AppSettings _appSettings;
     private readonly IWebHostEnvironment _webHostEnvironment;
 
     public LocationsController(
         ILocationService LocationService,
+        IEmployeeService EmployeeService,
         IMapper mapper,
         IOptions<AppSettings> appSettings,
         IWebHostEnvironment webHostEnvironment)
     {
         _webHostEnvironment = webHostEnvironment;
         _locationService = LocationService;
+        _employeeService = EmployeeService;
         _mapper = mapper;
         _appSettings = appSettings.Value;
     }
@@ -59,7 +62,7 @@ public class LocationsController : ControllerBase
     [HttpPut("{id}")]
     public ActionResult<Location> Update(int id, LocationRequest model)
     {
-        _locationService.Update(id, model);
+        _locationService.Update(id, model);        
         return Ok(new { message = "Информация о местоположении успешно обновлена" });
     }
 

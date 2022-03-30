@@ -50,12 +50,17 @@ public class LocationService : ILocationService
             && _context.Locations.Any(x => x.House == model.House))
             throw new AppException("Местоположение уже занято");
 
-        // map model to new Location object
-        var Location = _mapper.Map<Location>(model);
+        Employee employee = _context.Employees.Where(e => e.Id == model.Responsible).FirstOrDefault();
 
+        Location location = new Location
+        {
+            Room = model.Room,
+            House = model.House,
+            Employee = employee
+        };
 
         // save Location
-        _context.Locations.Add(Location);
+        _context.Locations.Add(location);
         _context.SaveChanges();
     }
 
@@ -64,12 +69,15 @@ public class LocationService : ILocationService
         var Location = getLocation(id);
 
         // validate
+        if (Location.House != model.House || Location.Room != model.Room)
         if (_context.Locations.Any(x => x.Room == model.Room)
                    && _context.Locations.Any(x => x.House == model.House))
             throw new AppException("Местоположение уже занято");
 
+        Employee employee = _context.Employees.Where(e => e.Id == model.Responsible).FirstOrDefault();
 
-        //_mapper.Map(model, Location);
+        if (employee == null) Location.IdEmployee = null;
+        Location.Employee = employee;
         Location.House = model.House;
         Location.Room = model.Room;
 

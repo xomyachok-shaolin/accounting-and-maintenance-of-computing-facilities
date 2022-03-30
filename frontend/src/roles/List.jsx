@@ -36,7 +36,7 @@ function List({ match }) {
 
   useEffect(() => {
     userActions.getAllRoles();
-  }, []);
+  }, [userActions]);
 
   useEffect(() => {
     if (isResetAll) {
@@ -157,20 +157,7 @@ function List({ match }) {
   };
 
   function onSubmit(values) {
-
-    if (!values.isEditTask) values.isEditTask = false;
-    else values.isEditTask = true;
-    if (!values.isEditWS) values.isEditWS = false;
-    else values.isEditWS = true;
-    if (!values.isTransfer) values.isTransfer = false;
-    else values.isTransfer = true;
-    if (!values.isUpgrade) values.isUpgrade = false;
-    else values.isUpgrade = true;
-    if (!values.isWriteOff) values.isWriteOff = false;
-    else values.isWriteOff = true;
-
     setVisible(false);
-
     return !mode ? createRole(values) : updateRole(mode.id, values);
   }
 

@@ -8,12 +8,10 @@ import { Space } from "antd";
 import { Button } from "antd";
 import { Avatar } from "account/Avatar";
 import { useForm } from "react-hook-form";
-import { ExclamationCircleOutlined, SearchOutlined  } from "@ant-design/icons";
-import { Option } from "antd/lib/mentions";
-import { rolesAtom } from "_state/roles";
-import Checkbox from "antd/lib/checkbox/Checkbox";
-import { locationsAtom } from "_state";
+import { ExclamationCircleOutlined, SearchOutlined, MinusCircleTwoTone, PlusCircleTwoTone } from "@ant-design/icons";
+import { employeesAtom, locationsAtom } from "_state";
 import React from "react";
+const { Option } = Select;
 
 export { List };
 
@@ -33,12 +31,20 @@ function List({ match }) {
   const { confirm } = Modal;
 
   const locations = useRecoilValue(locationsAtom);
-  
+
   const locationActions = useLocationActions();
-  // const role = useRecoilValue(roleAtom);
+
+  const employees = useRecoilValue(employeesAtom);
 
   useEffect(() => {
     locationActions.getAll();
+    return locationActions.resetLocations;
+  }, []);
+
+  
+  useEffect(() => {
+    locationActions.getAllEmployees();
+    return locationActions.resetEmployees;
   }, []);
 
   useEffect(() => {
@@ -46,7 +52,7 @@ function List({ match }) {
       locationActions.getAll();
       setIsResetAll(false);
     }
-  }, [isResetAll, locationActions]);
+  }, [isResetAll]);
 
   const columns = [
     {
@@ -60,12 +66,12 @@ function List({ match }) {
       id: "room",
     },
     Table.EXPAND_COLUMN,
-  {
+    {
       title: "Ответственный",
       dataIndex: "employee",
       id: "employee",
-  },
-    
+    },
+
     {
       title: "",
       key: "action",
@@ -92,7 +98,7 @@ function List({ match }) {
       house: row.house,
       room: row.room,
       employee: row.employee?.personnelNumber,
-      description: row.employee?.department + ': ' + row.employee?.position + 
+      description: row.employee?.department + ': ' + row.employee?.position +
         ' ' + row.employee?.lastName + ' ' + row.employee?.firstName + ' ' + row.employee?.patronymic
     };
   });
@@ -104,12 +110,9 @@ function List({ match }) {
   const showAddModal = () => {
     setMode(false);
     form.setFieldsValue({
-      name: "",
-      isWriteOff: false,
-      isTransfer: false,
-      isUpgrade: false,
-      isEditWS: false,
-      isEditTask: false,
+      house: "",
+      room: "",
+      employee: "",
     });
     showModal();
   };
@@ -121,24 +124,21 @@ function List({ match }) {
       okText: "Да",
       cancelText: "Отмена",
       onOk() {
-        locationActions.deleteRole(id);
+        locationActions.delete(id);
       },
-      onCancel() {},
+      onCancel() { },
     });
   };
 
   const showEditModal = (id) => {
-    locations.forEach((role) => {
-      if (role.id === id) {
+    locations.forEach((location) => {
+      if (location.id === id) {
         form.setFieldsValue({
-          name: role.name,
-          isWriteOff: role.isWriteOff,
-          isTransfer: role.isTransfer,
-          isUpgrade: role.isUpgrade,
-          isEditWS: role.isEditWS,
-          isEditTask: role.isEditTask,
+          house: location.house,
+          room: location.room,
+          responsible: location?.employee?.id,
         });
-        setMode(role);
+        setMode(location);
 
         showModal();
       }
@@ -147,20 +147,9 @@ function List({ match }) {
 
   function onSubmit(values) {
 
-    if (!values.isEditTask) values.isEditTask = false;
-    else values.isEditTask = true;
-    if (!values.isEditWS) values.isEditWS = false;
-    else values.isEditWS = true;
-    if (!values.isTransfer) values.isTransfer = false;
-    else values.isTransfer = true;
-    if (!values.isUpgrade) values.isUpgrade = false;
-    else values.isUpgrade = true;
-    if (!values.isWriteOff) values.isWriteOff = false;
-    else values.isWriteOff = true;
-
     setVisible(false);
 
-    return !mode ? createRole(values) : updateRole(mode.id, values);
+    return !mode ? createLocation(values) : updateLocation(mode.id, values);
   }
 
   const handleCancel = () => {
@@ -168,16 +157,16 @@ function List({ match }) {
     form.resetFields();
   };
 
-  function createRole(data) {
-    return locationActions.createRole(data).then(() => {
+  function createLocation(data) {
+    return locationActions.create(data).then(() => {
       setIsResetAll(true);
-      alertActions.success("Роль добавлена");
+      alertActions.success("Местоположение добавлено");
     });
   }
 
-  function updateRole(id, data) {
+  function updateLocation(id, data) {
     //data.imageFile = avatar.imageFile;
-    return locationActions.updateRole(id, data).then(() => {
+    return locationActions.update(id, data).then(() => {
       setIsResetAll(true);
       alertActions.success("Информация о местоположении обновлена");
     });
@@ -212,8 +201,6 @@ function List({ match }) {
         okText="Сохранить"
         cancelText="Отмена"
       >
-        <>
-          {!loading && (
             <Form
               {...formItemLayout}
               form={form}
@@ -252,39 +239,32 @@ function List({ match }) {
                 label="Ответственный"
               >
                 <Select
+                  notFoundContent="Сотрудник не найден"
                   showSearch
                   placeholder="Выберите ответственного за помещение"
                   optionFilterProp="children"
-                  filterOption={(input, option) =>
-                    option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                  }
-                  //defaultValue={selectedRoles?.map((r) => r.id)}
-                  //value={roles}
-                  onChange={(text, index) => {
-                    //setSelectedRoles(index);
-                  }}
+                    value={employees}
+                  allowClear
                 >
-                  {/* {roles?.map((role) => (
-                    <Option value={role.id} key={role.id}>
-                      {role.name}
-                    </Option>
-                  ))} */}
+                  {employees?.map((e) => (
+                    <Select value={e.id} key={e.id}>
+                      {e.personnelNumber} {e.lastName} {e.firstName} {e.patronymic} {e.department} {e.position}
+                    </Select>
+                  ))}
                 </Select>
               </Form.Item>
-
-
             </Form>
-          )}
-          {confirmLoading && (
-            <div className="text-center p-3">
-              <Spin size="large" />
-            </div>
-          )}
-        </>
       </Modal>
-      <Table columns={columns} expandable={{
-        expandedRowRender: record => <p style={{ margin: 0 }}>{record.description}</p>,
-      }} dataSource={data}></Table>
+      {(locations && employees) && <Table columns={columns} expandable={{
+        expandedRowRender: record => {if (record.employee) return <p style={{ margin: 0 }}>{record.description}</p>;
+          else return <p style={{ margin: 0 }}>Ответственный за помещение не определен</p>;},
+        
+  }} dataSource={data}></Table>}
+      {(!employees || !locations) && (
+        <div className="text-center p-3">
+          <Spin size="large" />
+        </div>
+      )}
     </>
   );
 }

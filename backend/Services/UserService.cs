@@ -13,7 +13,7 @@ public interface IUserService
     AuthenticateResponse Authenticate(AuthenticateRequest model);
     IEnumerable<User> GetAll();
     User GetById(int id);
-    User Register(RegisterRequest model);
+    void Register(RegisterRequest model);
     void Update(int id, UpdateRequest model);
     void Delete(int id);
 }
@@ -62,34 +62,36 @@ public class UserService : IUserService
         return getUser(id);
     }
 
-    public User Register(RegisterRequest model)
+    public void Register(RegisterRequest model)
     {
         // validate
         if (_context.Users.Any(x => x.Username == model.Username))
             throw new AppException("Имя пользователя '" + model.Username + "' уже занято");
 
-        // map model to new user object
-        //var user = _mapper.Map<User>(model);
-        User user = new User();
 
-        user.FirstName = model.FirstName;
-        user.LastName = model.LastName;
-        user.Username = model.Username;
-        user.Mail = model.Mail;
-        user.ImageFile = model.ImageFile;
-        user.ImageName = model.ImageName;
-        user.Mail = user.Mail;
-        user.Patronymic = model.Patronymic;
+        List<Role> roles = new List<Role>();
+        foreach (int r in model.Roles)
+            roles.Add(_context.Roles.Where(role => role.Id == r).FirstOrDefault());
 
 
-        // hash password
-        user.PasswordHash = BCrypt.HashPassword(model.Password);
+            // map model to new user object
+            //var user = _mapper.Map<User>(model);
+            User user = new User
+        {
+            Username = model.Username,
+            FirstName = model.FirstName,
+            LastName = model.LastName,
+            Patronymic = model.Patronymic,
+            Mail = model.Mail,
+            PasswordHash = BCrypt.HashPassword(model.Password),
+            ImageFile = model.ImageFile,
+            ImageName = model.ImageName,
+            Roles = roles
+        };
 
         // save user
         _context.Users.Add(user);
         _context.SaveChanges();
-
-        return user;
     }
 
     public void Update(int id, UpdateRequest model)

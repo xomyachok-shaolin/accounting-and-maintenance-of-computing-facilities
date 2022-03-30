@@ -12,6 +12,6 @@ public class Location
     [JsonIgnore]
     public ICollection<Device> Devices { get; set; }
 
-    public int IdEmployee { get; set; }
-    public Employee Employee { get; set; }
+    public int? IdEmployee { get; set; }
+    public virtual Employee Employee { get; set; }
 }

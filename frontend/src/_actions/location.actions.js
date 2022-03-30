@@ -1,29 +1,27 @@
-import { useRecoilState, useSetRecoilState, useResetRecoilState } from 'recoil';
+import { useSetRecoilState, useResetRecoilState } from 'recoil';
 
-import { history, useFetchWrapper } from '_helpers';
-import { adminAtom, authAtom, usersAtom, userAtom, collapseAtom, locationsAtom, locationAtom } from '_state';
-import { submitAtom } from '_state';
-import { rolesAtom } from '_state/roles';
+import { useFetchWrapper } from '_helpers';
+import { locationsAtom, locationAtom, employeesAtom } from '_state';
 
 export { useLocationActions };
 
 function useLocationActions () {
     const baseUrl = `${process.env.REACT_APP_API_URL}/locations`;
+    const baseUrlEmp = `${process.env.REACT_APP_API_URL}/employees`;
     const fetchWrapper = useFetchWrapper();
-    const [auth, setAuth] = useRecoilState(authAtom);
-    const [collapse, setCollapse] = useRecoilState(collapseAtom);
-    const [submit, setSubmit] = useRecoilState(submitAtom);
-    const [admin, setAdmin] = useRecoilState(adminAtom);
     const setLocations = useSetRecoilState(locationsAtom);
     const setLocation = useSetRecoilState(locationAtom);
-    const setRoles = useSetRecoilState(rolesAtom);
+    const setEmployees = useSetRecoilState(employeesAtom);
 
     return {
         getAll,
+        getAllEmployees,
         getById,
+        create,
         update,
         delete: _delete,
         resetLocations: useResetRecoilState(locationsAtom),
+        resetEmployees: useResetRecoilState(employeesAtom),
         resetLocation: useResetRecoilState(locationAtom)
     }
 
@@ -36,7 +34,9 @@ function useLocationActions () {
     function getAll() {
         return fetchWrapper.get(baseUrl).then(setLocations);
     }
-
+    function getAllEmployees() {
+        return fetchWrapper.get(baseUrlEmp).then(setEmployees);
+    }
     function getById(id) {
         return fetchWrapper.get(`${baseUrl}/${id}`).then(setLocation);
     }

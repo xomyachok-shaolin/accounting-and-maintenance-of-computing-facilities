@@ -115,7 +115,7 @@ function useUserActions () {
     function _delete(id) {
         setUsers(users => users.map(x => {
             // add isDeleting prop to user being deleted
-            if (x.id === id) 
+            if (x.id === id)
                 return { ...x, isDeleting: true };
 
             return x;

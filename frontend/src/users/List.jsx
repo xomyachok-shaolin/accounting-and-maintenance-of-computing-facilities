@@ -2,13 +2,12 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useRecoilValue, useRecoilState, DefaultValue } from "recoil";
 
-import { usersAtom, userAtom, imageAtom, avatarAtom } from "_state";
+import { usersAtom, imageAtom, avatarAtom } from "_state";
 import { useUserActions, useAlertActions } from "_actions";
 import { Form, Modal, Spin, Table, Tag, Input, Select } from "antd";
 import { Space } from "antd";
 import { Button } from "antd";
 import { Avatar } from "account/Avatar";
-import { useForm } from "react-hook-form";
 import { ExclamationCircleOutlined } from "@ant-design/icons";
 import { Option } from "antd/lib/mentions";
 import { rolesAtom } from "_state/roles";
@@ -37,15 +36,11 @@ function List({ match }) {
   const { confirm } = Modal;
 
   const roles = useRecoilValue(rolesAtom);
-  const [selectedRoles, setSelectedRoles] = useState(
-    // Initial state
-    roles
-  );
 
   useEffect(() => {
     userActions.getAll();
     userActions.getAllRoles();
-  }, []);
+  },[]);
 
   useEffect(() => {
     if (isResetAll) {
@@ -152,7 +147,6 @@ function List({ match }) {
   const showAddModal = () => {
     setMode(false);
     setImage(null);
-    setSelectedRoles(null);
     form.setFieldsValue({
       username: "",
       password: "",
@@ -212,13 +206,11 @@ function List({ match }) {
       values.imageFile = avatar.imageUrl;
     }
     setImage(null);
-    setSelectedRoles(null);
     return !mode ? createUser(values) : updateUser(mode.id, values);
   }
 
   const handleCancel = () => {
     setVisible(false);
-    setSelectedRoles(null);
     form.resetFields();
   };
 
@@ -260,14 +252,12 @@ function List({ match }) {
       <Modal
         title={!mode ? "Добавить пользователя" : "Редактировать пользователя"}
         visible={visible}
-        confirmLoading={confirmLoading}
         onOk={form.submit}
         onCancel={handleCancel}
         okText="Сохранить"
         cancelText="Отмена"
       >
         <>
-          {!loading && (
             <Form
               {...formItemLayout}
               form={form}
@@ -370,13 +360,10 @@ function List({ match }) {
                 ]}
               >
                 <Select
-                  defaultValue={selectedRoles?.map((r) => r.id)}
+                  //defaultValue={selectedRoles?.map((r) => r.id)}
                   mode="multiple"
                   value={roles}
                   placeholder="Пожалуйста, выберите роли"
-                  onChange={(text, index) => {
-                    setSelectedRoles(index);
-                  }}
                 >
                   {roles?.map((role) => (
                     <Option value={role.id} key={role.id}>
@@ -393,15 +380,14 @@ function List({ match }) {
                         <Link to="/users" className="btn btn-link">Отмена</Link>
                     </div> */}
             </Form>
-          )}
-          {confirmLoading && (
+        </>
+      </Modal>
+      {users && <Table columns={columns} dataSource={data}></Table>}
+      {!users && (
             <div className="text-center p-3">
               <Spin size="large" />
             </div>
           )}
-        </>
-      </Modal>
-      <Table columns={columns} dataSource={data}></Table>
     </>
   );
 }
