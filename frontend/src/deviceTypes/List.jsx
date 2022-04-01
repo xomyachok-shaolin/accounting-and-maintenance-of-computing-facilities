@@ -216,7 +216,9 @@ function List({ match }) {
 
             </Form>
       </Modal>
-      {(deviceTypes) && <Table columns={columns} dataSource={data}></Table>}
+      {(deviceTypes) && <Table 
+        pagination={false} scroll={{ x: 800, }}
+      bordered columns={columns} dataSource={data}></Table>}
       {!deviceTypes && (
         <div className="text-center p-3">
           <Spin size="large" />

@@ -10,3 +10,4 @@ export * from './locations';
 export * from './employees';
 export * from './deviceParameters';
 export * from './deviceTypes';
+export * from './deviceDetails';

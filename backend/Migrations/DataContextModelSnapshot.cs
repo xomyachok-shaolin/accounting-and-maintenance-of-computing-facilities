@@ -60,17 +60,14 @@ namespace WebApi.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("DateOfDebit")
+                    b.Property<DateTime?>("DateOfDebit")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTime>("DateOfLastService")
+                    b.Property<DateTime?>("DateOfLastService")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTime>("DateOfNextService")
+                    b.Property<DateTime?>("DateOfNextService")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<int?>("DeviceModelId")
-                        .HasColumnType("integer");
 
                     b.Property<int>("IdDeviceModel")
                         .HasColumnType("integer");
@@ -92,7 +89,7 @@ namespace WebApi.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("DeviceModelId");
+                    b.HasIndex("IdDeviceModel");
 
                     b.HasIndex("IdLocation");
 
@@ -446,8 +443,10 @@ namespace WebApi.Migrations
             modelBuilder.Entity("WebApi.Entities.Device", b =>
                 {
                     b.HasOne("WebApi.Entities.DeviceModel", "DeviceModel")
-                        .WithMany()
-                        .HasForeignKey("DeviceModelId");
+                        .WithMany("Devices")
+                        .HasForeignKey("IdDeviceModel")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("WebApi.Entities.Location", "Location")
                         .WithMany("Devices")
@@ -573,6 +572,8 @@ namespace WebApi.Migrations
             modelBuilder.Entity("WebApi.Entities.DeviceModel", b =>
                 {
                     b.Navigation("DeviceProperties");
+
+                    b.Navigation("Devices");
                 });
 
             modelBuilder.Entity("WebApi.Entities.DeviceParameter", b =>

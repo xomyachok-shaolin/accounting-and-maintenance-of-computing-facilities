@@ -9,7 +9,7 @@ public class Location
     /* EF Relations */
     [JsonIgnore]
     public ICollection<Workstation> Workstations { get; set; }
-    [JsonIgnore]
+    
     public ICollection<Device> Devices { get; set; }
 
     public int? IdEmployee { get; set; }

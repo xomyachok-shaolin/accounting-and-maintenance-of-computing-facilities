@@ -10,6 +10,7 @@ using WebApi.Models.Locations;
 public interface IDeviceTypeService
 {
     IEnumerable<DeviceType> GetAll();
+    IEnumerable<Location> GetAllDetails();
     DeviceType GetById(int id);
     void Create(DeviceType model);
     void Update(int id, DeviceType model);
@@ -34,7 +35,12 @@ public class DeviceTypeService : IDeviceTypeService
 
     public IEnumerable<DeviceType> GetAll()
     {
-        return _context.DeviceTypes;
+        return _context.DeviceTypes.Include(dt => dt.DeviceModels);
+    }
+
+    public IEnumerable<Location> GetAllDetails()
+    {
+        return _context.Locations.Include(l => l.Devices).ThenInclude(d => d.DeviceModel).ThenInclude(dm => dm.DeviceProperties).ThenInclude(dp => dp.DeviceParameter);
     }
 
     public DeviceType GetById(int id)

@@ -12,5 +12,6 @@ public class AuthenticateResponse
     public string Username { get; set; }
     public string Token { get; set; }
     public string ImageName { get; set; }
+    public string ImageFile { get; set; }
     public ICollection<Role> Roles { get; set; }
 }

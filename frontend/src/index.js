@@ -2,8 +2,6 @@ import React from "react";
 import ReactDOM from "react-dom";
 import { RecoilRoot } from "recoil";
 
-import "antd/dist/antd.css";
-
 import "index.css";
 import { App } from "App";
 
@@ -12,10 +10,9 @@ import { App } from "App";
 // fakeBackend();
 
 ReactDOM.render(
-  <React.StrictMode>
     <RecoilRoot>
       <App />
-    </RecoilRoot>{" "}
-  </React.StrictMode>,
+    </RecoilRoot>
+  ,
   document.getElementById("app")
 );

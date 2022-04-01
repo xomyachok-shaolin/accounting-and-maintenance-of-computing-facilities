@@ -10,7 +10,7 @@ function DeviceParameters({ match }) {
     const { path } = match;
     
     return (
-          <Card hoverable title="Управление параметрами устройств" >
+          <Card hoverable title="Управление техническими параметрами устройств" >
                 <Switch>
                     <Route exact path={path} component={List} />
                 </Switch>

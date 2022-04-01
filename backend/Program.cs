@@ -19,6 +19,8 @@ var builder = WebApplication.CreateBuilder(args);
     services.AddCors();
     services.AddControllers();
 
+    services.AddControllers().AddJsonOptions(x =>
+                x.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles);
     // configure automapper with all automapper profiles from this assembly
     services.AddAutoMapper(typeof(Program));
 

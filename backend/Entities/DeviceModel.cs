@@ -10,4 +10,6 @@ public class DeviceModel
 
     public ICollection<DeviceParameter> DeviceParameters { get; set; }
     public List<DeviceProperties> DeviceProperties { get; set; }
+
+    public ICollection<Device> Devices { get; set; }
 }

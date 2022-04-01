@@ -19,6 +19,7 @@ import { Roles } from "roles/Roles";
 import { Locations } from "locations/Locations";
 import { DeviceTypes } from "deviceTypes/DeviceTypes";
 import { DeviceParameters } from "deviceParameters/DeviceParameters";
+import { DeviceDetails } from "deviceDetails/DeviceDetails";
 
 const { Content, Footer } = Layout;
 
@@ -44,7 +45,8 @@ function App() {
                 <PrivateRoute path="/locations" component={Locations} />
                 <PrivateRoute path="/deviceTypes" component={DeviceTypes} />
                 <PrivateRoute path="/deviceParameters" component={DeviceParameters} />
-                <Redirect from="*" to="/" />
+                <PrivateRoute path="/deviceDetails" component={DeviceDetails} />
+               <Redirect from="*" to="/" />
               </Switch>
             </Content>
             <Footer style={{ textAlign: "center" }}>
@@ -63,6 +65,7 @@ function App() {
               <PrivateRoute path="/locations" component={Locations} />
               <PrivateRoute path="/deviceTypes" component={DeviceTypes} />
               <PrivateRoute path="/deviceParameters" component={DeviceParameters} />
+              <PrivateRoute path="/deviceDetails" component={DeviceDetails} />
               <Route path="/account" component={Account} />
               <Redirect from="*" to="/" />
             </Switch>

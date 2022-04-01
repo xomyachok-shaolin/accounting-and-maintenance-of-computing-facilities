@@ -51,7 +51,6 @@ function Register({ history }) {
   };
 
   function onSubmit(data) {
-    console.log(data);
     return userActions.register(data).then(() => {
       history.push("/account/login");
       alertActions.success("Регистрация успешно выполнена");

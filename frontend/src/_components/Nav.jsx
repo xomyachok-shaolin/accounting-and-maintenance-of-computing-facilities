@@ -10,6 +10,7 @@ import {
   DesktopOutlined,
   PieChartOutlined,
   FilterOutlined,
+  BuildOutlined,
   ControlOutlined,
   CompassOutlined,
   FileOutlined,
@@ -56,30 +57,13 @@ function Nav() {
       onCollapse={userActions.switchMenu}
     >
       <Menu theme="light" defaultSelectedKeys={["0"]} mode="inline">
-        <Space>
-          <Avatar
-            style={{ marginLeft: 25, marginTop: 15 }}
-            src={
-              <Image
-                src="https://joeschmoe.io/api/v1/random"
-                style={{ width: 32 }}
-              />
-            }
-          />
-          {!collapsed && (
-            <Title style={{ marginLeft: 10, marginTop: 25 }} level={5}>
-              {auth.username}
-            </Title>
-          )}
-        </Space>
-        <Divider />
         <Menu.Item key="0" icon={<HomeOutlined />}>
           <NavLink exact to="/">
             Главная
           </NavLink>
         </Menu.Item>
         {!isAdmin && (
-          <SubMenu
+          <Menu.SubMenu
             key="sub1"
             icon={<SettingOutlined />}
             title="Администрирование"
@@ -90,10 +74,10 @@ function Nav() {
             <Menu.Item icon={<StarOutlined />} key="2">
               <Link to="/roles">Роли</Link>
             </Menu.Item>
-          </SubMenu>
+          </Menu.SubMenu>
         )}
         
-        {!isAdmin && (<SubMenu key="sub3" icon={<BookOutlined />} title="Справочники">
+        {!isAdmin && (<Menu.SubMenu key="sub3" icon={<BookOutlined />} title="Справочники">
           <Menu.Item key="3" icon={<CompassOutlined />}>
             <Link to="/locations">Местоположения</Link>
           </Menu.Item>
@@ -103,17 +87,17 @@ function Nav() {
           <Menu.Item key="5" icon={<ControlOutlined />}>
             <Link to="/deviceParameters">Параметры устройств</Link>
           </Menu.Item>
-        </SubMenu>
+        </Menu.SubMenu>
         )}
 
-        <Menu.Item key="6" icon={<DesktopOutlined />}>
-          <Link to="/deviceTypes">Виды устройств</Link>
+        <Menu.Item key="6" icon={<BuildOutlined />}>
+          <Link to="/deviceDetails">Сведения об устройствах</Link>
         </Menu.Item>
-        <SubMenu key="sub2" icon={<FileOutlined />} title="User">
+        <Menu.SubMenu key="sub2" icon={<FileOutlined />} title="User">
           <Menu.Item key="7">Tom</Menu.Item>
           <Menu.Item key="8">Bill</Menu.Item>
           <Menu.Item key="9">Alex</Menu.Item>
-        </SubMenu>
+        </Menu.SubMenu>
         <Menu.Item key="10" icon={<PoweroffOutlined />}>
           <Link to="" onClick={userActions.logout}>
             Выход

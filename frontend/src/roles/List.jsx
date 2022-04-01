@@ -36,14 +36,14 @@ function List({ match }) {
 
   useEffect(() => {
     userActions.getAllRoles();
-  }, [userActions]);
+  }, []);
 
   useEffect(() => {
     if (isResetAll) {
       userActions.getAllRoles();
       setIsResetAll(false);
     }
-  }, [isResetAll, userActions]);
+  }, [isResetAll]);
 
   const columns = [
     {
@@ -280,7 +280,9 @@ function List({ match }) {
           )}
         </>
       </Modal>
-      <Table columns={columns} dataSource={data}></Table>
+      <Table 
+      pagination={false} scroll={{ x: 800, }}
+      bordered columns={columns} dataSource={data}></Table>
     </>
   );
 }

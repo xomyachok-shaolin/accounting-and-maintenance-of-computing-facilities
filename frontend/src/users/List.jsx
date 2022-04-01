@@ -35,7 +35,7 @@ function List({ match }) {
 
   const { confirm } = Modal;
 
-  const roles = useRecoilValue(rolesAtom);
+  const rolesA = useRecoilValue(rolesAtom);
 
   useEffect(() => {
     userActions.getAll();
@@ -91,16 +91,17 @@ function List({ match }) {
       title: "Роли",
       key: "roles",
       dataIndex: "roles",
-      render: (roles) => (
+      render: roles => (
         <>
-          {roles.map((role) => {
-            let color = "geekblue";
-            if (role.name === "Администратор") {
+          {roles?.map((role) => {
+            var name = role.name;
+            var color = "geekblue";
+            if (name === "Администратор") {
               color = "volcano";
             }
             return (
-              <Tag color={color} key={role}>
-                {role.name.toUpperCase()}
+              <Tag color={color} key={name}>
+                {name.toUpperCase()}
               </Tag>
             );
           })}
@@ -362,13 +363,13 @@ function List({ match }) {
                 <Select
                   //defaultValue={selectedRoles?.map((r) => r.id)}
                   mode="multiple"
-                  value={roles}
+                  value={rolesA}
                   placeholder="Пожалуйста, выберите роли"
                 >
-                  {roles?.map((role) => (
-                    <Option value={role.id} key={role.id}>
+                  {rolesA?.map((role) => (
+                    <Select.Option value={role.id} key={role.id}>
                       {role.name}
-                    </Option>
+                    </Select.Option>
                   ))}
                 </Select>
               </Form.Item>
@@ -382,7 +383,9 @@ function List({ match }) {
             </Form>
         </>
       </Modal>
-      {users && <Table columns={columns} dataSource={data}></Table>}
+      {users && <Table 
+      scroll={{ x: 800, }}
+      bordered columns={columns} dataSource={data}></Table>}
       {!users && (
             <div className="text-center p-3">
               <Spin size="large" />

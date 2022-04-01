@@ -98,6 +98,12 @@ public partial class DataContext : DbContext
             .HasForeignKey(t => t.IdDevice)
             .OnDelete(DeleteBehavior.Restrict);
 
+        modelBuilder.Entity<DeviceModel>()
+            .HasMany(dm => dm.Devices)
+            .WithOne(d => d.DeviceModel)
+            .HasForeignKey(d => d.IdDeviceModel)
+            .OnDelete(DeleteBehavior.Restrict);
+
         OnModelCreatingPartial(modelBuilder);
     }
 

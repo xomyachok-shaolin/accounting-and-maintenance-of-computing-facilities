@@ -195,7 +195,8 @@ function List({ match }) {
 
             </Form>
       </Modal>
-      {(deviceParameters) && <Table columns={columns} dataSource={data}></Table>}
+      {(deviceParameters) && <Table scroll={{ x: 800, }}
+      bordered columns={columns} dataSource={data}></Table>}
       {!deviceParameters && (
         <div className="text-center p-3">
           <Spin size="large" />

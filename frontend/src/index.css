@@ -1,3 +1,5 @@
+@import '~antd/dist/antd.css';
+
 a {
     cursor: pointer;
 }
@@ -13,7 +15,7 @@ a {
 }
 
 .site-layout .site-layout-background {
-    background: #fff;
+    background: #f0f2f5;
 }
 
 .flex-container {
@@ -29,3 +31,33 @@ a {
     width: 128px;
     height: 128px;
 }
+
+
+      .ant-table-thead > tr >th{
+        color: black;
+        background: rgba(220, 220, 220, .3) !important;
+      }
+
+      
+
+      .ant-table-tbody > tr >th{
+        color: black;
+        background:  rgba(230, 230, 230, .7)!important;
+        }
+         .ant-table-tbody> tr> td {
+          background: rgba(255,255,255,0) !important;
+        }
+        .ant-table-tbody> tr >td:hover{
+          background: rgba(255,255,255,0) !important;
+        }
+       .ant-table-tbody> tr> td {
+          background: rgba(255,255,255,0) !important;
+        }
+        .ant-table-tbody> tr:hover{
+          background: #f5f6f7!important;
+        }
+
+
+        .site-tree-search-value {
+            color: #f50;
+          }

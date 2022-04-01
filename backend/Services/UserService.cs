@@ -70,6 +70,8 @@ public class UserService : IUserService
 
 
         List<Role> roles = new List<Role>();
+        
+        if (model.Roles != null)
         foreach (int r in model.Roles)
             roles.Add(_context.Roles.Where(role => role.Id == r).FirstOrDefault());
 
@@ -106,6 +108,11 @@ public class UserService : IUserService
         if (!string.IsNullOrEmpty(model.Password))
             user.PasswordHash = BCrypt.HashPassword(model.Password);
 
+        List<Role> roles = new List<Role>();
+        if (model.Roles != null)
+            foreach (int r in model.Roles)
+                roles.Add(_context.Roles.Where(role => role.Id == r).FirstOrDefault());
+
         // copy model to user and save
         // _mapper.Map(model, user);
         user.FirstName = model.FirstName;
@@ -116,6 +123,7 @@ public class UserService : IUserService
         user.ImageName = model.ImageName;
         user.Mail = user.Mail;
         user.Patronymic = model.Patronymic;
+        user.Roles = roles;
 
         _context.Users.Update(user);
         _context.SaveChanges();
