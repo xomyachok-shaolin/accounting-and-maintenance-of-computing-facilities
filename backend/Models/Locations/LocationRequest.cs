@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace WebApi.Models.Locations;
-public class LocationRequest
+public class WorkstationRequest
 {
     [Required]
     public string House { get; set; }

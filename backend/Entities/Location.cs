@@ -7,7 +7,6 @@ public class Location
     public string Room { get; set; }
     public string House { get; set; }
     /* EF Relations */
-    [JsonIgnore]
     public ICollection<Workstation> Workstations { get; set; }
     
     public ICollection<Device> Devices { get; set; }

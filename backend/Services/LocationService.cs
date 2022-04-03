@@ -11,8 +11,8 @@ public interface ILocationService
 {
     IEnumerable<Location> GetAll();
     Location GetById(int id);
-    void Create(LocationRequest model);
-    void Update(int id, LocationRequest model);
+    void Create(WorkstationRequest model);
+    void Update(int id, WorkstationRequest model);
     void Delete(int id);
 }
 
@@ -35,7 +35,8 @@ public class LocationService : ILocationService
     public IEnumerable<Location> GetAll()
     {
         return _context.Locations
-            .Include(l => l.Employee); ;
+            .Include(l => l.Employee)
+            .Include(l => l.Workstations);
     }
 
     public Location GetById(int id)
@@ -43,7 +44,7 @@ public class LocationService : ILocationService
         return getLocation(id);
     }
 
-    public void Create(LocationRequest model)
+    public void Create(WorkstationRequest model)
     {
         // validate
         if (_context.Locations.Any(x => x.Room == model.Room) 
@@ -64,7 +65,7 @@ public class LocationService : ILocationService
         _context.SaveChanges();
     }
 
-    public void Update(int id, LocationRequest model)
+    public void Update(int id, WorkstationRequest model)
     {
         var Location = getLocation(id);
 

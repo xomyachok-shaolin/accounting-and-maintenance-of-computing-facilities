@@ -216,7 +216,7 @@ function List({ match }) {
 
             </Form>
       </Modal>
-      {(deviceTypes) && <Table 
+      {(deviceTypes) && <Table locale={{emptyText:"Нет данных"}} 
         pagination={false} scroll={{ x: 800, }}
       bordered columns={columns} dataSource={data}></Table>}
       {!deviceTypes && (

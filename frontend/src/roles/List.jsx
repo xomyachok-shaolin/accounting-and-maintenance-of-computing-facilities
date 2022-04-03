@@ -280,7 +280,7 @@ function List({ match }) {
           )}
         </>
       </Modal>
-      <Table 
+      <Table locale={{emptyText:"Нет данных"}} 
       pagination={false} scroll={{ x: 800, }}
       bordered columns={columns} dataSource={data}></Table>
     </>

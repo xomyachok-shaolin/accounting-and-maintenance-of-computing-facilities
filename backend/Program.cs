@@ -35,6 +35,8 @@ var builder = WebApplication.CreateBuilder(args);
     services.AddScoped<IEmployeeService, EmployeeService>();
     services.AddScoped<IDeviceTypeService, DeviceTypeService>();
     services.AddScoped<IDeviceParameterService, DeviceParameterService>();
+    services.AddScoped<IWorkstationService, WorkstationService>();
+    services.AddScoped<IDeviceService, DeviceService>();
 
 }
 
@@ -93,6 +95,7 @@ app.UseStaticFiles(new StaticFileOptions
     using var scope = app.Services.CreateScope();
     var dataContext = scope.ServiceProvider.GetRequiredService<DataContext>();
     dataContext.Users.AddRange(testUsers);
+
     dataContext.SaveChanges();
 }*/
 

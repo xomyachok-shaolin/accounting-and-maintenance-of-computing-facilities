@@ -11,3 +11,4 @@ export * from './employees';
 export * from './deviceParameters';
 export * from './deviceTypes';
 export * from './deviceDetails';
+export * from './workstations';

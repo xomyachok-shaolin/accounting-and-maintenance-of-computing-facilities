@@ -11,8 +11,8 @@ public class Device
 
     public string SerialNumber { get; set; }
 
-    public int IdLocation { get; set; }
-    public Location Location { get; set; }
+    public int? IdLocation { get; set; }
+    public virtual Location Location { get; set; }
 
     public DateTime? DateOfDebit { get; set; }
     public DateTime? DateOfLastService { get; set; }

@@ -11,7 +11,7 @@ import { useForm } from "react-hook-form";
 import { ExclamationCircleOutlined, SearchOutlined, MinusCircleTwoTone, PlusCircleTwoTone } from "@ant-design/icons";
 import { employeesAtom, locationsAtom } from "_state";
 import React from "react";
-const { Option } = Select;
+const { Option } = Select.Option;
 
 export { List };
 
@@ -255,7 +255,7 @@ function List({ match }) {
               </Form.Item>
             </Form>
       </Modal>
-      {(locations && employees) && <Table scroll={{ x: 800, }}
+      {(locations && employees) && <Table locale={{emptyText:"Нет данных"}}  scroll={{ x: 800, }}
       bordered columns={columns} expandable={{
         expandedRowRender: record => {if (record.employee) return <p style={{ margin: 0 }}>{record.description}</p>;
           else return <p style={{ margin: 0 }}>Ответственный за помещение не определен</p>;},

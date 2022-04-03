@@ -6,6 +6,7 @@ using Microsoft.Extensions.Options;
 using WebApi.Authorization;
 using WebApi.Entities;
 using WebApi.Helpers;
+using WebApi.Models.Devices;
 using WebApi.Models.Locations;
 using WebApi.Services;
 
@@ -15,28 +16,42 @@ using WebApi.Services;
 public class DeviceDetailsController : ControllerBase
 {
     private IDeviceTypeService _deviceTypeService;
+    private IDeviceService _deviceService;
+    private IWorkstationService _workstationService;
     private IMapper _mapper;
     private readonly AppSettings _appSettings;
     private readonly IWebHostEnvironment _webHostEnvironment;
 
     public DeviceDetailsController(
         IDeviceTypeService deviceTypeService,
+        IDeviceService deviceService,
+        IWorkstationService workstationService,
         IMapper mapper,
         IOptions<AppSettings> appSettings,
         IWebHostEnvironment webHostEnvironment)
     {
         _webHostEnvironment = webHostEnvironment;
         _deviceTypeService = deviceTypeService;
+        _deviceService = deviceService;
+        _workstationService = workstationService;
         _mapper = mapper;
         _appSettings = appSettings.Value;
     }
 
     // [Authorize(Location.Admin)]
     [HttpGet]
-    public IActionResult GetAll()
+    public IActionResult GetAllDetails()
     {
         var devices = _deviceTypeService.GetAllDetails();
 
+        return Ok(devices);
+    }
+
+
+    [HttpGet("workstations")]
+    public IActionResult GetAll()
+    {
+        var devices = _deviceService.GetAll();
 
         return Ok(devices);
     }
@@ -48,5 +63,14 @@ public class DeviceDetailsController : ControllerBase
         return Ok(deviceType);
     }
 
-   
+    [AllowAnonymous]
+    [HttpPost("create")]
+    public async Task<ActionResult<DeviceRequest>> Create(DeviceRequest model)
+    {
+
+        _deviceService.Create(model);
+
+        return Ok(new { message = "Устройство успешно добавлено" });
+    }
+
 }

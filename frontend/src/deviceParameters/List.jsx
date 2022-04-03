@@ -11,7 +11,6 @@ import { useForm } from "react-hook-form";
 import { ExclamationCircleOutlined } from "@ant-design/icons";
 import { deviceParametersAtom } from "_state";
 import React from "react";
-const { Option } = Select;
 
 export { List };
 
@@ -195,7 +194,7 @@ function List({ match }) {
 
             </Form>
       </Modal>
-      {(deviceParameters) && <Table scroll={{ x: 800, }}
+      {(deviceParameters) && <Table locale={{emptyText:"Нет данных"}}  scroll={{ x: 800, }}
       bordered columns={columns} dataSource={data}></Table>}
       {!deviceParameters && (
         <div className="text-center p-3">

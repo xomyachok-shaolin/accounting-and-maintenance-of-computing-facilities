@@ -33,7 +33,7 @@ public class LocationsController : ControllerBase
 
     [AllowAnonymous]
     [HttpPost("create")]
-    public ActionResult<Location> Create(LocationRequest model)
+    public ActionResult<Location> Create(WorkstationRequest model)
     {
         _locationService.Create(model);
         return Ok(new { message = "Создание местоположения успешно выполнено" });
@@ -57,7 +57,7 @@ public class LocationsController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    public ActionResult<Location> Update(int id, LocationRequest model)
+    public ActionResult<Location> Update(int id, WorkstationRequest model)
     {
         _locationService.Update(id, model);        
         return Ok(new { message = "Информация о местоположении успешно обновлена" });

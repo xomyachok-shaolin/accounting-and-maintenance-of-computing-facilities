@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
 namespace WebApi.Entities;
@@ -12,4 +13,7 @@ public class DeviceModel
     public List<DeviceProperties> DeviceProperties { get; set; }
 
     public ICollection<Device> Devices { get; set; }
+
+    [NotMapped]
+    public int numberDevices { get; set; }
 }

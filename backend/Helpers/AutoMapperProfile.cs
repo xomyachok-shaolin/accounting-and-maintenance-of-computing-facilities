@@ -19,7 +19,7 @@ public class AutoMapperProfile : Profile
 
 
         // LocationRequest -> User
-        CreateMap<LocationRequest, Location>();
+        CreateMap<WorkstationRequest, Location>();
 
         // UpdateRequest -> User
         CreateMap<UpdateRequest, User>()

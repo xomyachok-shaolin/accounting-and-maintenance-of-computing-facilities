@@ -72,7 +72,7 @@ namespace WebApi.Migrations
                     b.Property<int>("IdDeviceModel")
                         .HasColumnType("integer");
 
-                    b.Property<int>("IdLocation")
+                    b.Property<int?>("IdLocation")
                         .HasColumnType("integer");
 
                     b.Property<string>("InventoryNumber")
@@ -315,13 +315,13 @@ namespace WebApi.Migrations
                     b.Property<DateTime>("DateOfInstallation")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTime>("DateOfRemoval")
+                    b.Property<DateTime?>("DateOfRemoval")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("IdDevice")
                         .HasColumnType("integer");
 
-                    b.Property<int>("IdTask")
+                    b.Property<int?>("IdTask")
                         .HasColumnType("integer");
 
                     b.Property<int>("IdWorkstation")
@@ -451,8 +451,7 @@ namespace WebApi.Migrations
                     b.HasOne("WebApi.Entities.Location", "Location")
                         .WithMany("Devices")
                         .HasForeignKey("IdLocation")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("DeviceModel");
 
@@ -529,8 +528,7 @@ namespace WebApi.Migrations
                     b.HasOne("WebApi.Entities.Task", "Task")
                         .WithMany("Transfers")
                         .HasForeignKey("IdTask")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("WebApi.Entities.Workstation", "Workstation")
                         .WithMany("Transfers")
