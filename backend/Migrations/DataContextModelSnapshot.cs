@@ -22,19 +22,19 @@ namespace WebApi.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("DeviceModelDeviceParameter", b =>
+            modelBuilder.Entity("DeviceDeviceParameter", b =>
                 {
-                    b.Property<int>("DeviceModelsId")
+                    b.Property<int>("DeviceId")
                         .HasColumnType("integer");
 
                     b.Property<int>("DeviceParametersId")
                         .HasColumnType("integer");
 
-                    b.HasKey("DeviceModelsId", "DeviceParametersId");
+                    b.HasKey("DeviceId", "DeviceParametersId");
 
                     b.HasIndex("DeviceParametersId");
 
-                    b.ToTable("DeviceModelDeviceParameter");
+                    b.ToTable("DeviceDeviceParameter");
                 });
 
             modelBuilder.Entity("RoleUser", b =>
@@ -72,26 +72,12 @@ namespace WebApi.Migrations
                     b.Property<int>("IdDeviceModel")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("IdLocation")
-                        .HasColumnType("integer");
-
                     b.Property<string>("InventoryNumber")
-                        .HasColumnType("text");
-
-                    b.Property<bool>("IsCommonUse")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsReserve")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("SerialNumber")
                         .HasColumnType("text");
 
                     b.HasKey("Id");
 
                     b.HasIndex("IdDeviceModel");
-
-                    b.HasIndex("IdLocation");
 
                     b.ToTable("Devices");
                 });
@@ -133,22 +119,59 @@ namespace WebApi.Migrations
                     b.ToTable("DeviceParameters");
                 });
 
-            modelBuilder.Entity("WebApi.Entities.DeviceProperties", b =>
+            modelBuilder.Entity("WebApi.Entities.DeviceParameterValue", b =>
                 {
                     b.Property<int>("DeviceParameterId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("DeviceModelId")
+                    b.Property<int>("DeviceId")
                         .HasColumnType("integer");
 
-                    b.Property<string>("Description")
+                    b.Property<string>("Value")
                         .HasColumnType("text");
 
-                    b.HasKey("DeviceParameterId", "DeviceModelId");
+                    b.HasKey("DeviceParameterId", "DeviceId");
 
-                    b.HasIndex("DeviceModelId");
+                    b.HasIndex("DeviceId");
 
-                    b.ToTable("DeviceProperties");
+                    b.ToTable("DeviceParameterValues");
+                });
+
+            modelBuilder.Entity("WebApi.Entities.DeviceTransfer", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("DateOfInstallation")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("DateOfRemoval")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("IdDevice")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("IdLocation")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("IdWorkstation")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("UseType")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IdDevice");
+
+                    b.HasIndex("IdLocation");
+
+                    b.HasIndex("IdWorkstation");
+
+                    b.ToTable("DeviceTransfers");
                 });
 
             modelBuilder.Entity("WebApi.Entities.DeviceType", b =>
@@ -288,6 +311,42 @@ namespace WebApi.Migrations
                     b.ToTable("Tasks");
                 });
 
+            modelBuilder.Entity("WebApi.Entities.TaskDeviceTransfer", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("IdDevice")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("IdLocation")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("IdTask")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("IdWorkstation")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("UseType")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IdDevice");
+
+                    b.HasIndex("IdLocation");
+
+                    b.HasIndex("IdTask");
+
+                    b.HasIndex("IdWorkstation");
+
+                    b.ToTable("TaskDeviceTransfers");
+                });
+
             modelBuilder.Entity("WebApi.Entities.TaskType", b =>
                 {
                     b.Property<int>("Id")
@@ -304,7 +363,7 @@ namespace WebApi.Migrations
                     b.ToTable("TaskTypes");
                 });
 
-            modelBuilder.Entity("WebApi.Entities.Transfer", b =>
+            modelBuilder.Entity("WebApi.Entities.TaskWorkstationTransfer", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -312,16 +371,13 @@ namespace WebApi.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("DateOfInstallation")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime?>("DateOfRemoval")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("IdDevice")
+                    b.Property<int?>("IdEmployee")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("IdTask")
+                    b.Property<int>("IdLocation")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("IdTask")
                         .HasColumnType("integer");
 
                     b.Property<int>("IdWorkstation")
@@ -329,13 +385,15 @@ namespace WebApi.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("IdDevice");
+                    b.HasIndex("IdEmployee");
+
+                    b.HasIndex("IdLocation");
 
                     b.HasIndex("IdTask");
 
                     b.HasIndex("IdWorkstation");
 
-                    b.ToTable("Transfers");
+                    b.ToTable("TaskWorkstationTransfers");
                 });
 
             modelBuilder.Entity("WebApi.Entities.User", b =>
@@ -383,12 +441,6 @@ namespace WebApi.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("IdEmployee")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("IdLocation")
-                        .HasColumnType("integer");
-
                     b.Property<string>("IpAddress")
                         .HasColumnType("text");
 
@@ -403,18 +455,48 @@ namespace WebApi.Migrations
 
                     b.HasKey("Id");
 
+                    b.ToTable("Workstations");
+                });
+
+            modelBuilder.Entity("WebApi.Entities.WorkstationTransfer", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("DateOfInstallation")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("DateOfRemoval")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("IdEmployee")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("IdLocation")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("IdWorkstation")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
                     b.HasIndex("IdEmployee");
 
                     b.HasIndex("IdLocation");
 
-                    b.ToTable("Workstations");
+                    b.HasIndex("IdWorkstation");
+
+                    b.ToTable("WorkstationTransfers");
                 });
 
-            modelBuilder.Entity("DeviceModelDeviceParameter", b =>
+            modelBuilder.Entity("DeviceDeviceParameter", b =>
                 {
-                    b.HasOne("WebApi.Entities.DeviceModel", null)
+                    b.HasOne("WebApi.Entities.Device", null)
                         .WithMany()
-                        .HasForeignKey("DeviceModelsId")
+                        .HasForeignKey("DeviceId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -448,14 +530,7 @@ namespace WebApi.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("WebApi.Entities.Location", "Location")
-                        .WithMany("Devices")
-                        .HasForeignKey("IdLocation")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.Navigation("DeviceModel");
-
-                    b.Navigation("Location");
                 });
 
             modelBuilder.Entity("WebApi.Entities.DeviceModel", b =>
@@ -469,23 +544,48 @@ namespace WebApi.Migrations
                     b.Navigation("DeviceType");
                 });
 
-            modelBuilder.Entity("WebApi.Entities.DeviceProperties", b =>
+            modelBuilder.Entity("WebApi.Entities.DeviceParameterValue", b =>
                 {
-                    b.HasOne("WebApi.Entities.DeviceModel", "DeviceModel")
-                        .WithMany("DeviceProperties")
-                        .HasForeignKey("DeviceModelId")
+                    b.HasOne("WebApi.Entities.Device", "Device")
+                        .WithMany("DeviceParameterValues")
+                        .HasForeignKey("DeviceId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("WebApi.Entities.DeviceParameter", "DeviceParameter")
-                        .WithMany("DeviceProperties")
+                        .WithMany("DeviceParameterValues")
                         .HasForeignKey("DeviceParameterId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("DeviceModel");
+                    b.Navigation("Device");
 
                     b.Navigation("DeviceParameter");
+                });
+
+            modelBuilder.Entity("WebApi.Entities.DeviceTransfer", b =>
+                {
+                    b.HasOne("WebApi.Entities.Device", "Device")
+                        .WithMany("DeviceTransfers")
+                        .HasForeignKey("IdDevice")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("WebApi.Entities.Location", "Location")
+                        .WithMany("DeviceTransfers")
+                        .HasForeignKey("IdLocation")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("WebApi.Entities.Workstation", "Workstation")
+                        .WithMany("DeviceTransfers")
+                        .HasForeignKey("IdWorkstation")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Device");
+
+                    b.Navigation("Location");
+
+                    b.Navigation("Workstation");
                 });
 
             modelBuilder.Entity("WebApi.Entities.Location", b =>
@@ -517,66 +617,116 @@ namespace WebApi.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("WebApi.Entities.Transfer", b =>
+            modelBuilder.Entity("WebApi.Entities.TaskDeviceTransfer", b =>
                 {
                     b.HasOne("WebApi.Entities.Device", "Device")
-                        .WithMany("Transfers")
+                        .WithMany("TaskDeviceTransfers")
                         .HasForeignKey("IdDevice")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("WebApi.Entities.Task", "Task")
-                        .WithMany("Transfers")
-                        .HasForeignKey("IdTask")
+                    b.HasOne("WebApi.Entities.Location", "Location")
+                        .WithMany("TaskDeviceTransfers")
+                        .HasForeignKey("IdLocation")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("WebApi.Entities.Workstation", "Workstation")
-                        .WithMany("Transfers")
-                        .HasForeignKey("IdWorkstation")
+                    b.HasOne("WebApi.Entities.Task", "Task")
+                        .WithMany("TaskDeviceTransfers")
+                        .HasForeignKey("IdTask")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("WebApi.Entities.Workstation", "Workstation")
+                        .WithMany("TaskDeviceTransfers")
+                        .HasForeignKey("IdWorkstation")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.Navigation("Device");
+
+                    b.Navigation("Location");
 
                     b.Navigation("Task");
 
                     b.Navigation("Workstation");
                 });
 
-            modelBuilder.Entity("WebApi.Entities.Workstation", b =>
+            modelBuilder.Entity("WebApi.Entities.TaskWorkstationTransfer", b =>
                 {
                     b.HasOne("WebApi.Entities.Employee", "Employee")
-                        .WithMany("Workstations")
+                        .WithMany("TaskWorkstationTransfers")
                         .HasForeignKey("IdEmployee")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("WebApi.Entities.Location", "Location")
+                        .WithMany("TaskWorkstationTransfers")
+                        .HasForeignKey("IdLocation")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("WebApi.Entities.Location", "Location")
-                        .WithMany("Workstations")
-                        .HasForeignKey("IdLocation")
+                    b.HasOne("WebApi.Entities.Task", "Task")
+                        .WithMany("TaskWorkstationTransfers")
+                        .HasForeignKey("IdTask")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("WebApi.Entities.Workstation", "Workstation")
+                        .WithMany("TaskWorkstationTransfers")
+                        .HasForeignKey("IdWorkstation")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Employee");
 
                     b.Navigation("Location");
+
+                    b.Navigation("Task");
+
+                    b.Navigation("Workstation");
+                });
+
+            modelBuilder.Entity("WebApi.Entities.WorkstationTransfer", b =>
+                {
+                    b.HasOne("WebApi.Entities.Employee", "Employee")
+                        .WithMany("WorkstationTransfers")
+                        .HasForeignKey("IdEmployee")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("WebApi.Entities.Location", "Location")
+                        .WithMany("WorkstationTransfers")
+                        .HasForeignKey("IdLocation")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("WebApi.Entities.Workstation", "Workstation")
+                        .WithMany("WorkstationTransfers")
+                        .HasForeignKey("IdWorkstation")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Employee");
+
+                    b.Navigation("Location");
+
+                    b.Navigation("Workstation");
                 });
 
             modelBuilder.Entity("WebApi.Entities.Device", b =>
                 {
-                    b.Navigation("Transfers");
+                    b.Navigation("DeviceParameterValues");
+
+                    b.Navigation("DeviceTransfers");
+
+                    b.Navigation("TaskDeviceTransfers");
                 });
 
             modelBuilder.Entity("WebApi.Entities.DeviceModel", b =>
                 {
-                    b.Navigation("DeviceProperties");
-
                     b.Navigation("Devices");
                 });
 
             modelBuilder.Entity("WebApi.Entities.DeviceParameter", b =>
                 {
-                    b.Navigation("DeviceProperties");
+                    b.Navigation("DeviceParameterValues");
                 });
 
             modelBuilder.Entity("WebApi.Entities.DeviceType", b =>
@@ -588,19 +738,27 @@ namespace WebApi.Migrations
                 {
                     b.Navigation("Locations");
 
-                    b.Navigation("Workstations");
+                    b.Navigation("TaskWorkstationTransfers");
+
+                    b.Navigation("WorkstationTransfers");
                 });
 
             modelBuilder.Entity("WebApi.Entities.Location", b =>
                 {
-                    b.Navigation("Devices");
+                    b.Navigation("DeviceTransfers");
 
-                    b.Navigation("Workstations");
+                    b.Navigation("TaskDeviceTransfers");
+
+                    b.Navigation("TaskWorkstationTransfers");
+
+                    b.Navigation("WorkstationTransfers");
                 });
 
             modelBuilder.Entity("WebApi.Entities.Task", b =>
                 {
-                    b.Navigation("Transfers");
+                    b.Navigation("TaskDeviceTransfers");
+
+                    b.Navigation("TaskWorkstationTransfers");
                 });
 
             modelBuilder.Entity("WebApi.Entities.TaskType", b =>
@@ -615,7 +773,13 @@ namespace WebApi.Migrations
 
             modelBuilder.Entity("WebApi.Entities.Workstation", b =>
                 {
-                    b.Navigation("Transfers");
+                    b.Navigation("DeviceTransfers");
+
+                    b.Navigation("TaskDeviceTransfers");
+
+                    b.Navigation("TaskWorkstationTransfers");
+
+                    b.Navigation("WorkstationTransfers");
                 });
 #pragma warning restore 612, 618
         }

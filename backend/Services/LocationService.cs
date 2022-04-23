@@ -36,7 +36,7 @@ public class LocationService : ILocationService
     {
         return _context.Locations
             .Include(l => l.Employee)
-            .Include(l => l.Workstations);
+            .Include(l => l.WorkstationTransfers.Where(wt => wt.DateOfRemoval == null)).ThenInclude(wt => wt.Workstation);
     }
 
     public Location GetById(int id)

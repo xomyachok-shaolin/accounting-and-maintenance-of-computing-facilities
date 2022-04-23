@@ -32,30 +32,33 @@ public class DeviceService : IDeviceService
         _jwtUtils = jwtUtils;
         _mapper = mapper;
     }
-
+    
     public IEnumerable<Device> GetAll()
     {
-        return _context.Devices.Include(d => d.Transfers.Where(t => t.DateOfRemoval == null)).ThenInclude(t => t.Workstation);
+        return _context.Devices.Include(d => d.DeviceTransfers.Where(dt => dt.DateOfRemoval == null)).ThenInclude(dt => dt.Location)
+                               .Include(d => d.DeviceTransfers.Where(dt => dt.DateOfRemoval == null)).ThenInclude(dt => dt.Workstation)
+                                    .ThenInclude(w => w.WorkstationTransfers.Where(wt => wt.DateOfRemoval == null)).ThenInclude(wt => wt.Location)
+                               .Include(d => d.DeviceParameterValues).ThenInclude(dp => dp.DeviceParameter);
     }
 
     public Device GetById(int id)
     {
         return getDevice(id);
     }
-
+    
     public void Create(DeviceRequest model)
     {
         // validate
         if (_context.Devices.Any(x => x.InventoryNumber == model.InventoryNumber))
             throw new AppException("Инвентарный № уже занят");
 
+        Location location = null;
+        Workstation workstation = null;
 
-
-        Location location;
         if (model.IsReserve || model.IsCommonUse)
             location = _context.Locations.Where(l => l.Id == model.Location).FirstOrDefault();
         else
-            location = _context.Locations.Include(l => l.Workstations).Where(w => w.Id == model.Location).FirstOrDefault();
+            workstation = _context.Workstations.Where(w => w.Id == model.Location).FirstOrDefault();
 
         DeviceType deviceType = _context.DeviceTypes.Where(l => l.Id == model.DeviceType).FirstOrDefault();
 
@@ -75,30 +78,35 @@ public class DeviceService : IDeviceService
         Device device = new Device
         {
             InventoryNumber = model.InventoryNumber,
-            SerialNumber = model.SerialNumber,
-            Location = location,
             DeviceModel = deviceModel,
         };
-        // save Location
         _context.Devices.Add(device);
 
-        if(model.IsReserve || model.IsCommonUse)
-        {
-            Transfer transfer = new Transfer
+        DeviceTransfer transfer = null;
+        if (model.IsReserve || model.IsCommonUse) {
+            transfer = new DeviceTransfer
             {
                 DateOfInstallation = DateTime.UtcNow,
                 Device = device,
-                IdWorkstation = model.Location,
-                
+                Location = location,
+                UseType = model.IsReserve? "резерв" : "общее пользование"
             };
-
-            device.Transfers = new List<Transfer>();
-            device.Transfers.Add(transfer);
+        } else {
+            transfer = new DeviceTransfer
+            {
+                DateOfInstallation = DateTime.UtcNow,
+                Device = device,
+                Workstation = workstation,
+                UseType = "рабочее место"
+            };
         }
+            
+        device.DeviceTransfers = new List<DeviceTransfer>();
+        device.DeviceTransfers.Add(transfer);
 
         _context.SaveChanges();
     }
-
+    
     public void Update(int id, DeviceRequest model)
     {
         var Device = getDevice(id);
@@ -123,7 +131,7 @@ public class DeviceService : IDeviceService
         _context.Devices.Remove(Device);
         _context.SaveChanges();
     }
-
+    
     // helper methods
 
     private Device getDevice(int id)

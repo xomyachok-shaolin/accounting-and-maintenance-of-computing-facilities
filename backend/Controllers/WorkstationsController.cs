@@ -30,7 +30,7 @@ public class WorkstationsController : ControllerBase
         _mapper = mapper;
         _appSettings = appSettings.Value;
     }
-
+    
     [AllowAnonymous]
     [HttpPost("create")]
     public ActionResult<Workstation> Create(WorkstationRequest model)

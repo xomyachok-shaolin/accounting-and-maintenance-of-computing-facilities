@@ -14,10 +14,7 @@ public class Employee
     public string Department { get; set; }
 
     /* EF Relations */
-
-    [JsonIgnore]
-    public ICollection<Workstation> Workstations { get; set; }
-
-    [JsonIgnore]
+    public ICollection<TaskWorkstationTransfer> TaskWorkstationTransfers { get; set; }
+    public ICollection<WorkstationTransfer> WorkstationTransfers { get; set; }
     public ICollection<Location> Locations { get; set; }
 }

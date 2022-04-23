@@ -32,13 +32,25 @@ public partial class DataContext : DbContext
             .OnDelete(DeleteBehavior.Restrict);
 
         modelBuilder.Entity<Location>()
-            .HasMany(l => l.Workstations)
+            .HasMany(l => l.TaskWorkstationTransfers)
             .WithOne(w => w.Location)
             .HasForeignKey(w => w.IdLocation)
             .OnDelete(DeleteBehavior.Restrict);
 
         modelBuilder.Entity<Location>()
-            .HasMany(l => l.Devices)
+            .HasMany(l => l.TaskDeviceTransfers)
+            .WithOne(w => w.Location)
+            .HasForeignKey(w => w.IdLocation)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Location>()
+            .HasMany(l => l.DeviceTransfers)
+            .WithOne(w => w.Location)
+            .HasForeignKey(w => w.IdLocation)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Location>()
+            .HasMany(l => l.WorkstationTransfers)
             .WithOne(d => d.Location)
             .HasForeignKey(d => d.IdLocation)
             .OnDelete(DeleteBehavior.Restrict);
@@ -48,18 +60,18 @@ public partial class DataContext : DbContext
             .WithOne(dm => dm.DeviceType)
             .HasForeignKey(dt => dt.IdDeviceType)
             .OnDelete(DeleteBehavior.Restrict);
+        
+        modelBuilder.Entity<DeviceParameterValue>()
+            .HasKey(dp => new { dp.DeviceParameterId , dp.DeviceId });
 
-        modelBuilder.Entity<DeviceProperties>()
-            .HasKey(dp => new { dp.DeviceParameterId , dp.DeviceModelId });
+        modelBuilder.Entity<DeviceParameterValue>()
+            .HasOne(dpv => dpv.Device)
+            .WithMany(p => p.DeviceParameterValues)
+            .HasForeignKey(dpv => dpv.DeviceId);
 
-        modelBuilder.Entity<DeviceProperties>()
-            .HasOne(pt => pt.DeviceModel)
-            .WithMany(p => p.DeviceProperties)
-            .HasForeignKey(pt => pt.DeviceModelId);
-
-        modelBuilder.Entity<DeviceProperties>()
+        modelBuilder.Entity<DeviceParameterValue>()
             .HasOne(pt => pt.DeviceParameter)
-            .WithMany(t => t.DeviceProperties)
+            .WithMany(t => t.DeviceParameterValues)
             .HasForeignKey(pt => pt.DeviceParameterId);
 
         modelBuilder.Entity<TaskType>()
@@ -69,13 +81,25 @@ public partial class DataContext : DbContext
             .OnDelete(DeleteBehavior.Restrict);
 
         modelBuilder.Entity<Task>()
-            .HasMany(t => t.Transfers)
+            .HasMany(t => t.TaskDeviceTransfers)
+            .WithOne(tr => tr.Task)
+            .HasForeignKey(t => t.IdTask)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Task>()
+            .HasMany(t => t.TaskWorkstationTransfers)
             .WithOne(tr => tr.Task)
             .HasForeignKey(t => t.IdTask)
             .OnDelete(DeleteBehavior.Restrict);
 
         modelBuilder.Entity<Employee>()
-            .HasMany(e => e.Workstations)
+            .HasMany(e => e.TaskWorkstationTransfers)
+            .WithOne(w => w.Employee)
+            .HasForeignKey(w => w.IdEmployee)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Employee>()
+            .HasMany(e => e.WorkstationTransfers)
             .WithOne(w => w.Employee)
             .HasForeignKey(w => w.IdEmployee)
             .OnDelete(DeleteBehavior.Restrict);
@@ -87,13 +111,37 @@ public partial class DataContext : DbContext
             .OnDelete(DeleteBehavior.Restrict);
 
         modelBuilder.Entity<Workstation>()
-            .HasMany(w => w.Transfers)
+            .HasMany(w => w.WorkstationTransfers)
+            .WithOne(t => t.Workstation)
+            .HasForeignKey(t => t.IdWorkstation)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Workstation>()
+            .HasMany(w => w.TaskWorkstationTransfers)
+            .WithOne(t => t.Workstation)
+            .HasForeignKey(t => t.IdWorkstation)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Workstation>()
+            .HasMany(w => w.DeviceTransfers)
+            .WithOne(t => t.Workstation)
+            .HasForeignKey(t => t.IdWorkstation)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Workstation>()
+            .HasMany(w => w.TaskDeviceTransfers)
             .WithOne(t => t.Workstation)
             .HasForeignKey(t => t.IdWorkstation)
             .OnDelete(DeleteBehavior.Restrict);
 
         modelBuilder.Entity<Device>()
-            .HasMany(d => d.Transfers)
+            .HasMany(d => d.DeviceTransfers)
+            .WithOne(t => t.Device)
+            .HasForeignKey(t => t.IdDevice)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Device>()
+            .HasMany(d => d.TaskDeviceTransfers)
             .WithOne(t => t.Device)
             .HasForeignKey(t => t.IdDevice)
             .OnDelete(DeleteBehavior.Restrict);
@@ -104,6 +152,8 @@ public partial class DataContext : DbContext
             .HasForeignKey(d => d.IdDeviceModel)
             .OnDelete(DeleteBehavior.Restrict);
 
+        // modelBuilder.Entity<TaskDeviceTransfer>().HasDiscriminator(dt => dt.UseType);
+
         OnModelCreatingPartial(modelBuilder);
     }
 
@@ -112,16 +162,19 @@ public partial class DataContext : DbContext
     public DbSet<User> Users { get; set; }
     public DbSet<Role> Roles { get; set; }
     public DbSet<Location> Locations { get; set; }
-
     public DbSet<DeviceType> DeviceTypes { get; set; }
     public DbSet<DeviceParameter> DeviceParameters { get; set; }
     public DbSet<DeviceModel> DeviceModels { get; set; }
-    public DbSet<DeviceProperties> DeviceProperties { get; set; }
+    public DbSet<DeviceParameterValue> DeviceParameterValues { get; set; }
     public DbSet<Device> Devices { get; set; }
+    public DbSet<DeviceTransfer> DeviceTransfers { get; set; }
 
+
+    public DbSet<TaskWorkstationTransfer> TaskWorkstationTransfers { get; set; }
+    public DbSet<WorkstationTransfer> WorkstationTransfers { get; set; }
+    public DbSet<TaskDeviceTransfer> TaskDeviceTransfers { get; set; }
     public DbSet<TaskType> TaskTypes { get; set; }
     public DbSet<Task> Tasks { get; set; }
     public DbSet<Employee> Employees { get; set; }
     public DbSet<Workstation> Workstations { get; set; }
-    public DbSet<Transfer> Transfers { get; set; }
 }

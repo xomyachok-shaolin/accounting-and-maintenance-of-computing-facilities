@@ -50,7 +50,7 @@ function App() {
               </Switch>
             </Content>
             <Footer style={{ textAlign: "center" }}>
-              Учет и техническое обслуживание вычислительных средств ©2022
+              Учет и распределение вычислительных средств ©2022
               ASMinaev@mephi.ru
             </Footer>
           </Layout>
@@ -71,7 +71,7 @@ function App() {
             </Switch>
 
             <Footer style={{ textAlign: "center" }}>
-              Учет и техническое обслуживание вычислительных средств ©2022
+              Учет и распределение вычислительных средств ©2022
               ASMinaev@mephi.ru
             </Footer>
           </>

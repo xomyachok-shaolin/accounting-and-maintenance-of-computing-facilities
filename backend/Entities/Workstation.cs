@@ -9,9 +9,9 @@ public class Workstation
     public string IpAddress { get; set; }
     public bool IsDisassembled { get; set; }
 
-    public int IdEmployee { get; set; }
-    public Employee Employee { get; set; }
-    public int IdLocation { get; set; }
-    public Location Location { get; set; }
-    public ICollection<Transfer> Transfers { get; set; }
+    public ICollection<DeviceTransfer> DeviceTransfers { get; set; }
+    public ICollection<TaskDeviceTransfer> TaskDeviceTransfers { get; set; }
+
+    public ICollection<WorkstationTransfer> WorkstationTransfers { get; set; }
+    public ICollection<TaskWorkstationTransfer> TaskWorkstationTransfers { get; set; }
 }

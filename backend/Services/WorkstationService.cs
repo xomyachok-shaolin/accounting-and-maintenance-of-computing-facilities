@@ -9,11 +9,11 @@ using WebApi.Models.Workstations;
 
 public interface IWorkstationService
 {
-    IEnumerable<Workstation> GetAll();
-    Workstation GetById(int id);
-    void Create(WorkstationRequest model);
-    void Update(int id, WorkstationRequest model);
-    void Delete(int id);
+       IEnumerable<Workstation> GetAll();
+       Workstation GetById(int id);
+       void Create(WorkstationRequest model);
+       void Update(int id, WorkstationRequest model);
+       void Delete(int id);
 }
 
 public class WorkstationService : IWorkstationService
@@ -31,11 +31,11 @@ public class WorkstationService : IWorkstationService
         _jwtUtils = jwtUtils;
         _mapper = mapper;
     }
-
+    
     public IEnumerable<Workstation> GetAll()
     {
         return _context.Workstations
-            .Include(l => l.Employee); ;
+            .Include(w => w.WorkstationTransfers).ThenInclude(wt => wt.Employee);
     }
     public Workstation GetById(int id)
     {
@@ -58,12 +58,20 @@ public class WorkstationService : IWorkstationService
             RegisterNumber = model.RegisterNumber,
             NetworkName = model.NetworkName,
             IpAddress = model.IpAddrress,
+        };
+        // save Workstation
+        _context.Workstations.Add(Workstation);
+
+        WorkstationTransfer workstationTransfer = new WorkstationTransfer
+        {
+            DateOfInstallation = DateTime.Now,
+            Workstation = Workstation,
             Location = location,
             Employee = employee
         };
 
-        // save Workstation
-        _context.Workstations.Add(Workstation);
+        _context.WorkstationTransfers.Add(workstationTransfer);
+
         _context.SaveChanges();
     }
 
@@ -82,8 +90,9 @@ public class WorkstationService : IWorkstationService
         Workstation.RegisterNumber = model.RegisterNumber;
         Workstation.NetworkName = model.NetworkName;
         Workstation.IpAddress = model.IpAddrress;
-        Workstation.Location = location;
-        Workstation.Employee = employee;
+        
+        // Workstation.Location = location;
+        // Workstation.Employee = employee;
 
         _context.Workstations.Update(Workstation);
         _context.SaveChanges();

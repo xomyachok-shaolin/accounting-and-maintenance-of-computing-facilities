@@ -13,7 +13,7 @@ import {
   BuildOutlined,
   ControlOutlined,
   CompassOutlined,
-  FileOutlined,
+  ReadOutlined,
   SettingOutlined,
   StarOutlined,
   PoweroffOutlined,
@@ -93,12 +93,13 @@ function Nav() {
         <Menu.Item key="6" icon={<BuildOutlined />}>
           <Link to="/deviceDetails">Сведения об устройствах</Link>
         </Menu.Item>
-        <Menu.SubMenu key="sub2" icon={<FileOutlined />} title="User">
-          <Menu.Item key="7">Tom</Menu.Item>
-          <Menu.Item key="8">Bill</Menu.Item>
-          <Menu.Item key="9">Alex</Menu.Item>
-        </Menu.SubMenu>
-        <Menu.Item key="10" icon={<PoweroffOutlined />}>
+        <Menu.Item key="7" icon={<DesktopOutlined />}>
+        <Link to="/workstationDevices">Оборудование на РМ</Link>
+        </Menu.Item>
+        <Menu.Item key="8" icon={<ReadOutlined />}>
+        <Link to="/tasks">Журнал задач</Link>
+        </Menu.Item>
+        <Menu.Item key="9" icon={<PoweroffOutlined />}>
           <Link to="" onClick={userActions.logout}>
             Выход
           </Link>

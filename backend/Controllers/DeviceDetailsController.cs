@@ -38,17 +38,6 @@ public class DeviceDetailsController : ControllerBase
         _appSettings = appSettings.Value;
     }
 
-    // [Authorize(Location.Admin)]
-    [HttpGet]
-    public IActionResult GetAllDetails()
-    {
-        var devices = _deviceTypeService.GetAllDetails();
-
-        return Ok(devices);
-    }
-
-
-    [HttpGet("workstations")]
     public IActionResult GetAll()
     {
         var devices = _deviceService.GetAll();

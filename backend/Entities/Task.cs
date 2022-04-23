@@ -9,6 +9,7 @@ public class Task
     public User User { get; set; }
     public int IdTaskType { get; set; }
     public TaskType TaskType { get; set; }
-    public ICollection<Transfer> Transfers { get; set; }
+    public ICollection<TaskDeviceTransfer> TaskDeviceTransfers { get; set; }
+    public ICollection<TaskWorkstationTransfer> TaskWorkstationTransfers { get; set; }
     public string Comment { get; set; }
 }

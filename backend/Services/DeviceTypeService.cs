@@ -37,13 +37,14 @@ public class DeviceTypeService : IDeviceTypeService
     {
         return _context.DeviceTypes.Include(dt => dt.DeviceModels).ThenInclude(dm => dm.Devices);
     }
-
+    
     public IEnumerable<Location> GetAllDetails()
     {
-        return _context.Locations.Include(l => l.Devices).ThenInclude(d => d.DeviceModel).ThenInclude(dm => dm.DeviceProperties).ThenInclude(dp => dp.DeviceParameter)
-            .Include(l => l.Devices).ThenInclude(d => d.Transfers.Where(t => t.DateOfRemoval == null)).ThenInclude(t => t.Workstation);
+        return _context.Locations.Include(l => l.DeviceTransfers.Where(dt => dt.DateOfRemoval == null)).
+                ThenInclude(dt => dt.Device).ThenInclude(d => d.DeviceParameterValues).ThenInclude(dp => dp.DeviceParameter)
+            .Include(l => l.DeviceTransfers.Where(dt => dt.DateOfRemoval == null)).ThenInclude(t => t.Workstation);
     }
-
+    
     public DeviceType GetById(int id)
     {
         return getDeviceType(id);

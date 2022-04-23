@@ -28,19 +28,9 @@ import {
 
 import { ExclamationCircleOutlined, FormOutlined } from "@ant-design/icons";
 
-import moment from "moment";
-
-import {
-  deviceDetailsAtom,
-  deviceTypesAtom,
-  locationsAtom,
-  workstationsAtom,
-} from "_state";
+import { deviceDetailsAtom, deviceTypesAtom, locationsAtom } from "_state";
 import React from "react";
 import Search from "antd/lib/input/Search";
-import Checkbox from "antd/lib/checkbox/Checkbox";
-import { TreeNode } from "antd/lib/tree-select";
-const { Option } = Select.Option;
 
 export { List };
 
@@ -49,10 +39,7 @@ function List({ match }) {
 
   const alertActions = useAlertActions();
 
-  const [loading] = useState(false);
-
   const [visible, setVisible] = useState(false);
-  const [confirmLoading] = useState(false);
 
   const [mode, setMode] = useState(false);
   const [isResetAll, setIsResetAll] = useState(false);
@@ -63,11 +50,12 @@ function List({ match }) {
   const deviceTypes = useRecoilValue(deviceTypesAtom);
 
   const locations = useRecoilValue(locationsAtom);
-  const workstations = useRecoilValue(workstationsAtom);
 
   const deviceDetailActions = useDeviceDetailActions();
   const deviceTypeActions = useDeviceTypeActions();
   const locationActions = useLocationActions();
+
+  const [useMode, setUseMode] = useState(null);
 
   useEffect(() => {
     deviceDetailActions.getAll();
@@ -92,24 +80,14 @@ function List({ match }) {
       id: "inventoryNumber",
     },
     {
-      title: "Серийный №",
-      dataIndex: "serialNumber",
-      id: "serialNumber",
-    },
-    {
       title: "Здание/Помещение/РМ",
       dataIndex: "location",
       id: "location",
     },
     {
-      title: "Общее пользование",
-      key: "isCommonUse",
-      render: (t, r) => <Checkbox checked={r.isCommonUse}> </Checkbox>,
-    },
-    {
-      title: "Резерв",
-      key: "isReserve",
-      render: (t, r) => <Checkbox checked={r.isCommonUse}> </Checkbox>,
+      title: "Вид пользования",
+      dataIndex: "useType",
+      id: "useType",
     },
     {
       title: "Дата последнего обслуживания",
@@ -194,43 +172,61 @@ function List({ match }) {
   const [filterDevices, setFilterDevices] = useState([]);
   const [filterParameters, setFilterParameters] = useState([]);
 
+  const [selectedRowKeys, setRowKeys] = useState([]);
   const onSelect = (selectedKeys: React.Key[], info) => {
     var node = info.node;
 
+    let tempKey = null;
     var devices = [];
     let regexp = /\d-\d-\d/;
     if (regexp.test(node.pos)) {
       deviceDetails.forEach((d) => {
-        if (d.idDeviceModel == node.key) devices.push(d);
+        if (d.idDeviceModel == node.key) {
+          if (tempKey == null) tempKey = d.id;
+          devices.push(d);
+        }
       });
     }
+
+    setFilterDevices(devices);
 
     var parameters = [];
-    if (devices.length != 0) {
-      devices[0].deviceModel.deviceProperties.forEach((dp) => {
-        parameters.push({
-          key: dp.deviceParameter.id,
-          name: dp.deviceParameter.name,
-          description: dp.description,
+    if (tempKey != null) {
+      setRowKeys([tempKey]);
+      if (devices.length != 0) {
+        devices[0].deviceParameterValues.forEach((dp) => {
+          parameters.push({
+            key: dp.deviceParameter.id,
+            name: dp.deviceParameter.name,
+            description: dp.value,
+          });
         });
-      });
-
-      console.log(filterParameters);
+      }
     }
-
     setFilterParameters(parameters);
-    setFilterDevices(devices);
+
     console.log(devices);
   };
 
   const dataDevices = filterDevices?.map(function (row) {
+    let useType = row.deviceTransfers[0].useType;
+    let location =
+      useType == "рабочее место"
+        ? row.deviceTransfers[0].workstation.workstationTransfers[0].location
+            .house +
+          "/" +
+          row.deviceTransfers[0].workstation.workstationTransfers[0].location
+            .room +
+          "/" +
+          row.deviceTransfers[0].workstation.registerNumber
+        : row.deviceTransfers[0].location.house +
+          "/" +
+          row.deviceTransfers[0].location.room;
     return {
       key: row.id,
       inventoryNumber: row.inventoryNumber,
-      serialNumber: row.serialNumber,
-      location: row.location,
-      isCommonUse: row.isCommonUse,
-      isReserve: row.isReserve,
+      location: location,
+      useType: useType,
       dateOfLastService: row.dateOfLastService,
       dateOfNextService: row.dateOfNextService,
       dateOfDebit: row.dateOfDebit,
@@ -245,6 +241,7 @@ function List({ match }) {
     };
   });
 
+  /* TREELIST */
   function details(path = "0", level = 1) {
     const list = [];
     deviceTypes?.forEach((dt) => {
@@ -280,22 +277,20 @@ function List({ match }) {
     return list;
   }
 
-  const [useMode, setUseMode] = useState(null);
-
+  /* TREESELECT */
   function detailsLocations() {
     const list = [];
-
     const map = {};
     locations?.forEach((l) => {
       let arr = [],
         room = l.room,
         house = l.house,
-        workstations = l.workstations;
+        workstations = l.workstationTransfers;
 
       if (!map[house]) arr.push({ label: room, value: l.id, ws: workstations });
       else {
         arr = map[house];
-        arr.push({ label: room, value: l.id, ws: workstations});
+        arr.push({ label: room, value: l.id, ws: workstations });
       }
       map[house] = arr;
     });
@@ -309,28 +304,24 @@ function List({ match }) {
       if (map[key].length != 0)
         // eslint-disable-next-line no-loop-func
         map[key].forEach((r) => {
-          console.log(r);
           const childrenNode = {
             label: "Помещение " + r.label,
             value: r.value,
           };
 
           if (useMode == 3) {
-            console.log(r.ws);
             const childrenListWS = [];
-            r.ws?.forEach((w) => {
-              console.log(w);
+            r.ws.forEach((w) => {
+              const childrenNodeWS = {
+                label: "РМ " + w.workstation.registerNumber,
+                value: w.workstation.id,
+              };
+              childrenListWS.push(childrenNodeWS);
+            });
 
-                  const childrenNodeWS = {
-                    label: "РМ " + w.registerNumber,
-                    value: w.id,
-                  };
-                  childrenListWS.push(childrenNodeWS);
-                });
-
-                if (childrenListWS.length == 0) childrenNode.disabled = true;
-                childrenNode.children = childrenListWS;
-              }
+            if (childrenListWS.length == 0) childrenNode.disabled = true;
+            childrenNode.children = childrenListWS;
+          }
 
           childrenList.push(childrenNode);
         });
@@ -533,6 +524,31 @@ function List({ match }) {
     setDisabledCascader(false);
   }
 
+  const onSelectChange = (selectedRowKeys) => {
+    setRowKeys(selectedRowKeys);
+
+    var parameters = [];
+    if (filterDevices.length != 0) {
+      filterDevices.forEach((d) => {
+        if (d.id == selectedRowKeys[0]) {
+          d.deviceParameterValues.forEach((dp) => {
+            parameters.push({
+              key: dp.deviceParameter.id,
+              name: dp.deviceParameter.name,
+              description: dp.value,
+            });
+          });
+        }
+      });
+    }
+    setFilterParameters(parameters);
+  };
+
+  const rowSelection = {
+    selectedRowKeys,
+    onChange: onSelectChange,
+  };
+
   return (
     <>
       <Space>
@@ -587,6 +603,10 @@ function List({ match }) {
             bordered
             columns={columnsDevices}
             dataSource={dataDevices}
+            rowSelection={{
+              type: "radio",
+              ...rowSelection,
+            }}
           ></Table>
         </div>
       )}
@@ -654,19 +674,6 @@ function List({ match }) {
                 {
                   required: true,
                   message: "Пожалуйста, введите инвентарный №!",
-                },
-              ]}
-            >
-              <Input />
-            </Form.Item>
-
-            <Form.Item
-              label="Серийный №"
-              name="serialNumber"
-              rules={[
-                {
-                  required: true,
-                  message: "Пожалуйста, введите серийный №!",
                 },
               ]}
             >

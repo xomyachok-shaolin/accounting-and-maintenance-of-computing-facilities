@@ -10,11 +10,9 @@ function useDeviceDetailActions () {
     const fetchWrapper = useFetchWrapper();
     const setDeviceDetails = useSetRecoilState(deviceDetailsAtom);
     const setDeviceDetail = useSetRecoilState(deviceDetailAtom);
-    const setWorkstations = useSetRecoilState(workstationsAtom);
 
     return {
         getAll,
-        getAllWorkstations,
         getById,
         create,
         update,
@@ -30,26 +28,9 @@ function useDeviceDetailActions () {
 
 
     function getAll() {
-        return fetchWrapper.get(baseUrl).then(val => {
-            var devices = [];
-            val.forEach(l => {
-                if (l.devices.length != 0){
-                    l.devices.forEach(d => {
-                        if (d.transfers.length != 0)
-                            d.location = l.house+'/'+l.room+'/'+d.transfers[0].workstation.registerNumber;
-                        else
-                            d.location = l.house+'/'+l.room;
-                        devices.push(d);
-                    })
-                }
-            });
-            setDeviceDetails(devices)
-        });
+        return fetchWrapper.get(baseUrl).then(setDeviceDetails);
     }
 
-    function getAllWorkstations() {
-        return fetchWrapper.get(`${baseUrl}/workstations`).then(setWorkstations);
-    }
 
     function getById(id) {
         return fetchWrapper.get(`${baseUrl}/${id}`).then(setDeviceDetail);

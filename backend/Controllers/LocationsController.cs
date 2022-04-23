@@ -48,7 +48,7 @@ public class LocationsController : ControllerBase
 
         return Ok(locations);
     }
-
+    
     [HttpGet("{id}")]
     public IActionResult GetById(int id)
     {

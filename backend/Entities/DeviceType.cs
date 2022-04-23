@@ -8,7 +8,4 @@ public class DeviceType
     public string Name { get; set; }
     public int MinimalQuantity { get; set; }
     public ICollection<DeviceModel> DeviceModels { get; set; }
-
-    [NotMapped]
-    public int numberDevices { get; set; }
 }

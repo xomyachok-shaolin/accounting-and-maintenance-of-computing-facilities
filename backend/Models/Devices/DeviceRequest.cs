@@ -9,8 +9,6 @@ public class DeviceRequest
     [Required]
     public string InventoryNumber { get; set; }
     [Required]
-    public string SerialNumber { get; set; }
-    [Required]
     public int DeviceType { get; set; }
     [Required]
     public int Location { get; set; }
