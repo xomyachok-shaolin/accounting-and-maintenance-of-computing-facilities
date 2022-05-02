@@ -180,11 +180,17 @@ function List({ match }) {
     var devices = [];
     let regexp = /\d-\d-\d/;
     if (regexp.test(node.pos)) {
-      deviceDetails.forEach((d) => {
-        if (d.idDeviceModel == node.key) {
-          if (tempKey == null) tempKey = d.id;
-          devices.push(d);
-        }
+
+      deviceDetails.forEach(dt => {
+
+        dt.deviceModels.forEach(dm => {
+          dm.devices.forEach(d => {
+            if (d.idDeviceModel == node.key) {
+              if (tempKey == null) tempKey = d.id;
+              devices.push(d);
+            }
+          })
+        });
       });
     }
 
@@ -244,16 +250,11 @@ function List({ match }) {
   /* TREELIST */
   function details(path = "0", level = 1) {
     const list = [];
-    deviceTypes?.forEach((dt) => {
+
+    deviceDetails?.forEach((dt) => {
       const key = `${dt.name}`;
-      let count = 0;
-      dt.deviceModels.forEach((dm) => {
-        dm.devices.forEach((d) => {
-          if (d.dateOfDebit == null) count++;
-        });
-      });
       const treeNode = {
-        title: dt.name + " " + count + "(" + dt.minimalQuantity + ")",
+        title: dt.name,
         key,
       };
       if (level > 0) {

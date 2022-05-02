@@ -46,6 +46,9 @@ public class DeviceTypesController : ControllerBase
         var deviceTypes = _deviceTypeService.GetAll();
 
 
+       /* foreach (var deviceType in deviceTypes)
+            deviceType.CurrentQuantity = deviceTypes.Count(dt => dt.Name.Contains(deviceType.Name));*/
+
         return Ok(deviceTypes);
     }
 

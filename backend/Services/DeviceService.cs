@@ -10,7 +10,7 @@ using WebApi.Models.Locations;
 
 public interface IDeviceService
 {
-    IEnumerable<Device> GetAll();
+    IEnumerable<DeviceType> GetAll();
     Device GetById(int id);
     void Create(DeviceRequest model);
     void Update(int id, DeviceRequest model);
@@ -33,12 +33,13 @@ public class DeviceService : IDeviceService
         _mapper = mapper;
     }
     
-    public IEnumerable<Device> GetAll()
+    public IEnumerable<DeviceType> GetAll()
     {
-        return _context.Devices.Include(d => d.DeviceTransfers.Where(dt => dt.DateOfRemoval == null)).ThenInclude(dt => dt.Location)
-                               .Include(d => d.DeviceTransfers.Where(dt => dt.DateOfRemoval == null)).ThenInclude(dt => dt.Workstation)
+        return _context.
+            DeviceTypes.Include(dt => dt.DeviceModels).ThenInclude(dm => dm.Devices).ThenInclude(d => d.DeviceTransfers.Where(dt => dt.DateOfRemoval == null)).ThenInclude(dt => dt.Location)
+                       .Include(dt => dt.DeviceModels).ThenInclude(dm => dm.Devices).ThenInclude(d => d.DeviceTransfers.Where(dt => dt.DateOfRemoval == null)).ThenInclude(dt => dt.Workstation)
                                     .ThenInclude(w => w.WorkstationTransfers.Where(wt => wt.DateOfRemoval == null)).ThenInclude(wt => wt.Location)
-                               .Include(d => d.DeviceParameterValues).ThenInclude(dp => dp.DeviceParameter);
+                       .Include(dt => dt.DeviceModels).ThenInclude(dm => dm.Devices).ThenInclude(d => d.DeviceParameterValues).ThenInclude(dp => dp.DeviceParameter);
     }
 
     public Device GetById(int id)

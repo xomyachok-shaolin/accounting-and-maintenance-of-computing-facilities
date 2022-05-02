@@ -2,6 +2,7 @@ namespace WebApi.Helpers;
 
 using Microsoft.EntityFrameworkCore;
 using WebApi.Entities;
+using WebApi.Models.DeviceTypes;
 
 public partial class DataContext : DbContext
 {
@@ -177,4 +178,8 @@ public partial class DataContext : DbContext
     public DbSet<Task> Tasks { get; set; }
     public DbSet<Employee> Employees { get; set; }
     public DbSet<Workstation> Workstations { get; set; }
+
+
+    public DbSet<DeviceTypeRequest> DeviceTypeRequests { get; set; }
+
 }

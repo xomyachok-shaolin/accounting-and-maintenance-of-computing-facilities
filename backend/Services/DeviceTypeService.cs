@@ -5,11 +5,12 @@ using Microsoft.EntityFrameworkCore;
 using WebApi.Authorization;
 using WebApi.Entities;
 using WebApi.Helpers;
+using WebApi.Models.DeviceTypes;
 using WebApi.Models.Locations;
 
 public interface IDeviceTypeService
 {
-    IEnumerable<DeviceType> GetAll();
+    IEnumerable<DeviceTypeRequest> GetAll();
     IEnumerable<Location> GetAllDetails();
     DeviceType GetById(int id);
     void Create(DeviceType model);
@@ -33,9 +34,11 @@ public class DeviceTypeService : IDeviceTypeService
         _mapper = mapper;
     }
 
-    public IEnumerable<DeviceType> GetAll()
+    public IEnumerable<DeviceTypeRequest> GetAll()
     {
-        return _context.DeviceTypes.Include(dt => dt.DeviceModels).ThenInclude(dm => dm.Devices);
+        return _context.DeviceTypeRequests
+            .FromSqlRaw("select * from device_types_get()").ToList();
+            // DeviceTypes.Include(dt => dt.DeviceModels).ThenInclude(dm => dm.Devices);
     }
     
     public IEnumerable<Location> GetAllDetails()

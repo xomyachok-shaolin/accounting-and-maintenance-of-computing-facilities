@@ -11,7 +11,6 @@ import { useForm } from "react-hook-form";
 import { ExclamationCircleOutlined } from "@ant-design/icons";
 import { deviceTypesAtom } from "_state";
 import React from "react";
-const { Option } = Select;
 
 export { List };
 
@@ -58,6 +57,11 @@ function List({ match }) {
       id: "minimalQuantity",
     },
     {
+      title: "Текущее количество",
+      dataIndex: "currentQuantity",
+      id: "currentQuantity",
+    },
+    {
       title: "",
       key: "action",
       render: (text, record) => (
@@ -82,6 +86,7 @@ function List({ match }) {
       key: row.id,
       name: row.name,
       minimalQuantity: row.minimalQuantity,
+      currentQuantity: row.currentQuantity,
      };
   });
 
