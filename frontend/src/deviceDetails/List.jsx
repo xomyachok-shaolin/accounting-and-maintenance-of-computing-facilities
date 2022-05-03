@@ -159,7 +159,8 @@ function List({ match }) {
       title: "Инвентарный №",
       dataIndex: "inventoryNumber",
       id: "inventoryNumber",
-      ...getColumnSearchProps('inventoryNumber')
+      ...getColumnSearchProps('inventoryNumber'),
+      sorter: (a, b) => a.inventoryNumber.localeCompare(b.inventoryNumber)
     },
     {
       title: "Здание/Помещение/РМ",
@@ -690,6 +691,7 @@ function List({ match }) {
               type: "radio",
               ...rowSelection,
             }}
+            showSorterTooltip={{ title: 'Нажмите для сортировки' }}
           ></Table>
         </div>
       )}
