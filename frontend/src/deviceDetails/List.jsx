@@ -14,17 +14,17 @@ import {
   Modal,
   Spin,
   Table,
-  Tag,
   Input,
   Select,
-  InputNumber,
+  DatePicker,
   Space,
   Radio,
   Tree,
   Button,
-  TreeSelect,
   Cascader,
 } from "antd";
+
+import moment from "moment";
 
 import { ExclamationCircleOutlined, FormOutlined } from "@ant-design/icons";
 
@@ -32,8 +32,8 @@ import { deviceDetailsAtom, deviceTypesAtom, locationsAtom } from "_state";
 import React from "react";
 import Search from "antd/lib/input/Search";
 
-import Highlighter from 'react-highlight-words';
-import { SearchOutlined } from '@ant-design/icons';
+import Highlighter from "react-highlight-words";
+import { SearchOutlined, FilterOutlined } from "@ant-design/icons";
 
 export { List };
 
@@ -76,24 +76,56 @@ function List({ match }) {
     }
   }, [isResetAll]);
 
-  
-  const [searchText, setSearchText] = useState('');
-  const [searchedColumn, setSearchedColumn] = useState('');
+  const [searchText, setSearchText] = useState("");
+  const [searchedColumn, setSearchedColumn] = useState("");
 
-  const getColumnSearchProps = dataIndex => ({
-    
-    filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
-      <div style={{ padding: 8 }}>
-        <Input
-        
-          // ref={ searchInput }
-          placeholder={`Поиск по ${(dataIndex == 'inventoryNumber')?'инвентарному №':dataIndex}`}
-          value={selectedKeys[0]}
-          onChange={e => setSelectedKeys(e.target.value ? [e.target.value] : [])}
-          onPressEnter={() => handleSearch(selectedKeys, confirm, dataIndex)}
-          style={{ marginBottom: 8, display: 'block' }}
-        />
+  const getColumnSearchProps = (dataIndex) => ({
+    filterDropdown: ({
+      setSelectedKeys,
+      selectedKeys,
+      confirm,
+      clearFilters,
+    }) => (
+      <Space direction="vertical" style={{ padding: 8 }}>
+        {(dataIndex == "inventoryNumber" ||
+          dataIndex == "location" ||
+          dataIndex == "useType") && (
+          <Input
+            // ref={ searchInput }
+            placeholder={`Поиск по ${
+              dataIndex == "inventoryNumber"
+                ? "инвентарному №"
+                : dataIndex == "location"
+                ? "местоположению"
+                : dataIndex == "useType"
+                ? "типу пользования"
+                : dataIndex
+            }`}
+            value={selectedKeys[0]}
+            onChange={(e) =>
+              setSelectedKeys(e.target.value ? [e.target.value] : [])
+            }
+            onPressEnter={() => handleSearch(selectedKeys, confirm, dataIndex)}
+            style={{ marginBottom: 8, display: "block" }}
+          />
+        )}
+        {(dataIndex == "dateOfLastService" ||
+          dataIndex == "dateOfNextService" ||
+          dataIndex == "dateOfDebit") && (
+          <DatePicker.RangePicker
+            onChange={(date, dateString) => {
+              setSelectedKeys(date ? [date] : []);
+              handleDatePickerChange(date, dateString, 1);
+            }}
+            placeholder={[`c`, `по`]}
+            value={selectedKeys[0]}
+            style={{ marginRight: 8, width: 250 }}
+          />
+        )}
         <Space>
+        {dataIndex != "dateOfLastService" &&
+          dataIndex != "dateOfNextService" &&
+          dataIndex != "dateOfDebit" && (
           <Button
             type="primary"
             onClick={() => handleSearch(selectedKeys, confirm, dataIndex)}
@@ -102,56 +134,73 @@ function List({ match }) {
             style={{ width: 90 }}
           >
             Искать
-          </Button>
-          <Button onClick={() => handleReset(clearFilters)} size="small" style={{ width: 90 }}>
+          </Button>)}
+          <Button
+            onClick={() => handleReset(clearFilters)}
+            size="small"
+            type="link"
+            style={{ width: 90 }}
+          >
             Сброс
           </Button>
           <Button
-            type="link"
+            type="dashed"
             size="small"
             onClick={() => {
               confirm({ closeDropdown: false });
               setSearchText(selectedKeys[0]);
               setSearchedColumn(dataIndex);
             }}
+            icon={<FilterOutlined />}
           >
             Фильтр
           </Button>
         </Space>
-      </div>
+      </Space>
     ),
-    filterIcon: filtered => <SearchOutlined style={{ color: filtered ? '#1890ff' : undefined }} />,
-    onFilter: (value, record) =>
-      record[dataIndex]
-        ? record[dataIndex].toString().toLowerCase().includes(value.toLowerCase())
-        : '',
-    onFilterDropdownVisibleChange: visible => {
+    filterIcon: (filtered) => (
+      <SearchOutlined style={{ color: filtered ? "#1890ff" : undefined }} />
+    ),
+    onFilter: (value, record) => {
+      if (dataIndex == "dateOfLastService")
+        return record[dataIndex] ? moment(value[0]).isBefore(moment(record[dataIndex]).format('YYYY-MM-DD')) &&
+          moment(value[1]).isAfter(moment(record[dataIndex]).format('YYYY-MM-DD')) ? true : false : false;
+
+      return record[dataIndex]
+        ? record[dataIndex]
+            .toString()
+            .toLowerCase()
+            .includes(value.toLowerCase())
+        : false
+    },
+    onFilterDropdownVisibleChange: (visible) => {
       if (visible) {
         // setTimeout(() => this.searchInput.select(), 100);
       }
     },
-    render: text =>
+    render: (text) =>
     searchedColumn === dataIndex ? (
-      <Highlighter
-        highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
-        searchWords={[searchText]}
-        autoEscape
-        textToHighlight={text ? text.toString() : ''}
-      />
-    ) : (
-      text
-    ),
-});
+        <Highlighter
+          highlightStyle={{ backgroundColor: "#ffc069", padding: 0 }}
+          searchWords={[searchText]}
+          autoEscape
+          textToHighlight={text ? text.toString() : ''}
+        />
+      ) : text,
+  });
+
+  const handleDatePickerChange = (date, dateString, id) => {
+    console.log(id, date, dateString);
+  };
 
   const handleSearch = (selectedKeys, confirm, dataIndex) => {
-    confirm();
     setSearchText(selectedKeys[0]);
     setSearchedColumn(dataIndex);
   };
 
-  const handleReset = clearFilters => {
+  const handleReset = (clearFilters) => {
     clearFilters();
-    setSearchText('');
+    setSearchText("");
   };
 
   const columnsDevices = [
@@ -159,36 +208,62 @@ function List({ match }) {
       title: "Инвентарный №",
       dataIndex: "inventoryNumber",
       id: "inventoryNumber",
-      ...getColumnSearchProps('inventoryNumber'),
-      sorter: (a, b) => a.inventoryNumber.localeCompare(b.inventoryNumber)
+      ...getColumnSearchProps("inventoryNumber"),
+      sorter: (a, b) => a.inventoryNumber.localeCompare(b.inventoryNumber),
     },
     {
       title: "Здание/Помещение/РМ",
       dataIndex: "location",
       id: "location",
+      ...getColumnSearchProps("location"),
+      sorter: (a, b) => a.location.localeCompare(b.location),
     },
     {
       title: "Вид пользования",
       dataIndex: "useType",
       id: "useType",
+      filters: [
+        { text: "общее пользование", value: "общее пользование" },
+        { text: "резерв", value: "резерв" },
+        { text: "рабочее место", value: "рабочее место" },
+      ],
+      onFilter: (value, record) => record.useType === value,
     },
     {
       title: "Дата последнего обслуживания",
       key: "dateOfLastService",
       id: "dateOfLastService",
-      render: (t, r) => r.dateOfLastService,
+      ...getColumnSearchProps("dateOfLastService"),
+      render: (t, r) => r.dateOfLastService ? moment(r.dateOfLastService).format("DD/MM/YYYY h:mm:ss"):"",
+      sorter: (a, b) => {
+        a = a.dateOfLastService || "";
+        b = b.dateOfLastService || "";
+        a.localeCompare(b);
+      },
     },
     {
       title: "Дата следующего обслуживания",
       key: "dateOfNextService",
       id: "dateOfNextService",
+      ...getColumnSearchProps("dateOfNextService"),
       render: (t, r) => r.dateOfNextService,
+      sorter: (a, b) => {
+        a = a.dateOfNextService || "";
+        b = b.dateOfNextService || "";
+        a.localeCompare(b);
+      },
     },
     {
       title: "Дата списания",
       key: "dateOfDebit",
       id: "dateOfDebit",
+      ...getColumnSearchProps("dateOfDebit"),
       render: (t, r) => r.dateOfDebit,
+      sorter: (a, b) => {
+        a = a.dateOfDebit || "";
+        b = b.dateOfDebit || "";
+        a.localeCompare(b);
+      },
     },
     {
       title: "",
@@ -263,16 +338,14 @@ function List({ match }) {
     var devices = [];
     let regexp = /\d-\d-\d/;
     if (regexp.test(node.pos)) {
-
-      deviceDetails.forEach(dt => {
-
-        dt.deviceModels.forEach(dm => {
-          dm.devices.forEach(d => {
+      deviceDetails.forEach((dt) => {
+        dt.deviceModels.forEach((dm) => {
+          dm.devices.forEach((d) => {
             if (d.idDeviceModel == node.key) {
               if (tempKey == null) tempKey = d.id;
               devices.push(d);
             }
-          })
+          });
         });
       });
     }
@@ -633,6 +706,12 @@ function List({ match }) {
     onChange: onSelectChange,
   };
 
+  let locale = {
+    emptyText: "Нет данных",
+    filterConfirm: "Фильтр",
+    filterReset: "Сброс",
+  };
+
   return (
     <>
       <Space>
@@ -664,7 +743,7 @@ function List({ match }) {
           {deviceDetails && (
             <Table
               pagination={false}
-              locale={{ emptyText: "Нет данных" }}
+              locale={locale}
               bordered
               columns={columnsParameters}
               dataSource={dataParameters}
@@ -683,7 +762,7 @@ function List({ match }) {
           </Button>
           <Table
             scroll={{ x: 800 }}
-            locale={{ emptyText: "Нет данных" }}
+            locale={locale}
             bordered
             columns={columnsDevices}
             dataSource={dataDevices}
@@ -691,7 +770,7 @@ function List({ match }) {
               type: "radio",
               ...rowSelection,
             }}
-            showSorterTooltip={{ title: 'Нажмите для сортировки' }}
+            showSorterTooltip={{ title: "Нажмите для сортировки" }}
           ></Table>
         </div>
       )}
