@@ -20,6 +20,7 @@ import { Locations } from "locations/Locations";
 import { DeviceTypes } from "deviceTypes/DeviceTypes";
 import { DeviceParameters } from "deviceParameters/DeviceParameters";
 import { DeviceDetails } from "deviceDetails/DeviceDetails";
+import { WorkstationDevices } from "workstationDevices/WorkstationDevices";
 
 const { Content, Footer } = Layout;
 
@@ -46,6 +47,7 @@ function App() {
                 <PrivateRoute path="/deviceTypes" component={DeviceTypes} />
                 <PrivateRoute path="/deviceParameters" component={DeviceParameters} />
                 <PrivateRoute path="/deviceDetails" component={DeviceDetails} />
+                <PrivateRoute path="/workstationDevices" component={WorkstationDevices} />
                <Redirect from="*" to="/" />
               </Switch>
             </Content>

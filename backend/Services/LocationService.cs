@@ -35,8 +35,15 @@ public class LocationService : ILocationService
     public IEnumerable<Location> GetAll()
     {
         return _context.Locations
+            .Include(l => l.DeviceTransfers.Where(dt => dt.DateOfRemoval == null))
+                .ThenInclude(dt => dt.Device)
             .Include(l => l.Employee)
-            .Include(l => l.WorkstationTransfers.Where(wt => wt.DateOfRemoval == null)).ThenInclude(wt => wt.Workstation);
+            .Include(l => l.WorkstationTransfers.Where(wt => wt.DateOfRemoval == null))
+                .ThenInclude(wt => wt.Workstation)
+                    .ThenInclude(w => w.DeviceTransfers.Where(dt => dt.DateOfRemoval == null))
+                        .ThenInclude(dt => dt.Device)
+            .Include(l => l.WorkstationTransfers.Where(wt => wt.DateOfRemoval == null))
+                .ThenInclude(wt => wt.Employee);
     }
 
     public Location GetById(int id)
