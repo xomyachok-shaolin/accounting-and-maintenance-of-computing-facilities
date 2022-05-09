@@ -123,18 +123,19 @@ function List({ match }) {
           />
         )}
         <Space>
-        {dataIndex != "dateOfLastService" &&
-          dataIndex != "dateOfNextService" &&
-          dataIndex != "dateOfDebit" && (
-          <Button
-            type="primary"
-            onClick={() => handleSearch(selectedKeys, confirm, dataIndex)}
-            icon={<SearchOutlined />}
-            size="small"
-            style={{ width: 90 }}
-          >
-            Искать
-          </Button>)}
+          {dataIndex != "dateOfLastService" &&
+            dataIndex != "dateOfNextService" &&
+            dataIndex != "dateOfDebit" && (
+              <Button
+                type="primary"
+                onClick={() => handleSearch(selectedKeys, confirm, dataIndex)}
+                icon={<SearchOutlined />}
+                size="small"
+                style={{ width: 90 }}
+              >
+                Искать
+              </Button>
+            )}
           <Button
             onClick={() => handleReset(clearFilters)}
             size="small"
@@ -163,15 +164,23 @@ function List({ match }) {
     ),
     onFilter: (value, record) => {
       if (dataIndex == "dateOfLastService")
-        return record[dataIndex] ? moment(value[0]).isBefore(moment(record[dataIndex]).format('YYYY-MM-DD')) &&
-          moment(value[1]).isAfter(moment(record[dataIndex]).format('YYYY-MM-DD')) ? true : false : false;
+        return record[dataIndex]
+          ? moment(value[0]).isBefore(
+              moment(record[dataIndex]).format("YYYY-MM-DD")
+            ) &&
+            moment(value[1]).isAfter(
+              moment(record[dataIndex]).format("YYYY-MM-DD")
+            )
+            ? true
+            : false
+          : false;
 
       return record[dataIndex]
         ? record[dataIndex]
             .toString()
             .toLowerCase()
             .includes(value.toLowerCase())
-        : false
+        : false;
     },
     onFilterDropdownVisibleChange: (visible) => {
       if (visible) {
@@ -179,14 +188,16 @@ function List({ match }) {
       }
     },
     render: (text) =>
-    searchedColumn === dataIndex ? (
+      searchedColumn === dataIndex ? (
         <Highlighter
           highlightStyle={{ backgroundColor: "#ffc069", padding: 0 }}
           searchWords={[searchText]}
           autoEscape
-          textToHighlight={text ? text.toString() : ''}
+          textToHighlight={text ? text.toString() : ""}
         />
-      ) : text,
+      ) : (
+        text
+      ),
   });
 
   const handleDatePickerChange = (date, dateString, id) => {
@@ -234,7 +245,10 @@ function List({ match }) {
       key: "dateOfLastService",
       id: "dateOfLastService",
       ...getColumnSearchProps("dateOfLastService"),
-      render: (t, r) => r.dateOfLastService ? moment(r.dateOfLastService).format("DD/MM/YYYY h:mm:ss"):"",
+      render: (t, r) =>
+        r.dateOfLastService
+          ? moment(r.dateOfLastService).format("DD/MM/YYYY h:mm:ss")
+          : "",
       sorter: (a, b) => {
         a = a.dateOfLastService || "";
         b = b.dateOfLastService || "";
@@ -334,18 +348,33 @@ function List({ match }) {
   const onSelect = (selectedKeys: React.Key[], info) => {
     var node = info.node;
 
+    console.log(info);
+
     let tempKey = null;
     var devices = [];
-    let regexp = /\d-\d-\d/;
+
+    let regexp = /\d-\d-\d-\d/;
+    let regexp1 = /\d-\d-\d/;
     if (regexp.test(node.pos)) {
-      locations.forEach((dt) => {
-        dt.deviceModels.forEach((dm) => {
-          dm.devices.forEach((d) => {
-            if (d.idDeviceModel == node.key) {
-              if (tempKey == null) tempKey = d.id;
-              devices.push(d);
-            }
-          });
+      locations.forEach((l) => {
+        l.workstationTransfers[0]?.workstation.deviceTransfers.forEach((dt) => {
+          let device = JSON.parse(JSON.stringify(dt.device));
+          device.useType = dt.useType;
+          device.location = l;
+          device.workstation = l.workstationTransfers[0]?.workstation;
+
+          if (device.workstation.id == node.key) devices.push(device);
+        });
+      });
+    } else if (regexp1.test(node.pos)) {
+      locations.forEach((l) => {
+        l.deviceTransfers.forEach((dt) => {
+          let device = JSON.parse(JSON.stringify(dt.device));
+          device.useType = dt.useType;
+          device.location = l;
+          device.workstation = l.workstationTransfers[0]?.workstation;
+
+          if (device.location.id == node.key.slice(12)) devices.push(device);
         });
       });
     }
@@ -371,19 +400,16 @@ function List({ match }) {
   };
 
   const dataDevices = filterDevices?.map(function (row) {
-    let useType = row.deviceTransfers[0].useType;
+    console.log(row);
+    let useType = row.useType;
     let location =
       useType == "рабочее место"
-        ? row.deviceTransfers[0].workstation.workstationTransfers[0].location
-            .house +
+        ? row.location.house +
           "/" +
-          row.deviceTransfers[0].workstation.workstationTransfers[0].location
-            .room +
+          row.location.room +
           "/" +
-          row.deviceTransfers[0].workstation.registerNumber
-        : row.deviceTransfers[0].location.house +
-          "/" +
-          row.deviceTransfers[0].location.room;
+          row.workstation.registerNumber
+        : row.location.house + "/" + row.location.room;
     return {
       key: row.id,
       inventoryNumber: row.inventoryNumber,
@@ -403,7 +429,7 @@ function List({ match }) {
     };
   });
 
-  /* TREESELECT */
+  /* TREELIST */
   function detailsLocations() {
     const list = [];
     const map = {};
@@ -413,10 +439,19 @@ function List({ match }) {
         house = l.house,
         workstations = l.workstationTransfers;
 
-      if (!map[house]) arr.push({ title: room, value: l.id, ws: workstations });
+      if (!map[house])
+        arr.push({
+          title: room,
+          key: l.id,
+          workstationTransfers: workstations,
+        });
       else {
         arr = map[house];
-        arr.push({ title: room, value: l.id, ws: workstations });
+        arr.push({
+          title: room,
+          key: l.id,
+          workstationTransfers: workstations,
+        });
       }
       map[house] = arr;
     });
@@ -424,30 +459,31 @@ function List({ match }) {
     for (var key in map) {
       const treeNode = {
         title: "Здание " + key,
-        value: key,
+        key,
       };
       const childrenList = [];
       if (map[key].length != 0)
         // eslint-disable-next-line no-loop-func
         map[key].forEach((r) => {
+          console.log(r);
           const childrenNode = {
             title: "Помещение " + r.title,
-            value: r.value,
+            key: "id_location:" + r.key,
           };
 
-          console.log(r)
-
-          if (r.ws.length != 0) {
+          if (r.workstationTransfers.length != 0) {
             const childrenListWS = [];
-            r.ws.forEach((w) => {
+
+            r.workstationTransfers.forEach((w) => {
               const childrenNodeWS = {
                 title: "РМ " + w.workstation.registerNumber,
-                value: w.workstation.id,
+                key: w.workstation.id,
               };
               childrenListWS.push(childrenNodeWS);
             });
 
             if (childrenListWS.length == 0) childrenNode.disabled = true;
+
             childrenNode.children = childrenListWS;
           }
 
