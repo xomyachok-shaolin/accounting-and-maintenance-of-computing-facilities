@@ -37,7 +37,6 @@ public class UsersController : ControllerBase
     public IActionResult Authenticate(AuthenticateRequest model)
     {
         var response = _userService.Authenticate(model);
-        response.ImageFile = String.Format("{0}://{1}{2}/Images/{3}", Request.Scheme, Request.Host, Request.PathBase, response.ImageName);
         return Ok(response);
     }
 
@@ -45,8 +44,6 @@ public class UsersController : ControllerBase
     [HttpPost("register")]
     public async Task<ActionResult<RegisterRequest>> Register(RegisterRequest model)
     {
-        model.ImageName = await SaveImage(model.ImageFile, model.ImageName);
-
         _userService.Register(model);
         
         return Ok(new { message = "Регистрация успешно выполнена" });
@@ -57,11 +54,6 @@ public class UsersController : ControllerBase
     public IActionResult GetAll()
     {
         var users = _userService.GetAll();
-
-        foreach (var user in users)
-        {
-            user.ImageFile = String.Format("{0}://{1}{2}/Images/{3}", Request.Scheme, Request.Host, Request.PathBase, user.ImageName);
-        }
 
         return Ok(users);
     }
@@ -76,8 +68,6 @@ public class UsersController : ControllerBase
     [HttpPut("{id}")]
     public async Task<ActionResult<UpdateRequest>>Update(int id, UpdateRequest model)
     {
-        if (!(model.ImageFile.Equals("null") && model.ImageName.Equals("null")))
-            model.ImageName = await SaveImage(model.ImageFile, model.ImageName);
 
         _userService.Update(id, model);
         return Ok(new { message = "Информация о пользователе успешно обновлена" });
@@ -88,23 +78,5 @@ public class UsersController : ControllerBase
     {
         _userService.Delete(id);
         return Ok(new { message = "Информация о пользователе успешно удалена" });
-    }
-
-    [NonAction]
-    public async Task<string> SaveImage(string img, string imgName)
-    {
-        if (img == "null" && imgName == "null") return "0222003866.jpg";
-
-        byte[] bytes = Convert.FromBase64String(img.Substring(img.LastIndexOf(',') + 1));
-        MemoryStream stream = new MemoryStream(bytes);
-        IFormFile imageFile = new FormFile(stream, 0, bytes.Length, imgName, imgName);
-        string imageName = new String(Path.GetFileNameWithoutExtension(imageFile.FileName).Take(10).ToArray()).Replace(' ', '-');
-        imageName += DateTime.Now.ToString("yymmssfff")+ Path.GetExtension(imageFile.FileName);
-        var imagePath = Path.Combine(_webHostEnvironment.ContentRootPath,"Images",imageName);
-        using (var fileStream = new FileStream(imagePath, FileMode.Create))
-        {
-            await imageFile.CopyToAsync(fileStream);
-        }
-        return imageName;
     }
 }

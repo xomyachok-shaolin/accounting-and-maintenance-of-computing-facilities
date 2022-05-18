@@ -12,3 +12,4 @@ export * from './deviceParameters';
 export * from './deviceTypes';
 export * from './deviceDetails';
 export * from './workstations';
+export * from './writtingOffActs';

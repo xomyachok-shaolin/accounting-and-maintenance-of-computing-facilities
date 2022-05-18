@@ -37,6 +37,7 @@ var builder = WebApplication.CreateBuilder(args);
     services.AddScoped<IDeviceParameterService, DeviceParameterService>();
     services.AddScoped<IWorkstationService, WorkstationService>();
     services.AddScoped<IDeviceService, DeviceService>();
+    services.AddScoped<IWrittingOffActService, WrittingOffActService>();
 
 }
 
@@ -58,9 +59,10 @@ using (var scope = app.Services.CreateScope())
 {
     // global cors policy
     app.UseCors(x => x
-        .AllowAnyOrigin()
         .AllowAnyMethod()
-        .AllowAnyHeader());
+        .AllowAnyHeader()
+        .SetIsOriginAllowed(origin => true) // allow any origin
+        .AllowCredentials()); // allow credentials
 
     // global error handler
     app.UseMiddleware<ErrorHandlerMiddleware>();
@@ -76,8 +78,8 @@ using (var scope = app.Services.CreateScope())
 app.UseStaticFiles(new StaticFileOptions
 {
     FileProvider = new PhysicalFileProvider(
-        Path.Combine(builder.Environment.ContentRootPath, "Images")),
-    RequestPath = "/Images"
+        Path.Combine(builder.Environment.ContentRootPath, "Documents")),
+    RequestPath = "/Documents"
 });
 
 // create hardcoded test users in db on startup
@@ -88,9 +90,9 @@ app.UseStaticFiles(new StaticFileOptions
     var testUsers = new List<User>
     {
         new User { Id = 1, FirstName = "Admin", LastName = "Admin", Patronymic = "", 
-            Mail = "admin", Username = "admin", PasswordHash = BCryptNet.HashPassword("admin"), ImageName ="avatar222259691.jpg", Roles = new List<Role>{ role1, role2 } },
+            Mail = "admin", Username = "admin", PasswordHash = BCryptNet.HashPassword("admin"), Roles = new List<Role>{ role1, role2 } },
         new User { Id = 2, FirstName = "User", LastName = "User", Patronymic = "", 
-            Mail = "user@mail.ru", Username = "user", PasswordHash = BCryptNet.HashPassword("user"), ImageName ="0222003866.jpg", Roles =  new List<Role>{ role2 } }
+            Mail = "user@mail.ru", Username = "user", PasswordHash = BCryptNet.HashPassword("user"), Roles =  new List<Role>{ role2 } }
     };
     using var scope = app.Services.CreateScope();
     var dataContext = scope.ServiceProvider.GetRequiredService<DataContext>();

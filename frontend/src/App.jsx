@@ -21,6 +21,7 @@ import { DeviceTypes } from "deviceTypes/DeviceTypes";
 import { DeviceParameters } from "deviceParameters/DeviceParameters";
 import { DeviceDetails } from "deviceDetails/DeviceDetails";
 import { WorkstationDevices } from "workstationDevices/WorkstationDevices";
+import { WrittingOffActs } from "writtingOffActs/WrittingOffActs";
 
 const { Content, Footer } = Layout;
 
@@ -47,6 +48,7 @@ function App() {
                 <PrivateRoute path="/deviceTypes" component={DeviceTypes} />
                 <PrivateRoute path="/deviceParameters" component={DeviceParameters} />
                 <PrivateRoute path="/deviceDetails" component={DeviceDetails} />
+                <PrivateRoute path="/writingOffActs" component={WrittingOffActs} />
                 <PrivateRoute path="/workstationDevices" component={WorkstationDevices} />
                <Redirect from="*" to="/" />
               </Switch>
@@ -68,6 +70,8 @@ function App() {
               <PrivateRoute path="/deviceTypes" component={DeviceTypes} />
               <PrivateRoute path="/deviceParameters" component={DeviceParameters} />
               <PrivateRoute path="/deviceDetails" component={DeviceDetails} />
+              <PrivateRoute path="/writingOffActs" component={WrittingOffActs} />
+              <PrivateRoute path="/workstationDevices" component={WorkstationDevices} />
               <Route path="/account" component={Account} />
               <Redirect from="*" to="/" />
             </Switch>

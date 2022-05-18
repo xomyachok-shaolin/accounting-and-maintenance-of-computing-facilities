@@ -43,9 +43,12 @@ public class DeviceTypeService : IDeviceTypeService
     
     public IEnumerable<Location> GetAllDetails()
     {
-        return _context.Locations.Include(l => l.DeviceTransfers.Where(dt => dt.DateOfRemoval == null)).
-                ThenInclude(dt => dt.Device).ThenInclude(d => d.DeviceParameterValues).ThenInclude(dp => dp.DeviceParameter)
-            .Include(l => l.DeviceTransfers.Where(dt => dt.DateOfRemoval == null)).ThenInclude(t => t.Workstation);
+        return _context.Locations.Include(l => l.DeviceTransfers.Where(dt => dt.DateOfRemoval == null))
+            .ThenInclude(dt => dt.Device)
+                .ThenInclude(d => d.DeviceParameterValues)
+                    .ThenInclude(dp => dp.DeviceParameter)
+            .Include(l => l.DeviceTransfers.Where(dt => dt.DateOfRemoval == null))
+                .ThenInclude(t => t.Workstation);
     }
     
     public DeviceType GetById(int id)

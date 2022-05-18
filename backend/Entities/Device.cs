@@ -9,7 +9,10 @@ public class Device
     public int IdDeviceModel { get; set; }
     public DeviceModel DeviceModel { get; set; }
 
-    public DateTime? DateOfDebit { get; set; }
+
+    public int? IdWrittingOffAct { get; set; }
+    public virtual WrittingOffAct WrittingOffAct { get; set; }
+
     public DateTime? DateOfLastService { get; set; }
     public DateTime? DateOfNextService { get; set; }
 

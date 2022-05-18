@@ -31,7 +31,6 @@ public class WorkstationsController : ControllerBase
         _appSettings = appSettings.Value;
     }
     
-    [AllowAnonymous]
     [HttpPost("create")]
     public ActionResult<Workstation> Create(WorkstationRequest model)
     {

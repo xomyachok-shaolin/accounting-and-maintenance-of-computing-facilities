@@ -35,11 +35,24 @@ public class DeviceService : IDeviceService
     
     public IEnumerable<DeviceType> GetAll()
     {
-        return _context.
-            DeviceTypes.Include(dt => dt.DeviceModels).ThenInclude(dm => dm.Devices).ThenInclude(d => d.DeviceTransfers.Where(dt => dt.DateOfRemoval == null)).ThenInclude(dt => dt.Location)
-                       .Include(dt => dt.DeviceModels).ThenInclude(dm => dm.Devices).ThenInclude(d => d.DeviceTransfers.Where(dt => dt.DateOfRemoval == null)).ThenInclude(dt => dt.Workstation)
-                                    .ThenInclude(w => w.WorkstationTransfers.Where(wt => wt.DateOfRemoval == null)).ThenInclude(wt => wt.Location)
-                       .Include(dt => dt.DeviceModels).ThenInclude(dm => dm.Devices).ThenInclude(d => d.DeviceParameterValues).ThenInclude(dp => dp.DeviceParameter);
+        return _context.DeviceTypes
+            .Include(dt => dt.DeviceModels)
+                .ThenInclude(dm => dm.Devices)
+                    .ThenInclude(d => d.DeviceTransfers)
+                        .ThenInclude(dt => dt.Location)
+            .Include(dt => dt.DeviceModels)
+                .ThenInclude(dm => dm.Devices)
+                    .ThenInclude(d => d.DeviceTransfers)
+                        .ThenInclude(dt => dt.Workstation)
+                            .ThenInclude(w => w.WorkstationTransfers)
+                                .ThenInclude(wt => wt.Location)
+            .Include(dt => dt.DeviceModels)
+                .ThenInclude(dm => dm.Devices)
+                    .ThenInclude(d => d.DeviceParameterValues)
+                        .ThenInclude(dp => dp.DeviceParameter)
+            .Include(dt => dt.DeviceModels)
+                .ThenInclude(dm => dm.Devices)
+                    .ThenInclude(d => d.WrittingOffAct);
     }
 
     public Device GetById(int id)

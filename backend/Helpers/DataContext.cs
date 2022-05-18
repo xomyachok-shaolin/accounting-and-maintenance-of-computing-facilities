@@ -3,6 +3,7 @@ namespace WebApi.Helpers;
 using Microsoft.EntityFrameworkCore;
 using WebApi.Entities;
 using WebApi.Models.DeviceTypes;
+using WebApi.Models.WrittingOffActs;
 
 public partial class DataContext : DbContext
 {
@@ -153,6 +154,19 @@ public partial class DataContext : DbContext
             .HasForeignKey(d => d.IdDeviceModel)
             .OnDelete(DeleteBehavior.Restrict);
 
+
+        modelBuilder.Entity<WrittingOffAct>()
+            .HasMany(w => w.WrittingOffActFiles)
+            .WithOne(t => t.WrittingOffAct)
+            .HasForeignKey(t => t.IdWrittingOffAct)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<WrittingOffAct>()
+            .HasMany(w => w.Devices)
+            .WithOne(d => d.WrittingOffAct)
+            .HasForeignKey(d => d.IdWrittingOffAct)
+            .OnDelete(DeleteBehavior.Restrict);
+
         // modelBuilder.Entity<TaskDeviceTransfer>().HasDiscriminator(dt => dt.UseType);
 
         OnModelCreatingPartial(modelBuilder);
@@ -178,8 +192,10 @@ public partial class DataContext : DbContext
     public DbSet<Task> Tasks { get; set; }
     public DbSet<Employee> Employees { get; set; }
     public DbSet<Workstation> Workstations { get; set; }
-
+    public DbSet<WrittingOffAct> WrittingOffActs { get; set; }
+    public DbSet<WrittingOffActFile> WrittingOffActFiles { get; set; }
 
     public DbSet<DeviceTypeRequest> DeviceTypeRequests { get; set; }
+
 
 }

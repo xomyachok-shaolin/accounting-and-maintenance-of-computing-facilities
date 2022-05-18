@@ -18,6 +18,7 @@ import {
   Select,
   DatePicker,
   Space,
+  Tag,
   Radio,
   Tree,
   Button,
@@ -110,8 +111,7 @@ function List({ match }) {
           />
         )}
         {(dataIndex == "dateOfLastService" ||
-          dataIndex == "dateOfNextService" ||
-          dataIndex == "dateOfDebit") && (
+          dataIndex == "dateOfNextService" ) && (
           <DatePicker.RangePicker
             onChange={(date, dateString) => {
               setSelectedKeys(date ? [date] : []);
@@ -163,7 +163,8 @@ function List({ match }) {
       <SearchOutlined style={{ color: filtered ? "#1890ff" : undefined }} />
     ),
     onFilter: (value, record) => {
-      if (dataIndex == "dateOfLastService")
+      if (dataIndex == "dateOfLastService" ||
+          dataIndex == "dateOfNextService")
         return record[dataIndex]
           ? moment(value[0]).isBefore(
               moment(record[dataIndex]).format("YYYY-MM-DD")
@@ -223,11 +224,18 @@ function List({ match }) {
       sorter: (a, b) => a.inventoryNumber.localeCompare(b.inventoryNumber),
     },
     {
-      title: "Здание/Помещение/РМ",
-      dataIndex: "location",
-      id: "location",
-      ...getColumnSearchProps("location"),
-      sorter: (a, b) => a.location.localeCompare(b.location),
+      title: "Модель",
+      dataIndex: "deviceModel",
+      id: "deviceModel",
+      ...getColumnSearchProps("deviceModel"),
+      sorter: (a, b) => a.deviceModel.localeCompare(b.deviceModel),
+    },
+    {
+      title: "Тип устройства",
+      dataIndex: "deviceType",
+      id: "deviceType",
+      ...getColumnSearchProps("deviceType"),
+      sorter: (a, b) => a.deviceType.localeCompare(b.deviceType),
     },
     {
       title: "Вид пользования",
@@ -239,6 +247,18 @@ function List({ match }) {
         { text: "рабочее место", value: "рабочее место" },
       ],
       onFilter: (value, record) => record.useType === value,
+      render: (t, r) => (
+        <span>
+          <Tag color="geekblue">{t}</Tag>
+        </span>
+      )
+    },
+    {
+      title: "Здание/Помещение/РМ",
+      dataIndex: "location",
+      id: "location",
+      ...getColumnSearchProps("location"),
+      sorter: (a, b) => a.location.localeCompare(b.location),
     },
     {
       title: "Дата последнего обслуживания",
@@ -260,22 +280,10 @@ function List({ match }) {
       key: "dateOfNextService",
       id: "dateOfNextService",
       ...getColumnSearchProps("dateOfNextService"),
-      render: (t, r) => r.dateOfNextService,
+      render: (t, r) => r.dateOfNextService ? moment(r.dateOfNextService).format("DD/MM/YYYY h:mm:ss"):"",
       sorter: (a, b) => {
         a = a.dateOfNextService || "";
         b = b.dateOfNextService || "";
-        a.localeCompare(b);
-      },
-    },
-    {
-      title: "Дата списания",
-      key: "dateOfDebit",
-      id: "dateOfDebit",
-      ...getColumnSearchProps("dateOfDebit"),
-      render: (t, r) => r.dateOfDebit,
-      sorter: (a, b) => {
-        a = a.dateOfDebit || "";
-        b = b.dateOfDebit || "";
         a.localeCompare(b);
       },
     },
@@ -301,14 +309,45 @@ function List({ match }) {
 
   const columnsParameters = [
     {
-      title: "Параметры модели",
-      dataIndex: "name",
-      id: "name",
+      title: "Регистрационный №",
+      dataIndex: "registerNumber",
+      id: "registerNumber",
+      ...getColumnSearchProps("registerNumber"),
+      sorter: (a, b) => a.registerNumber.localeCompare(b.registerNumber),
     },
     {
-      title: "Описание",
-      dataIndex: "description",
-      id: "description",
+      title: "Сетевое имя",
+      dataIndex: "networkName",
+      id: "networkName",
+      ...getColumnSearchProps("networkName"),
+      sorter: (a, b) => a.networkName.localeCompare(b.networkName),
+    },
+    {
+      title: "IP-адрес",
+      dataIndex: "ipAddress",
+      id: "ipAddress",
+      ...getColumnSearchProps("ipAddress"),
+      sorter: (a, b) => a.ipAddress.localeCompare(b.ipAddress),
+    },
+    {
+      title: "Дата установки",
+      dataIndex: "dateOfInstallation",
+      id: "dateOfInstallation",
+      ...getColumnSearchProps("dateOfInstallation"),
+      render: (t, r) => r.dateOfInstallation ? moment(r.dateOfInstallation).format("DD/MM/YYYY h:mm:ss"):"",
+      sorter: (a, b) => {
+        a = a.dateOfInstallation || "";
+        b = b.dateOfInstallation || "";
+        a.localeCompare(b);
+      },
+    },
+    Table.EXPAND_COLUMN,
+    {
+      title: "Отвественный",
+      dataIndex: "employee",
+      id: "employee",
+      ...getColumnSearchProps("employee"),
+      sorter: (a, b) => a.employee.localeCompare(b.employee),
     },
     {
       title: "",
@@ -342,14 +381,11 @@ function List({ match }) {
   };
 
   const [filterDevices, setFilterDevices] = useState([]);
-  const [filterParameters, setFilterParameters] = useState([]);
+  const [filterWorkstations, setfilterWorkstations] = useState([]);
 
   const [selectedRowKeys, setRowKeys] = useState([]);
   const onSelect = (selectedKeys: React.Key[], info) => {
     var node = info.node;
-
-    console.log(info);
-
     let tempKey = null;
     var devices = [];
 
@@ -374,7 +410,10 @@ function List({ match }) {
           device.location = l;
           device.workstation = l.workstationTransfers[0]?.workstation;
 
-          if (device.location.id == node.key.slice(12)) devices.push(device);
+          if (device.location.id == node.key.slice(12)) {
+            if (tempKey == null) tempKey = device.location.workstationTransfers;
+            devices.push(device);
+          }
         });
       });
     }
@@ -383,18 +422,20 @@ function List({ match }) {
 
     var parameters = [];
     if (tempKey != null) {
-      setRowKeys([tempKey]);
-      if (devices.length != 0) {
-        devices[0].deviceParameterValues.forEach((dp) => {
+      
+      tempKey.forEach((wt) => {
           parameters.push({
-            key: dp.deviceParameter.id,
-            name: dp.deviceParameter.name,
-            description: dp.value,
+            key: wt.id,
+            registerNumber: wt.workstation.registerNumber,
+            networkName: wt.workstation.networkName,
+            ipAddress: wt.workstation.ipAddress,
+            dateOfInstallation: wt.dateOfInstallation,
+            employee: wt.employee
           });
         });
       }
-    }
-    setFilterParameters(parameters);
+    console.log(parameters)
+    setfilterWorkstations(parameters);
 
     console.log(devices);
   };
@@ -413,19 +454,33 @@ function List({ match }) {
     return {
       key: row.id,
       inventoryNumber: row.inventoryNumber,
+      deviceModel: row.deviceModel.name,
+      deviceType: row.deviceModel.deviceType.name,
       location: location,
       useType: useType,
       dateOfLastService: row.dateOfLastService,
       dateOfNextService: row.dateOfNextService,
-      dateOfDebit: row.dateOfDebit,
     };
   });
 
-  const dataParameters = filterParameters?.map(function (row) {
+  const dataWorkstations = filterWorkstations?.map(function (row) {
     return {
       key: row.key,
-      name: row.name,
-      description: row.description,
+      registerNumber: row.registerNumber,
+      networkName: row.networkName,
+      ipAddress: row.ipAddress,
+      dateOfInstallation: row.dateOfInstallation,
+      employee: row.employee?.personnelNumber,
+      description:
+        row.employee?.department +
+        ": " +
+        row.employee?.position +
+        " " +
+        row.employee?.lastName +
+        " " +
+        row.employee?.firstName +
+        " " +
+        row.employee?.patronymic,
     };
   });
 
@@ -621,8 +676,6 @@ function List({ match }) {
       lastName: "",
       mail: "",
       patronymic: "",
-      imageFile: "",
-      imageName: "",
       roles: [],
     });
     showModal();
@@ -705,18 +758,12 @@ function List({ match }) {
         }
       });
     }
-    setFilterParameters(parameters);
+    setfilterWorkstations(parameters);
   };
 
   const rowSelection = {
     selectedRowKeys,
     onChange: onSelectChange,
-  };
-
-  let locale = {
-    emptyText: "Нет данных",
-    filterConfirm: "Фильтр",
-    filterReset: "Сброс",
   };
 
   return (
@@ -745,15 +792,26 @@ function List({ match }) {
             onClick={showAddModalDevice}
             style={{ marginBottom: 8 }}
           >
-            Добавить параметр
+            Добавить рабочее место
           </Button>
           {detailsLocations && (
             <Table
               pagination={false}
-              locale={locale}
               bordered
               columns={columnsParameters}
-              dataSource={dataParameters}
+              dataSource={dataWorkstations}
+              expandable={{
+                expandedRowRender: (record) => {
+                  if (record.employee)
+                    return <p style={{ margin: 0 }}>{record.description}</p>;
+                  else
+                    return (
+                      <p style={{ margin: 0 }}>
+                        Ответственный за помещение не определен
+                      </p>
+                    );
+                },
+              }}
             ></Table>
           )}
         </div>
@@ -769,7 +827,6 @@ function List({ match }) {
           </Button>
           <Table
             scroll={{ x: 800 }}
-            locale={locale}
             bordered
             columns={columnsDevices}
             dataSource={dataDevices}
@@ -777,7 +834,6 @@ function List({ match }) {
               type: "radio",
               ...rowSelection,
             }}
-            showSorterTooltip={{ title: "Нажмите для сортировки" }}
           ></Table>
         </div>
       )}

@@ -31,7 +31,6 @@ public class LocationsController : ControllerBase
         _appSettings = appSettings.Value;
     }
 
-    [AllowAnonymous]
     [HttpPost("create")]
     public ActionResult<Location> Create(WorkstationRequest model)
     {

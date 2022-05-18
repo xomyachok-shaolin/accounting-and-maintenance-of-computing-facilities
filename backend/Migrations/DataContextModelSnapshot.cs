@@ -60,9 +60,6 @@ namespace WebApi.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime?>("DateOfDebit")
-                        .HasColumnType("timestamp with time zone");
-
                     b.Property<DateTime?>("DateOfLastService")
                         .HasColumnType("timestamp with time zone");
 
@@ -72,12 +69,17 @@ namespace WebApi.Migrations
                     b.Property<int>("IdDeviceModel")
                         .HasColumnType("integer");
 
+                    b.Property<int?>("IdWrittingOffAct")
+                        .HasColumnType("integer");
+
                     b.Property<string>("InventoryNumber")
                         .HasColumnType("text");
 
                     b.HasKey("Id");
 
                     b.HasIndex("IdDeviceModel");
+
+                    b.HasIndex("IdWrittingOffAct");
 
                     b.ToTable("Devices");
                 });
@@ -407,9 +409,6 @@ namespace WebApi.Migrations
                     b.Property<string>("FirstName")
                         .HasColumnType("text");
 
-                    b.Property<string>("ImageName")
-                        .HasColumnType("text");
-
                     b.Property<string>("LastName")
                         .HasColumnType("text");
 
@@ -492,6 +491,68 @@ namespace WebApi.Migrations
                     b.ToTable("WorkstationTransfers");
                 });
 
+            modelBuilder.Entity("WebApi.Entities.WrittingOffAct", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("DateOfDebit")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("WrittingOffActs");
+                });
+
+            modelBuilder.Entity("WebApi.Entities.WrittingOffActFile", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("FileName")
+                        .HasColumnType("text");
+
+                    b.Property<int>("IdWrittingOffAct")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IdWrittingOffAct");
+
+                    b.ToTable("WrittingOffActFiles");
+                });
+
+            modelBuilder.Entity("WebApi.Models.DeviceTypes.DeviceTypeRequest", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CurrentQuantity")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("MinimalQuantity")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("DeviceTypeRequests");
+                });
+
             modelBuilder.Entity("DeviceDeviceParameter", b =>
                 {
                     b.HasOne("WebApi.Entities.Device", null)
@@ -530,7 +591,14 @@ namespace WebApi.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("WebApi.Entities.WrittingOffAct", "WrittingOffAct")
+                        .WithMany("Devices")
+                        .HasForeignKey("IdWrittingOffAct")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.Navigation("DeviceModel");
+
+                    b.Navigation("WrittingOffAct");
                 });
 
             modelBuilder.Entity("WebApi.Entities.DeviceModel", b =>
@@ -710,6 +778,17 @@ namespace WebApi.Migrations
                     b.Navigation("Workstation");
                 });
 
+            modelBuilder.Entity("WebApi.Entities.WrittingOffActFile", b =>
+                {
+                    b.HasOne("WebApi.Entities.WrittingOffAct", "WrittingOffAct")
+                        .WithMany("WrittingOffActFiles")
+                        .HasForeignKey("IdWrittingOffAct")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("WrittingOffAct");
+                });
+
             modelBuilder.Entity("WebApi.Entities.Device", b =>
                 {
                     b.Navigation("DeviceParameterValues");
@@ -780,6 +859,13 @@ namespace WebApi.Migrations
                     b.Navigation("TaskWorkstationTransfers");
 
                     b.Navigation("WorkstationTransfers");
+                });
+
+            modelBuilder.Entity("WebApi.Entities.WrittingOffAct", b =>
+                {
+                    b.Navigation("Devices");
+
+                    b.Navigation("WrittingOffActFiles");
                 });
 #pragma warning restore 612, 618
         }

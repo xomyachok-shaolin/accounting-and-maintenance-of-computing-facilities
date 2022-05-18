@@ -30,7 +30,6 @@ public class RolesController : ControllerBase
         _appSettings = appSettings.Value;
     }
 
-    [AllowAnonymous]
     [HttpPost("create")]
     public ActionResult<Role> Create(Role model)
     {

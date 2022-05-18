@@ -67,3 +67,11 @@ a {
   display: inline-flex;
   align-items: center;
 }
+.ant-modal, .ant-modal-content {
+  width: 100vw;
+  margin: unset;
+ }
+
+ #components-transfer-demo-table-transfer .ant-table td {
+  background: transparent;
+}

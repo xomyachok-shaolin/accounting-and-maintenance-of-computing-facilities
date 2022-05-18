@@ -11,10 +11,6 @@ public class UpdateRequest
     public string Patronymic { get; set; }
     public string Password { get; set; }
 
-    public string ImageName { get; set; }
-
-    [NotMapped]
-    public string ImageFile { get; set; }
     [NotMapped]
     public int[] Roles { get; set; }
 }

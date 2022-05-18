@@ -31,7 +31,6 @@ public class DeviceTypesController : ControllerBase
         _appSettings = appSettings.Value;
     }
 
-    [AllowAnonymous]
     [HttpPost("create")]
     public ActionResult<DeviceType> Create(DeviceType model)
     {

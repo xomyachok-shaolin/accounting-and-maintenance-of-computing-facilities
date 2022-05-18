@@ -8,7 +8,7 @@ import { useUserActions } from "_actions";
 import { Button, Descriptions, Divider, Layout, Menu } from "antd";
 import {
   DesktopOutlined,
-  PieChartOutlined,
+  ContainerOutlined,
   FilterOutlined,
   BuildOutlined,
   ControlOutlined,
@@ -99,7 +99,10 @@ function Nav() {
         <Menu.Item key="8" icon={<ReadOutlined />}>
         <Link to="/tasks">Журнал задач</Link>
         </Menu.Item>
-        <Menu.Item key="9" icon={<PoweroffOutlined />}>
+        <Menu.Item key="9" icon={<ContainerOutlined />}>
+        <Link to="/writingOffActs">Акты списания</Link>
+        </Menu.Item>
+        <Menu.Item key="10" icon={<PoweroffOutlined />}>
           <Link to="" onClick={userActions.logout}>
             Выход
           </Link>

@@ -14,10 +14,6 @@ public class User
 
     [JsonIgnore]
     public string PasswordHash { get; set; }
-    // 100
-    public string ImageName { get; set; }
-    [NotMapped]
-    public string ImageFile { get; set; }
 
     /* EF Relations */
     public ICollection<Role> Roles { get; set; }

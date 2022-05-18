@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { useRecoilValue, useRecoilState, DefaultValue } from "recoil";
+import { useRecoilValue,  } from "recoil";
 
 import { useDeviceTypeActions, useAlertActions } from "_actions";
 import { Form, Modal, Spin, Table, Tag, Input, Select, InputNumber } from "antd";

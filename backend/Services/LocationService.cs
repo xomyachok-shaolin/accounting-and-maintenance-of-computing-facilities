@@ -37,12 +37,16 @@ public class LocationService : ILocationService
         return _context.Locations
             .Include(l => l.DeviceTransfers.Where(dt => dt.DateOfRemoval == null))
                 .ThenInclude(dt => dt.Device)
-              .Include(l => l.Employee)
+                    .ThenInclude(d => d.DeviceModel)
+                        .ThenInclude(dm => dm.DeviceType)
+            .Include(l => l.Employee)
             .Include(l => l.WorkstationTransfers.Where(wt => wt.DateOfRemoval == null))
                 .ThenInclude(wt => wt.Workstation)
                     .ThenInclude(w => w.DeviceTransfers.Where(dt => dt.DateOfRemoval == null))
                         .ThenInclude(dt => dt.Device)
-                  .Include(l => l.WorkstationTransfers.Where(wt => wt.DateOfRemoval == null))
+                            .ThenInclude(d => d.DeviceModel)
+                                .ThenInclude(dm => dm.DeviceType)
+             .Include(l => l.WorkstationTransfers.Where(wt => wt.DateOfRemoval == null))
                 .ThenInclude(wt => wt.Employee);
     }
 

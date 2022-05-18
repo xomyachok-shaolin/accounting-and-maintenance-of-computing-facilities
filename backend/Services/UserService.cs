@@ -86,8 +86,6 @@ public class UserService : IUserService
             Patronymic = model.Patronymic,
             Mail = model.Mail,
             PasswordHash = BCrypt.HashPassword(model.Password),
-            ImageFile = model.ImageFile,
-            ImageName = model.ImageName,
             Roles = roles
         };
 
@@ -119,8 +117,6 @@ public class UserService : IUserService
         user.LastName = model.LastName; 
         user.Username = model.Username; 
         user.Mail = model.Mail;
-        user.ImageFile = model.ImageFile;
-        user.ImageName = model.ImageName;
         user.Mail = user.Mail;
         user.Patronymic = model.Patronymic;
         user.Roles = roles;

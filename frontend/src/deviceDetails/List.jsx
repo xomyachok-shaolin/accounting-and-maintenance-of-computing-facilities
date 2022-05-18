@@ -15,6 +15,7 @@ import {
   Spin,
   Table,
   Input,
+  Tag,
   Select,
   DatePicker,
   Space,
@@ -212,13 +213,6 @@ function List({ match }) {
       sorter: (a, b) => a.inventoryNumber.localeCompare(b.inventoryNumber),
     },
     {
-      title: "Здание/Помещение/РМ",
-      dataIndex: "location",
-      id: "location",
-      ...getColumnSearchProps("location"),
-      sorter: (a, b) => a.location.localeCompare(b.location),
-    },
-    {
       title: "Вид пользования",
       dataIndex: "useType",
       id: "useType",
@@ -228,13 +222,25 @@ function List({ match }) {
         { text: "рабочее место", value: "рабочее место" },
       ],
       onFilter: (value, record) => record.useType === value,
+      render: (t, r) => (
+        <span>
+          <Tag color="geekblue">{t}</Tag>
+        </span>
+      )
+    },
+    {
+      title: "Здание/Помещение/РМ",
+      dataIndex: "location",
+      id: "location",
+      ...getColumnSearchProps("location"),
+      sorter: (a, b) => a.location.localeCompare(b.location),
     },
     {
       title: "Дата последнего обслуживания",
       key: "dateOfLastService",
       id: "dateOfLastService",
       ...getColumnSearchProps("dateOfLastService"),
-      render: (t, r) => r.dateOfLastService ? moment(r.dateOfLastService).format("DD/MM/YYYY h:mm:ss"):"",
+      render: (t, r) => r.dateOfLastService ? moment(r.dateOfLastService).format("DD/MM/YYYY"):"",
       sorter: (a, b) => {
         a = a.dateOfLastService || "";
         b = b.dateOfLastService || "";
@@ -246,7 +252,7 @@ function List({ match }) {
       key: "dateOfNextService",
       id: "dateOfNextService",
       ...getColumnSearchProps("dateOfNextService"),
-      render: (t, r) => r.dateOfNextService,
+      render: (t, r) => r.dateOfNextService ? moment(r.dateOfNextService).format("DD/MM/YYYY"):"",
       sorter: (a, b) => {
         a = a.dateOfNextService || "";
         b = b.dateOfNextService || "";
@@ -258,7 +264,7 @@ function List({ match }) {
       key: "dateOfDebit",
       id: "dateOfDebit",
       ...getColumnSearchProps("dateOfDebit"),
-      render: (t, r) => r.dateOfDebit,
+      render: (t, r) => r.dateOfDebit ? moment(r.dateOfDebit).format("DD/MM/YYYY"):"",
       sorter: (a, b) => {
         a = a.dateOfDebit || "";
         b = b.dateOfDebit || "";
@@ -391,7 +397,7 @@ function List({ match }) {
       useType: useType,
       dateOfLastService: row.dateOfLastService,
       dateOfNextService: row.dateOfNextService,
-      dateOfDebit: row.dateOfDebit,
+      dateOfDebit: row.writtingOffAct?.dateOfDebit,
     };
   });
 
@@ -614,8 +620,6 @@ function List({ match }) {
       lastName: "",
       mail: "",
       patronymic: "",
-      imageFile: "",
-      imageName: "",
       roles: [],
     });
     showModal();
@@ -706,12 +710,6 @@ function List({ match }) {
     onChange: onSelectChange,
   };
 
-  let locale = {
-    emptyText: "Нет данных",
-    filterConfirm: "Фильтр",
-    filterReset: "Сброс",
-  };
-
   return (
     <>
       <Space>
@@ -743,7 +741,6 @@ function List({ match }) {
           {deviceDetails && (
             <Table
               pagination={false}
-              locale={locale}
               bordered
               columns={columnsParameters}
               dataSource={dataParameters}
@@ -762,7 +759,6 @@ function List({ match }) {
           </Button>
           <Table
             scroll={{ x: 800 }}
-            locale={locale}
             bordered
             columns={columnsDevices}
             dataSource={dataDevices}
@@ -770,7 +766,6 @@ function List({ match }) {
               type: "radio",
               ...rowSelection,
             }}
-            showSorterTooltip={{ title: "Нажмите для сортировки" }}
           ></Table>
         </div>
       )}

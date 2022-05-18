@@ -20,11 +20,6 @@ public class RegisterRequest
     public string Patronymic { get; set; }  
     [Required]
     public string Mail { get; set; }
-    [Required]
-    public string ImageName { get; set; }
-
-    [NotMapped]
-    public string ImageFile { get; set; }
     [NotMapped]
     public int[] Roles { get; set; }
 }

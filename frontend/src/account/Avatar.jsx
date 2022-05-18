@@ -12,9 +12,9 @@ import { avatarAtom, imageAtom } from "_state";
 function Avatar(){
 
   const [imageFile,setImageFile] = useRecoilState(avatarAtom);
-  
+
   const [imageUrl,setImageUrl] = useRecoilState(imageAtom);
-  
+
   const [loading,setLoading] = useState(false);
 
 
@@ -23,15 +23,14 @@ function Avatar(){
       setLoading(true);
       return;
     }
-    
     if (info.file.status === "done") {
       // Get this url from response in real world.
       getBase64(info.file.originFileObj, (imageUrl) => {
         setImageUrl(imageUrl);
         setLoading(false);
-        info.file.imageUrl = imageUrl; 
+        info.file.imageUrl = imageUrl;
         setImageFile(info.file);
-      });                                                                                                                                                                                                                             
+      });                                                                                                                                                                                                                   
     }
   };
   function getBase64(img, callback) {
@@ -39,7 +38,7 @@ function Avatar(){
     reader.addEventListener("load", () => callback(reader.result));
     reader.readAsDataURL(img);
   }
-  
+
   function beforeUpload(file) {
 
     const isJpgOrPng = file.type === "image/jpeg" || file.type === "image/png";
@@ -52,7 +51,7 @@ function Avatar(){
     }
     return isJpgOrPng && isLt2M;
   }
-    
+
     const uploadButton = (
       <div>
         {loading ? <LoadingOutlined /> : <PlusOutlined />}

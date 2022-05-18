@@ -52,7 +52,6 @@ public class DeviceDetailsController : ControllerBase
         return Ok(deviceType);
     }
 
-    [AllowAnonymous]
     [HttpPost("create")]
     public async Task<ActionResult<DeviceRequest>> Create(DeviceRequest model)
     {

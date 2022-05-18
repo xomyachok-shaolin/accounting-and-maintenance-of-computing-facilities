@@ -51,18 +51,6 @@ function List({ match }) {
 
   const columns = [
     {
-      title: "",
-      dataIndex: "imageUrl",
-      width: 25,
-      maxWidth: 25,
-      render: (t, r) => (
-        <img
-          src={`${r.imageUrl}`}
-          style={{ width: "50px", height: "50px", borderRadius: "50% " }}
-        />
-      ),
-    },
-    {
       title: "Имя пользователя",
       dataIndex: "username",
       id: "username",
@@ -137,7 +125,6 @@ function List({ match }) {
       patronymic: row.patronymic,
       mail: row.mail,
       roles: row.roles,
-      imageUrl: row.imageFile,
     };
   });
 
@@ -155,8 +142,6 @@ function List({ match }) {
       lastName: "",
       mail: "",
       patronymic: "",
-      imageFile: "",
-      imageName: "",
       roles: [],
     });
     showModal();
@@ -185,11 +170,8 @@ function List({ match }) {
           lastName: user.lastName,
           mail: user.mail,
           patronymic: user.patronymic,
-          imageFile: user.imageFile,
-          imageName: user.imageName,
           roles: user.roles.map((r) => r.id),
         });
-        setImage(user.imageFile);
         setMode(user);
 
         showModal();
@@ -199,14 +181,6 @@ function List({ match }) {
 
   function onSubmit(values) {
     setVisible(false);
-    if (avatar == null) {
-      values.imageName = "null";
-      values.imageFile = "null";
-    } else {
-      values.imageName = avatar.name;
-      values.imageFile = avatar.imageUrl;
-    }
-    setImage(null);
     return !mode ? createUser(values) : updateUser(mode.id, values);
   }
 
@@ -343,10 +317,6 @@ function List({ match }) {
                 ]}
               >
                 <Input />
-              </Form.Item>
-
-              <Form.Item label="Фотография профиля">
-                <Avatar />
               </Form.Item>
 
               <Form.Item
