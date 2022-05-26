@@ -1,13 +1,12 @@
 /* eslint-disable default-case */
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { useRecoilValue, useRecoilState, DefaultValue } from "recoil";
+import { useRecoilValue } from "recoil";
 
 import {
   useDeviceDetailActions,
   useDeviceTypeActions,
   useAlertActions,
-  useLocationActions,
+  useLocationActions,useDeviceParameterActions,
 } from "_actions";
 import {
   Form,
@@ -17,19 +16,21 @@ import {
   Input,
   Tag,
   Select,
-  DatePicker,
+  DatePicker,Descriptions ,Typography,
   Space,
+  Layout,
   Radio,
   Tree,
   Button,
   Cascader,
+  Divider,
 } from "antd";
 
 import moment from "moment";
 
 import { ExclamationCircleOutlined, FormOutlined } from "@ant-design/icons";
 
-import { deviceDetailsAtom, deviceTypesAtom, locationsAtom } from "_state";
+import { deviceDetailsAtom, deviceTypesAtom, locationsAtom, deviceParametersAtom } from "_state";
 import React from "react";
 import Search from "antd/lib/input/Search";
 
@@ -40,10 +41,14 @@ export { List };
 
 function List({ match }) {
   const [form] = Form.useForm();
+  const { Header, Footer, Sider, Content } = Layout;
+
+  const { Paragraph } = Typography;
 
   const alertActions = useAlertActions();
 
   const [visible, setVisible] = useState(false);
+  const [visibleParameter, setVisibleParameter] = useState(false);
 
   const [mode, setMode] = useState(false);
   const [isResetAll, setIsResetAll] = useState(false);
@@ -53,8 +58,10 @@ function List({ match }) {
   const deviceDetails = useRecoilValue(deviceDetailsAtom);
   const deviceTypes = useRecoilValue(deviceTypesAtom);
 
-  const locations = useRecoilValue(locationsAtom);
+  const locations = useRecoilValue(locationsAtom); 
+  const deviceParameters = useRecoilValue(deviceParametersAtom);
 
+  const deviceParameterActions = useDeviceParameterActions();
   const deviceDetailActions = useDeviceDetailActions();
   const deviceTypeActions = useDeviceTypeActions();
   const locationActions = useLocationActions();
@@ -65,6 +72,7 @@ function List({ match }) {
     deviceDetailActions.getAll();
     deviceTypeActions.getAll();
     locationActions.getAll();
+    deviceParameterActions.getAll();
     return deviceDetailActions.resetDeviceDetails;
   }, []);
 
@@ -73,6 +81,7 @@ function List({ match }) {
       deviceDetailActions.getAll();
       deviceTypeActions.getAll();
       locationActions.getAll();
+      deviceParameterActions.getAll();
       setIsResetAll(false);
     }
   }, [isResetAll]);
@@ -124,18 +133,19 @@ function List({ match }) {
           />
         )}
         <Space>
-        {dataIndex != "dateOfLastService" &&
-          dataIndex != "dateOfNextService" &&
-          dataIndex != "dateOfDebit" && (
-          <Button
-            type="primary"
-            onClick={() => handleSearch(selectedKeys, confirm, dataIndex)}
-            icon={<SearchOutlined />}
-            size="small"
-            style={{ width: 90 }}
-          >
-            Искать
-          </Button>)}
+          {dataIndex != "dateOfLastService" &&
+            dataIndex != "dateOfNextService" &&
+            dataIndex != "dateOfDebit" && (
+              <Button
+                type="primary"
+                onClick={() => handleSearch(selectedKeys, confirm, dataIndex)}
+                icon={<SearchOutlined />}
+                size="small"
+                style={{ width: 90 }}
+              >
+                Искать
+              </Button>
+            )}
           <Button
             onClick={() => handleReset(clearFilters)}
             size="small"
@@ -163,16 +173,28 @@ function List({ match }) {
       <SearchOutlined style={{ color: filtered ? "#1890ff" : undefined }} />
     ),
     onFilter: (value, record) => {
-      if (dataIndex == "dateOfLastService")
-        return record[dataIndex] ? moment(value[0]).isBefore(moment(record[dataIndex]).format('YYYY-MM-DD')) &&
-          moment(value[1]).isAfter(moment(record[dataIndex]).format('YYYY-MM-DD')) ? true : false : false;
+      if (
+        dataIndex == "dateOfLastService" ||
+        dataIndex == "dateOfNextService" ||
+        dataIndex == "dateOfDebit"
+      )
+        return record[dataIndex]
+          ? moment(value[0]).isBefore(
+              moment(record[dataIndex]).format("YYYY-MM-DD")
+            ) &&
+            moment(value[1]).isAfter(
+              moment(record[dataIndex]).format("YYYY-MM-DD")
+            )
+            ? true
+            : false
+          : false;
 
       return record[dataIndex]
         ? record[dataIndex]
             .toString()
             .toLowerCase()
             .includes(value.toLowerCase())
-        : false
+        : false;
     },
     onFilterDropdownVisibleChange: (visible) => {
       if (visible) {
@@ -180,14 +202,16 @@ function List({ match }) {
       }
     },
     render: (text) =>
-    searchedColumn === dataIndex ? (
+      searchedColumn === dataIndex ? (
         <Highlighter
           highlightStyle={{ backgroundColor: "#ffc069", padding: 0 }}
           searchWords={[searchText]}
           autoEscape
-          textToHighlight={text ? text.toString() : ''}
+          textToHighlight={text ? text.toString() : ""}
         />
-      ) : text,
+      ) : (
+        text
+      ),
   });
 
   const handleDatePickerChange = (date, dateString, id) => {
@@ -213,6 +237,13 @@ function List({ match }) {
       sorter: (a, b) => a.inventoryNumber.localeCompare(b.inventoryNumber),
     },
     {
+      title: "Модель",
+      dataIndex: "deviceModel",
+      id: "deviceModel",
+      ...getColumnSearchProps("deviceModel"),
+      sorter: (a, b) => a.deviceModel.localeCompare(b.deviceModel),
+    },
+    {
       title: "Вид пользования",
       dataIndex: "useType",
       id: "useType",
@@ -226,7 +257,7 @@ function List({ match }) {
         <span>
           <Tag color="geekblue">{t}</Tag>
         </span>
-      )
+      ),
     },
     {
       title: "Здание/Помещение/РМ",
@@ -240,7 +271,10 @@ function List({ match }) {
       key: "dateOfLastService",
       id: "dateOfLastService",
       ...getColumnSearchProps("dateOfLastService"),
-      render: (t, r) => r.dateOfLastService ? moment(r.dateOfLastService).format("DD/MM/YYYY"):"",
+      render: (t, r) =>
+        r.dateOfLastService
+          ? moment(r.dateOfLastService).format("DD/MM/YYYY")
+          : "",
       sorter: (a, b) => {
         a = a.dateOfLastService || "";
         b = b.dateOfLastService || "";
@@ -252,7 +286,10 @@ function List({ match }) {
       key: "dateOfNextService",
       id: "dateOfNextService",
       ...getColumnSearchProps("dateOfNextService"),
-      render: (t, r) => r.dateOfNextService ? moment(r.dateOfNextService).format("DD/MM/YYYY"):"",
+      render: (t, r) =>
+        r.dateOfNextService
+          ? moment(r.dateOfNextService).format("DD/MM/YYYY")
+          : "",
       sorter: (a, b) => {
         a = a.dateOfNextService || "";
         b = b.dateOfNextService || "";
@@ -264,7 +301,8 @@ function List({ match }) {
       key: "dateOfDebit",
       id: "dateOfDebit",
       ...getColumnSearchProps("dateOfDebit"),
-      render: (t, r) => r.dateOfDebit ? moment(r.dateOfDebit).format("DD/MM/YYYY"):"",
+      render: (t, r) =>
+        r.dateOfDebit ? moment(r.dateOfDebit).format("DD/MM/YYYY") : "",
       sorter: (a, b) => {
         a = a.dateOfDebit || "";
         b = b.dateOfDebit || "";
@@ -293,7 +331,7 @@ function List({ match }) {
 
   const columnsParameters = [
     {
-      title: "Параметры модели",
+      title: "Параметры устройства",
       dataIndex: "name",
       id: "name",
     },
@@ -307,7 +345,7 @@ function List({ match }) {
       key: "action",
       render: (text, record) => (
         <Space size="middle">
-          <Button onClick={() => showEditModal(record.key)}>
+          <Button onClick={() => showEditModalParameter(record.key)}>
             Редактировать
           </Button>
           <Button
@@ -329,32 +367,45 @@ function List({ match }) {
     },
     wrapperCol: {
       xs: { span: 24 },
-      sm: { span: 16 },
+      sm: { span: 8 },
     },
   };
 
   const [filterDevices, setFilterDevices] = useState([]);
+
   const [filterParameters, setFilterParameters] = useState([]);
 
   const [selectedRowKeys, setRowKeys] = useState([]);
   const onSelect = (selectedKeys: React.Key[], info) => {
     var node = info.node;
 
+    setDefaultRadio(false);
+
     let tempKey = null;
     var devices = [];
     let regexp = /\d-\d-\d/;
-    if (regexp.test(node.pos)) {
-      deviceDetails.forEach((dt) => {
-        dt.deviceModels.forEach((dm) => {
-          dm.devices.forEach((d) => {
+
+    deviceDetails.forEach((dt) => {
+      dt.deviceModels.forEach((dm) => {
+        dm.devices.forEach((device) => {
+          let d = JSON.parse(JSON.stringify(device));
+          d.deviceModel = dm.name;
+          d.deviceType = dt.name;
+          if (regexp.test(node.pos)) {
             if (d.idDeviceModel == node.key) {
-              if (tempKey == null) tempKey = d.id;
+              if (tempKey == null) tempKey = d;
               devices.push(d);
             }
-          });
+          } else {
+            console.log(dt.name, node.key);
+            if (dt.name == node.key) {
+              if (tempKey == null) tempKey = d;
+              devices.push(d);
+            }
+          }
         });
       });
-    }
+    });
 
     setFilterDevices(devices);
 
@@ -393,6 +444,7 @@ function List({ match }) {
     return {
       key: row.id,
       inventoryNumber: row.inventoryNumber,
+      deviceModel: row.deviceModel,
       location: location,
       useType: useType,
       dateOfLastService: row.dateOfLastService,
@@ -581,6 +633,9 @@ function List({ match }) {
   const showModal = () => {
     setVisible(true);
   };
+  const showModalParameter = () => {
+    setVisibleParameter(true);
+  };
   const showDeleteModal = (id) => {
     confirm({
       title: "Вы уверены что хотите удалить запись?",
@@ -611,6 +666,22 @@ function List({ match }) {
     // });
   };
 
+  const showEditModalParameter = (id) => {
+    filterParameters.forEach((p) => {
+      if (p.key === id) {
+        form.setFieldsValue({
+          deviceType: selectedDevice.deviceType,
+          deviceModel: selectedDevice.deviceModel,
+          inventoryNumber: selectedDevice.inventoryNumber,
+          deviceParameter: p.name,
+          deviceParameterValue: p.description
+        });
+        setMode(p);
+        showModalParameter();
+      }
+    });
+  };
+
   const showAddModalDevice = () => {
     setMode(false);
     form.setFieldsValue({
@@ -624,6 +695,17 @@ function List({ match }) {
     });
     showModal();
   };
+  const showAddModalParameter = () => {
+    setMode(false);
+    console.log(selectedDevice);
+    form.setFieldsValue({
+      deviceType: selectedDevice.deviceType,
+      deviceModel: selectedDevice.deviceModel,
+      inventoryNumber: selectedDevice.inventoryNumber,
+    });
+    showModalParameter();
+  };
+
   function createDevice(data) {
     console.log(data);
 
@@ -650,12 +732,29 @@ function List({ match }) {
       alertActions.success("Устройство добавлено");
     });
   }
-
+  function createParameter(data) {
+    data.device = selectedDevice.id;
+    return deviceParameterActions.createDeviceParameter(data).then(() => {
+      setIsResetAll(true);
+      alertActions.success("Значение параметра устройства добавлено");
+    });
+  }
   function updateDevice(id, data) {
     //data.imageFile = avatar.imageFile;
     return deviceTypeActions.update(id, data).then(() => {
       setIsResetAll(true);
       alertActions.success("Информация об устройстве обновлена");
+    });
+  }
+  function updateParameter(id, data) {
+    data.device = selectedDevice.id;
+    filterParameters.forEach((p) => {
+      if (p.name === data.deviceParameter) {
+        data.deviceParameter = p.key
+      }});
+    return deviceParameterActions.updateDeviceParameter(id, data).then(() => {
+      setIsResetAll(true);
+      alertActions.success("Значение параметра устройства обновлена");
     });
   }
   function onSubmit(values) {
@@ -664,9 +763,15 @@ function List({ match }) {
 
     return !mode ? createDevice(values) : updateDevice(mode.id, values);
   }
+  function onSubmitParameter(values) {
+    setVisible(false);
+    setDisabledCascader(true);
 
+    return !mode ? createParameter(values) : updateParameter(mode.key, values);
+  }
   const handleCancel = () => {
     setVisible(false);
+    setVisibleParameter(false);
     setDisabledCascader(true);
     form.resetFields();
   };
@@ -685,13 +790,24 @@ function List({ match }) {
     setDisabledCascader(false);
   }
 
+  const [defaultRadio, setDefaultRadio] = useState(false);
+  const [selectedDevice, setSelectedDevice] = useState();
+
+  if (!defaultRadio && filterDevices.length != 0) {
+    setRowKeys([filterDevices[0].id]);
+    setSelectedDevice(filterDevices[0]);
+    setDefaultRadio(true);
+  }
+
   const onSelectChange = (selectedRowKeys) => {
+    console.log(selectedRowKeys);
     setRowKeys(selectedRowKeys);
 
     var parameters = [];
     if (filterDevices.length != 0) {
       filterDevices.forEach((d) => {
         if (d.id == selectedRowKeys[0]) {
+          setSelectedDevice(d);
           d.deviceParameterValues.forEach((dp) => {
             parameters.push({
               key: dp.deviceParameter.id,
@@ -712,44 +828,84 @@ function List({ match }) {
 
   return (
     <>
-      <Space>
-        <div>
-          <Search
-            style={{ marginBottom: 8 }}
-            onChange={onChange}
-            placeholder="Поиск"
-          />
-          <Tree
-            onExpand={onExpand}
-            expandedKeys={expandedKeys}
-            autoExpandParent={autoExpandParent}
-            treeData={loop(treeData)}
-            showLine={{ hideLeafIcon: true }}
-            showIcon={false}
-            onSelect={onSelect}
-            style={{ marginBottom: 16 }}
-          />
-        </div>
-        <div>
-          <Button
-            type="primary"
-            onClick={showAddModalDevice}
-            style={{ marginBottom: 8 }}
-          >
-            Добавить параметр
-          </Button>
-          {deviceDetails && (
-            <Table
-              pagination={false}
-              bordered
-              columns={columnsParameters}
-              dataSource={dataParameters}
-            ></Table>
+      <Layout>
+        <Sider theme="light">
+          <Space direction="vertical">
+            <Search
+              style={{ marginBottom: 8 }}
+              onChange={onChange}
+              placeholder="Поиск"
+            />
+            <Tree
+              onExpand={onExpand}
+              expandedKeys={expandedKeys}
+              autoExpandParent={autoExpandParent}
+              treeData={loop(treeData)}
+              showLine={{ hideLeafIcon: true }}
+              showIcon={false}
+              onSelect={onSelect}
+              style={{ marginBottom: 16, minWidth: 200 }}
+            />
+          </Space>
+        </Sider>
+        <Content style={{ backgroundColor: "white" }}>
+          {filterDevices.length != 0 && filterParameters.length != 0 && (
+            <div direction="vertical">
+              <Button
+                type="primary"
+                onClick={showAddModalParameter}
+                style={{ marginBottom: 8 }}
+              >
+                Добавить параметр
+              </Button>
+              {deviceDetails && (
+                <Table
+                  pagination={false}
+                  scroll={{ x: "max-content" }}
+                  bordered
+                  columns={columnsParameters}
+                  dataSource={dataParameters}
+                ></Table>
+              )}
+            </div>
           )}
-        </div>
-      </Space>
-      {deviceDetails && (
-        <div>
+          {(filterDevices.length == 0 ||
+            (filterDevices.length != 0 && filterParameters.length == 0)) && (
+            <div direction="vertical">
+              <Space>
+                <Button
+                  type="primary"
+                  onClick={showAddModalDevice}
+                  style={{ marginBottom: 8 }}
+                >
+                  Добавить устройство
+                </Button>
+                {filterDevices.length != 0 && (
+                  <Button
+                    type="primary"
+                    onClick={showAddModalParameter}
+                    style={{ marginBottom: 8 }}
+                  >
+                    Добавить параметр
+                  </Button>
+                )}
+              </Space>
+              <Table
+                scroll={{ x: 400 }}
+                bordered
+                columns={columnsDevices}
+                dataSource={dataDevices}
+                rowSelection={{
+                  type: "radio",
+                  ...rowSelection,
+                }}
+              ></Table>
+            </div>
+          )}
+        </Content>
+      </Layout>
+      {filterDevices.length != 0 && filterParameters.length != 0 && (
+        <div direction="vertical">
           <Button
             type="primary"
             onClick={showAddModalDevice}
@@ -758,7 +914,7 @@ function List({ match }) {
             Добавить устройство
           </Button>
           <Table
-            scroll={{ x: 800 }}
+            scroll={{ x: 400 }}
             bordered
             columns={columnsDevices}
             dataSource={dataDevices}
@@ -771,9 +927,9 @@ function List({ match }) {
       )}
 
       {!deviceDetails && (
-        <div className="text-center p-3">
+        <Space direction="vertical" className="text-center p-3">
           <Spin size="large" />
-        </div>
+        </Space>
       )}
       <Modal
         title={!mode ? "Добавить устройство" : "Редактировать устройство"}
@@ -791,6 +947,7 @@ function List({ match }) {
             name="formName"
             onFinish={onSubmit}
           >
+          
             <Form.Item
               name="deviceType"
               label="Тип устройства"
@@ -802,6 +959,7 @@ function List({ match }) {
               ]}
             >
               <Select
+              disabled
                 //defaultValue={selectedRoles?.map((r) => r.id)}
                 value={deviceTypes}
               >
@@ -816,6 +974,7 @@ function List({ match }) {
             <Form.Item
               label="Модель"
               name="deviceModel"
+              disabled
               rules={[
                 {
                   required: true,
@@ -829,6 +988,7 @@ function List({ match }) {
             <Form.Item
               label="Инвентарный №"
               name="inventoryNumber"
+              disabled
               rules={[
                 {
                   required: true,
@@ -874,6 +1034,76 @@ function List({ match }) {
                 showSearch={{ filter }}
               ></Cascader>
             </Form.Item>
+
+            {/* <div className="form-group">
+                        <button type="submit" disabled={confirmLoading} className="btn btn-primary mr-2">
+                            {confirmLoading && <span className="spinner-border spinner-border-sm mr-1"></span>}
+                            Сохранить
+                        </button>
+                        <Link to="/users" className="btn btn-link">Отмена</Link>
+                    </div> */}
+          </Form>
+        </>
+      </Modal>
+
+      <Modal
+        title={!mode ? "Добавить параметр" : "Редактировать параметр"}
+        visible={visibleParameter}
+        onOk={form.submit}
+        onCancel={handleCancel}
+        okText="Сохранить"
+        cancelText="Отмена"
+      >
+        <>
+          <Form
+            {...formItemLayout}
+            form={form}
+            scrollToFirstError
+            name="formName"
+            onFinish={onSubmitParameter}
+          >
+          <Descriptions style={{marginInline: 250}} bordered layout="vertical" >
+    <Descriptions.Item label="Тип устройства">{ selectedDevice?.deviceType }</Descriptions.Item>
+    <Descriptions.Item label="Модель">{ selectedDevice?.deviceModel }</Descriptions.Item>
+    <Descriptions.Item label="Инвентарный №">{ selectedDevice?.inventoryNumber }</Descriptions.Item>
+    </Descriptions>
+  <Divider plain>
+</Divider>
+            <Form.Item
+              name="deviceParameter"
+              label="Параметр"
+              rules={[
+                {
+                  required: true,
+                  message: "Пожалуйста, выберите параметр устройства!",
+                },
+              ]}
+            >
+              <Select
+                //defaultValue={selectedRoles?.map((r) => r.id)}
+                value={deviceParameters}
+              >
+                {deviceParameters?.map((dt) => (
+                  <Select.Option value={dt.id} key={dt.id}>
+                    {dt.name}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
+
+            <Form.Item
+              label="Значение"
+              name="deviceParameterValue"
+              rules={[
+                {
+                  required: true,
+                  message: "Пожалуйста, введите значение параметра!",
+                },
+              ]}
+            >
+              <Input />
+            </Form.Item>
+
 
             {/* <div className="form-group">
                         <button type="submit" disabled={confirmLoading} className="btn btn-primary mr-2">

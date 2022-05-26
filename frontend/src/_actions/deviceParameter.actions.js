@@ -15,6 +15,8 @@ function useDeviceParameterActions () {
         getAll,
         getById,
         create,
+        createDeviceParameter,
+        updateDeviceParameter,
         update,
         delete: _delete,
         resetDeviceParameters: useResetRecoilState(deviceParametersAtom),
@@ -26,6 +28,9 @@ function useDeviceParameterActions () {
         return fetchWrapper.post(`${baseUrl}/create`, deviceParameter);
     }
 
+    function createDeviceParameter(deviceParameter) {
+        return fetchWrapper.post(`${baseUrl}/createDeviceParameter`, deviceParameter);
+    }
 
     function getAll() {
         return fetchWrapper.get(baseUrl).then(setDeviceParameters);
@@ -40,7 +45,12 @@ function useDeviceParameterActions () {
                 return x;
             });
     }
-
+    function updateDeviceParameter(id, params) {
+        return fetchWrapper.put(`${baseUrl}/updateDeviceParameter/${id}`, params)
+            .then(x => {
+                return x;
+            });
+    }
     // prefixed with underscored because delete is a reserved word in javascript
     function _delete(id) {
         setDeviceParameters(deviceParameters => deviceParameters.map(x => {

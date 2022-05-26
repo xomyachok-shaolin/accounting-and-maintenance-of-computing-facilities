@@ -5,13 +5,16 @@ using Microsoft.EntityFrameworkCore;
 using WebApi.Authorization;
 using WebApi.Entities;
 using WebApi.Helpers;
+using WebApi.Models.Devices;
 
 public interface IDeviceParameterService
 {
     IEnumerable<DeviceParameter> GetAll();
     DeviceParameter GetById(int id);
     void Create(DeviceParameter model);
+    void createDeviceParameter(DeviceParameterRequest model);
     void Update(int id, DeviceParameter model);
+    void UpdateDeviceParameter(int id, DeviceParameterRequest model);
     void Delete(int id);
 }
 
@@ -49,8 +52,49 @@ public class DeviceParameterService : IDeviceParameterService
 
         var deviceParameter = _mapper.Map<DeviceParameter>(model);
 
-        // save Location
         _context.DeviceParameters.Add(deviceParameter);
+        _context.SaveChanges();
+    }
+
+    public void createDeviceParameter(DeviceParameterRequest model)
+    {
+        // validate
+        if (_context.DeviceParameterValues.Any(x => x.DeviceId == model.Device && x.DeviceParameterId == model.DeviceParameter))
+            throw new AppException("Значение параметра устройства уже занято");
+
+        Device device = _context.Devices.Where(d => d.Id == model.Device).FirstOrDefault();
+        DeviceParameter deviceParameter = _context.DeviceParameters.Where(dp => dp.Id == model.DeviceParameter).FirstOrDefault();
+
+        DeviceParameterValue deviceParameterValue = new DeviceParameterValue()
+        {
+            Value = model.DeviceParameterValue,
+            Device = device,
+            DeviceParameter = deviceParameter
+        };
+
+        _context.DeviceParameterValues.Add(deviceParameterValue);
+        _context.SaveChanges();
+    }
+
+    public void UpdateDeviceParameter(int id, DeviceParameterRequest model)
+    {
+        var deviceParameter = _context.DeviceParameterValues
+            .Where(dp => dp.DeviceParameterId == model.DeviceParameter && dp.DeviceId == model.Device).FirstOrDefault();
+
+        // validate
+        if (deviceParameter.DeviceParameterId != model.DeviceParameter && deviceParameter.DeviceId != model.Device)
+            if (_context.DeviceParameterValues.Any(x => x.DeviceId == model.Device && x.DeviceParameterId == model.DeviceParameter))
+                throw new AppException("Значение параметра устройства уже занято");
+
+        Device device = _context.Devices.Where(d => d.Id == model.Device).FirstOrDefault();
+        DeviceParameter dp = _context.DeviceParameters.Where(dp => dp.Id == model.DeviceParameter).FirstOrDefault();
+
+
+        deviceParameter.Device = device;
+        deviceParameter.DeviceParameter = dp;
+        deviceParameter.Value = model.DeviceParameterValue;
+
+        _context.DeviceParameterValues.Update(deviceParameter);
         _context.SaveChanges();
     }
 
@@ -81,7 +125,7 @@ public class DeviceParameterService : IDeviceParameterService
     private DeviceParameter getDeviceParameter(int id)
     {
         var deviceParameter = _context.DeviceParameters.Find(id);
-        if (deviceParameter == null) throw new KeyNotFoundException("Характеристика устройства не найдена");
+        if (deviceParameter == null) throw new KeyNotFoundException("Параметр устройства не найден");
         return deviceParameter;
     }
 

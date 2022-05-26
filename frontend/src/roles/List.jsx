@@ -184,11 +184,11 @@ function List({ match }) {
   const formItemLayout = {
     labelCol: {
       xs: { span: 24 },
-      sm: { span: 8 },
+      sm: { span: 6 },
     },
     wrapperCol: {
       xs: { span: 24 },
-      sm: { span: 16 },
+      sm: { span: 12 },
     },
   };
 
@@ -280,7 +280,7 @@ function List({ match }) {
           )}
         </>
       </Modal>
-      <Table locale={{emptyText:"Нет данных"}} 
+      <Table 
       pagination={false} scroll={{ x: 800, }}
       bordered columns={columns} dataSource={data}></Table>
     </>

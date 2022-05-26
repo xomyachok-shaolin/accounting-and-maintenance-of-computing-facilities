@@ -6,6 +6,7 @@ using Microsoft.Extensions.Options;
 using WebApi.Authorization;
 using WebApi.Entities;
 using WebApi.Helpers;
+using WebApi.Models.Devices;
 using WebApi.Models.Locations;
 using WebApi.Services;
 
@@ -35,6 +36,13 @@ public class DeviceParametersController : ControllerBase
     public ActionResult<DeviceParameter> Create(DeviceParameter model)
     {
         _deviceParameterService.Create(model);
+        return Ok(new { message = "Создание параметра успешно выполнено" });
+    }
+
+    [HttpPost("createDeviceParameter")]
+    public ActionResult<DeviceParameterRequest> createDeviceParameter(DeviceParameterRequest model)
+    {
+        _deviceParameterService.createDeviceParameter(model);
         return Ok(new { message = "Создание параметра устройства успешно выполнено" });
     }
 
@@ -59,6 +67,13 @@ public class DeviceParametersController : ControllerBase
     public ActionResult<DeviceParameter> Update(int id, DeviceParameter model)
     {
         _deviceParameterService.Update(id, model);        
+        return Ok(new { message = "Информация о параметре успешно обновлена" });
+    }
+
+    [HttpPut("updateDeviceParameter/{id}")]
+    public ActionResult<DeviceParameterRequest> UpdateDeviceParameter(int id, DeviceParameterRequest model)
+    {
+        _deviceParameterService.UpdateDeviceParameter(id, model);
         return Ok(new { message = "Информация о параметре устройства успешно обновлена" });
     }
 

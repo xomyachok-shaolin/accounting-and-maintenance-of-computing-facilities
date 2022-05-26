@@ -1,77 +1,85 @@
 @import '~antd/dist/antd.css';
 
 a {
-    cursor: pointer;
+  cursor: pointer;
 }
 
 .app-container {
-    min-height: 350px;
+  min-height: 350px;
 }
 
 #components-layout-demo-side .logo {
-    height: 32px;
-    margin: 16px;
-    background: rgba(255, 255, 255, 0.3);
+  height: 32px;
+  margin: 16px;
+  background: rgba(255, 255, 255, 0.3);
 }
 
 .site-layout .site-layout-background {
-    background: #f0f2f5;
+  background: #f0f2f5;
 }
 
 .flex-container {
-    height: 100%;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  height: 100%;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .avatar-uploader>.ant-upload {
-    width: 128px;
-    height: 128px;
+  width: 128px;
+  height: 128px;
 }
 
 
-      .ant-table-thead > tr >th{
-        color: black;
-        background: rgba(220, 220, 220, .3) !important;
-      }
-
-      
-
-      .ant-table-tbody > tr >th{
-        color: black;
-        background:  rgba(230, 230, 230, .7)!important;
-        }
-         .ant-table-tbody> tr> td {
-          background: rgba(255,255,255,0) !important;
-        }
-        .ant-table-tbody> tr >td:hover{
-          background: rgba(255,255,255,0) !important;
-        }
-       .ant-table-tbody> tr> td {
-          background: rgba(255,255,255,0) !important;
-        }
-        .ant-table-tbody> tr:hover{
-          background: #f5f6f7!important;
-        }
+.ant-table-thead>tr>th {
+  color: black;
+  background: rgba(220, 220, 220, .3) !important;
+}
 
 
-        .site-tree-search-value {
-            color: #f50;
-          }
 
-          .anticon ,
-          .ant-btn {
+.ant-table-tbody>tr>th {
+  color: black;
+  background: rgba(230, 230, 230, .7) !important;
+}
+
+.ant-table-tbody>tr>td {
+  background: rgba(255, 255, 255, 0) !important;
+}
+
+.ant-table-tbody>tr>td:hover {
+  background: rgba(255, 255, 255, 0) !important;
+}
+
+.ant-table-tbody>tr>td {
+  background: rgba(255, 255, 255, 0) !important;
+}
+
+.ant-table-tbody>tr:hover {
+  background: #f5f6f7 !important;
+}
+
+
+.site-tree-search-value {
+  color: #f50;
+}
+
+.anticon,
+.ant-btn {
   display: inline-flex;
   align-items: center;
 }
-.ant-modal, .ant-modal-content {
+
+.ant-modal,
+.ant-modal-content {
   width: 100vw;
   margin: unset;
- }
+}
 
- #components-transfer-demo-table-transfer .ant-table td {
+#components-transfer-demo-table-transfer .ant-table td {
   background: transparent;
 }
+
+.ant-table.ant-table-rtl { overflow-x: scroll; }
