@@ -16,6 +16,8 @@ public interface IDeviceParameterService
     void Update(int id, DeviceParameter model);
     void UpdateDeviceParameter(int id, DeviceParameterRequest model);
     void Delete(int id);
+    void DeleteDeviceParameter(DeviceParameterDeleteRequest model);
+
 }
 
 public class DeviceParameterService : IDeviceParameterService
@@ -58,17 +60,22 @@ public class DeviceParameterService : IDeviceParameterService
 
     public void createDeviceParameter(DeviceParameterRequest model)
     {
-        // validate
-        if (_context.DeviceParameterValues.Any(x => x.DeviceId == model.Device && x.DeviceParameterId == model.DeviceParameter))
-            throw new AppException("Значение параметра устройства уже занято");
+        DeviceType dt = _context.DeviceTypes.Where(dt => dt.Name == model.DeviceType).FirstOrDefault();
 
-        Device device = _context.Devices.Where(d => d.Id == model.Device).FirstOrDefault();
+        DeviceModel deviceModel = _context.DeviceModels.Where(dm => dm.Name == model.DeviceModel && dm.IdDeviceType == dt.Id).SingleOrDefault();
+
+        if (deviceModel == null)
+            throw new AppException("Наименование модели \""+ model.DeviceModel + "\" для \"" + dt.Name + "\" не найдено");
+
+        if (_context.DeviceParameterValues.Any(x => x.DeviceModelId == deviceModel.Id && x.DeviceParameterId == model.DeviceParameter))
+            throw new AppException("Значение параметра  \"" + deviceModel.Name + "\"  уже занято");
+
         DeviceParameter deviceParameter = _context.DeviceParameters.Where(dp => dp.Id == model.DeviceParameter).FirstOrDefault();
 
         DeviceParameterValue deviceParameterValue = new DeviceParameterValue()
         {
             Value = model.DeviceParameterValue,
-            Device = device,
+            DeviceModel = deviceModel,
             DeviceParameter = deviceParameter
         };
 
@@ -78,19 +85,26 @@ public class DeviceParameterService : IDeviceParameterService
 
     public void UpdateDeviceParameter(int id, DeviceParameterRequest model)
     {
+
+        DeviceType dt = _context.DeviceTypes.Where(dt => dt.Name  == model.DeviceType).FirstOrDefault();
+
+        DeviceModel deviceModel = _context.DeviceModels.Where(dm => dm.Name == model.DeviceModel && dm.IdDeviceType == dt.Id).SingleOrDefault();
+
+        if (deviceModel == null)
+            throw new AppException("Наименование модели \"" + model.DeviceModel + "\" для \"" + dt.Name + "\" не найдено");
+
         var deviceParameter = _context.DeviceParameterValues
-            .Where(dp => dp.DeviceParameterId == model.DeviceParameter && dp.DeviceId == model.Device).FirstOrDefault();
+            .Where(dp => dp.DeviceParameterId == model.DeviceParameter && dp.DeviceModelId == deviceModel.Id).FirstOrDefault();
 
         // validate
-        if (deviceParameter.DeviceParameterId != model.DeviceParameter && deviceParameter.DeviceId != model.Device)
-            if (_context.DeviceParameterValues.Any(x => x.DeviceId == model.Device && x.DeviceParameterId == model.DeviceParameter))
-                throw new AppException("Значение параметра устройства уже занято");
+        if (deviceParameter.DeviceParameterId != model.DeviceParameter && deviceParameter.DeviceModelId != deviceModel.Id)
+            if (_context.DeviceParameterValues.Any(x => x.DeviceModelId == deviceModel.Id && x.DeviceParameterId == model.DeviceParameter))
+                throw new AppException("Значение параметра  \"" + deviceModel.Name + "\"  уже занято");
 
-        Device device = _context.Devices.Where(d => d.Id == model.Device).FirstOrDefault();
         DeviceParameter dp = _context.DeviceParameters.Where(dp => dp.Id == model.DeviceParameter).FirstOrDefault();
 
 
-        deviceParameter.Device = device;
+        deviceParameter.DeviceModel = deviceModel;
         deviceParameter.DeviceParameter = dp;
         deviceParameter.Value = model.DeviceParameterValue;
 
@@ -105,7 +119,7 @@ public class DeviceParameterService : IDeviceParameterService
         // validate
         if (deviceParameter.Name != model.Name)
         if (_context.DeviceParameters.Any(x => x.Name == model.Name))
-            throw new AppException("Наименование характеристики устройства уже занято");
+            throw new AppException("Наименование параметра устройства уже занято");
 
         deviceParameter.Name = model.Name;
 
@@ -117,6 +131,15 @@ public class DeviceParameterService : IDeviceParameterService
     {
         var deviceParameter = getDeviceParameter(id);
         _context.DeviceParameters.Remove(deviceParameter);
+        _context.SaveChanges();
+    }
+
+    public void DeleteDeviceParameter(DeviceParameterDeleteRequest model)
+    {
+        DeviceParameter temp = _context.DeviceParameters.Where(dp => dp.Name == model.DeviceParameter).FirstOrDefault();
+
+        var deviceParameter = _context.DeviceParameterValues.Where(dp => dp.DeviceParameterId == temp.Id && dp.DeviceModelId == model.DeviceModel).FirstOrDefault();
+        _context.DeviceParameterValues.Remove(deviceParameter);
         _context.SaveChanges();
     }
 

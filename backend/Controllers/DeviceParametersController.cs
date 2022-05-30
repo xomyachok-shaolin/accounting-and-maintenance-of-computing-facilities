@@ -81,6 +81,13 @@ public class DeviceParametersController : ControllerBase
     public IActionResult Delete(int id)
     {
         _deviceParameterService.Delete(id);
+        return Ok(new { message = "Информация о параметре успешно удалена" });
+    }
+
+    [HttpPost("deleteDeviceParameter")]
+    public ActionResult<DeviceParameterDeleteRequest> DeleteDeviceParameter(DeviceParameterDeleteRequest model)
+    {
+        _deviceParameterService.DeleteDeviceParameter(model);
         return Ok(new { message = "Информация о параметре устройства успешно удалена" });
     }
 }

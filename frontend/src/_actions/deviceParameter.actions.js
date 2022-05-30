@@ -18,6 +18,7 @@ function useDeviceParameterActions () {
         createDeviceParameter,
         updateDeviceParameter,
         update,
+        deleteDeviceParameter,
         delete: _delete,
         resetDeviceParameters: useResetRecoilState(deviceParametersAtom),
         resetDeviceParameter: useResetRecoilState(deviceParameterAtom)
@@ -66,5 +67,10 @@ function useDeviceParameterActions () {
                 // remove deviceParameter from list after deleting
                 setDeviceParameters(deviceParameters => deviceParameters.filter(x => x.id !== id));
             });
+    }
+
+    function deleteDeviceParameter(params) {
+
+        return fetchWrapper.post(`${baseUrl}/deleteDeviceParameter/`, params);
     }
 }

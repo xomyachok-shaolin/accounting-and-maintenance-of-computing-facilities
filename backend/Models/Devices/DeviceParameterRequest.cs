@@ -5,7 +5,9 @@ namespace WebApi.Models.Devices;
 public class DeviceParameterRequest
 {
     [Required]
-    public int Device { get; set; }
+    public string DeviceType { get; set; }
+    [Required]
+    public string DeviceModel { get; set; }
     [Required]
     public string DeviceParameterValue { get; set; }
     [Required]

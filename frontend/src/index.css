@@ -60,8 +60,9 @@ a {
 .ant-table-tbody>tr:hover {
   background: #f5f6f7 !important;
 }
-
-
+.anticon svg {
+  display: block;
+}
 .site-tree-search-value {
   color: #f50;
 }
@@ -81,5 +82,7 @@ a {
 #components-transfer-demo-table-transfer .ant-table td {
   background: transparent;
 }
-
+.ant-menu-item.ant-menu-item-only-child .anticon, .ant-menu-submenu-title.ant-menu-item-only-child .anticon {
+  margin-right: 0;
+}
 .ant-table.ant-table-rtl { overflow-x: scroll; }

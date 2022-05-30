@@ -10,7 +10,19 @@ const deviceDetailAtom = atom({
     default: null
 });
 
+const filterParametersAtom = atom({
+    key: 'filterParameters',
+    default: null
+});
+
+const filterDevicesAtom = atom({
+    key: 'filterDevices',
+    default: null
+});
+
 export {
     deviceDetailsAtom,
-    deviceDetailAtom
+    deviceDetailAtom,
+    filterParametersAtom,
+    filterDevicesAtom
 };

@@ -9,10 +9,9 @@ public class DeviceModel
     public string Name { get; set; }
     public int IdDeviceType { get; set; }
     public DeviceType DeviceType { get; set; }
-    [NotMapped]
-    public int DeviceTypeRequestId { get; set; }
-    [NotMapped]
-    public DeviceTypeRequest DeviceTypeRequest { get; set; }
+
+    public ICollection<DeviceParameter> DeviceParameters { get; set; }
+    public List<DeviceParameterValue> DeviceParameterValues { get; set; }
 
 
     public ICollection<Device> Devices { get; set; }

@@ -64,12 +64,12 @@ public partial class DataContext : DbContext
             .OnDelete(DeleteBehavior.Restrict);
         
         modelBuilder.Entity<DeviceParameterValue>()
-            .HasKey(dp => new { dp.DeviceParameterId , dp.DeviceId });
+            .HasKey(dp => new { dp.DeviceParameterId , dp.DeviceModelId });
 
         modelBuilder.Entity<DeviceParameterValue>()
-            .HasOne(dpv => dpv.Device)
+            .HasOne(dpv => dpv.DeviceModel)
             .WithMany(p => p.DeviceParameterValues)
-            .HasForeignKey(dpv => dpv.DeviceId);
+            .HasForeignKey(dpv => dpv.DeviceModelId);
 
         modelBuilder.Entity<DeviceParameterValue>()
             .HasOne(pt => pt.DeviceParameter)

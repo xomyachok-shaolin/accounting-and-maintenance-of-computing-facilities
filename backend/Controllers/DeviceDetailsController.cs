@@ -61,4 +61,11 @@ public class DeviceDetailsController : ControllerBase
         return Ok(new { message = "Устройство успешно добавлено" });
     }
 
+    [HttpPut("{id}")]
+    public ActionResult<DeviceRequest> Update(int id, DeviceRequest model)
+    {
+        _deviceService.Update(id, model);
+        return Ok(new { message = "Информация об устройстве успешно обновлена" });
+    }
+
 }

@@ -16,9 +16,6 @@ public class Device
     public DateTime? DateOfLastService { get; set; }
     public DateTime? DateOfNextService { get; set; }
 
-    public ICollection<DeviceParameter> DeviceParameters { get; set; }
-    public List<DeviceParameterValue> DeviceParameterValues { get; set; }
-
     public ICollection<DeviceTransfer> DeviceTransfers { get; set; }
     public ICollection<TaskDeviceTransfer> TaskDeviceTransfers { get; set; }
 }

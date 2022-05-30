@@ -50,9 +50,7 @@ function List({ match }) {
 
   const { confirm } = Modal;
 
-  const deviceDetails = useRecoilValue(deviceDetailsAtom);
   const deviceTypes = useRecoilValue(deviceTypesAtom);
-
   const locations = useRecoilValue(locationsAtom);
 
   const deviceDetailActions = useDeviceDetailActions();
@@ -783,7 +781,7 @@ function List({ match }) {
             showLine={{ hideLeafIcon: true }}
             showIcon={false}
             onSelect={onSelect}
-            style={{ marginBottom: 16 }}
+            style={{ marginBottom: 16, minWidth: 200 }}
           />
         </div>
         <div>

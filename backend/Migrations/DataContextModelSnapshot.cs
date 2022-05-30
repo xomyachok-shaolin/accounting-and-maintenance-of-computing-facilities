@@ -22,21 +22,6 @@ namespace WebApi.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("DeviceDeviceParameter", b =>
-                {
-                    b.Property<int>("DeviceId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("DeviceParametersId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("DeviceId", "DeviceParametersId");
-
-                    b.HasIndex("DeviceParametersId");
-
-                    b.ToTable("DeviceDeviceParameter");
-                });
-
             modelBuilder.Entity("RoleUser", b =>
                 {
                     b.Property<int>("RolesId")
@@ -66,6 +51,9 @@ namespace WebApi.Migrations
                     b.Property<DateTime?>("DateOfNextService")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<int?>("DeviceParameterId")
+                        .HasColumnType("integer");
+
                     b.Property<int>("IdDeviceModel")
                         .HasColumnType("integer");
 
@@ -76,6 +64,8 @@ namespace WebApi.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("DeviceParameterId");
 
                     b.HasIndex("IdDeviceModel");
 
@@ -113,10 +103,15 @@ namespace WebApi.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<int?>("DeviceModelId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Name")
                         .HasColumnType("text");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("DeviceModelId");
 
                     b.ToTable("DeviceParameters");
                 });
@@ -126,15 +121,15 @@ namespace WebApi.Migrations
                     b.Property<int>("DeviceParameterId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("DeviceId")
+                    b.Property<int>("DeviceModelId")
                         .HasColumnType("integer");
 
                     b.Property<string>("Value")
                         .HasColumnType("text");
 
-                    b.HasKey("DeviceParameterId", "DeviceId");
+                    b.HasKey("DeviceParameterId", "DeviceModelId");
 
-                    b.HasIndex("DeviceId");
+                    b.HasIndex("DeviceModelId");
 
                     b.ToTable("DeviceParameterValues");
                 });
@@ -553,21 +548,6 @@ namespace WebApi.Migrations
                     b.ToTable("DeviceTypeRequests");
                 });
 
-            modelBuilder.Entity("DeviceDeviceParameter", b =>
-                {
-                    b.HasOne("WebApi.Entities.Device", null)
-                        .WithMany()
-                        .HasForeignKey("DeviceId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("WebApi.Entities.DeviceParameter", null)
-                        .WithMany()
-                        .HasForeignKey("DeviceParametersId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("RoleUser", b =>
                 {
                     b.HasOne("WebApi.Entities.Role", null)
@@ -585,6 +565,10 @@ namespace WebApi.Migrations
 
             modelBuilder.Entity("WebApi.Entities.Device", b =>
                 {
+                    b.HasOne("WebApi.Entities.DeviceParameter", null)
+                        .WithMany("Device")
+                        .HasForeignKey("DeviceParameterId");
+
                     b.HasOne("WebApi.Entities.DeviceModel", "DeviceModel")
                         .WithMany("Devices")
                         .HasForeignKey("IdDeviceModel")
@@ -612,11 +596,18 @@ namespace WebApi.Migrations
                     b.Navigation("DeviceType");
                 });
 
+            modelBuilder.Entity("WebApi.Entities.DeviceParameter", b =>
+                {
+                    b.HasOne("WebApi.Entities.DeviceModel", null)
+                        .WithMany("DeviceParameters")
+                        .HasForeignKey("DeviceModelId");
+                });
+
             modelBuilder.Entity("WebApi.Entities.DeviceParameterValue", b =>
                 {
-                    b.HasOne("WebApi.Entities.Device", "Device")
+                    b.HasOne("WebApi.Entities.DeviceModel", "DeviceModel")
                         .WithMany("DeviceParameterValues")
-                        .HasForeignKey("DeviceId")
+                        .HasForeignKey("DeviceModelId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -626,7 +617,7 @@ namespace WebApi.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Device");
+                    b.Navigation("DeviceModel");
 
                     b.Navigation("DeviceParameter");
                 });
@@ -791,8 +782,6 @@ namespace WebApi.Migrations
 
             modelBuilder.Entity("WebApi.Entities.Device", b =>
                 {
-                    b.Navigation("DeviceParameterValues");
-
                     b.Navigation("DeviceTransfers");
 
                     b.Navigation("TaskDeviceTransfers");
@@ -800,11 +789,17 @@ namespace WebApi.Migrations
 
             modelBuilder.Entity("WebApi.Entities.DeviceModel", b =>
                 {
+                    b.Navigation("DeviceParameterValues");
+
+                    b.Navigation("DeviceParameters");
+
                     b.Navigation("Devices");
                 });
 
             modelBuilder.Entity("WebApi.Entities.DeviceParameter", b =>
                 {
+                    b.Navigation("Device");
+
                     b.Navigation("DeviceParameterValues");
                 });
 
