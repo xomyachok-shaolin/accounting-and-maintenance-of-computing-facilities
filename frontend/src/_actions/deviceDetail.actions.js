@@ -80,9 +80,9 @@ function useDeviceDetailActions() {
 
   // prefixed with underscored because delete is a reserved word in javascript
   function _delete(id) {
-    setDeviceDetails((deviceDetails) =>
-      deviceDetails.map((x) => {
-        // add isDeleting prop to deviceDetail being deleted
+    setFilterDevices((filterDevices) =>
+    filterDevices.map((x) => {
+        // add isDeleting prop to filterDevices being deleted
         if (x.id === id) return { ...x, isDeleting: true };
 
         return x;
@@ -90,9 +90,9 @@ function useDeviceDetailActions() {
     );
 
     return fetchWrapper.delete(`${baseUrl}/${id}`).then(() => {
-      // remove deviceDetail from list after deleting
-      setDeviceDetails((deviceDetails) =>
-        deviceDetails.filter((x) => x.id !== id)
+      // remove filterDevices from list after deleting
+      setDeviceDetails((filterDevices) =>
+      filterDevices.filter((x) => x.id !== id)
       );
     });
   }

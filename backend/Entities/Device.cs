@@ -3,6 +3,7 @@ using System.Text.Json.Serialization;
 namespace WebApi.Entities;
 public class Device
 {
+
     public int Id { get; set; }
     public string InventoryNumber { get; set; }
 
@@ -15,6 +16,8 @@ public class Device
 
     public DateTime? DateOfLastService { get; set; }
     public DateTime? DateOfNextService { get; set; }
+
+    public bool IsDeleted { get; set; }
 
     public ICollection<DeviceTransfer> DeviceTransfers { get; set; }
     public ICollection<TaskDeviceTransfer> TaskDeviceTransfers { get; set; }

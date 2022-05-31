@@ -68,4 +68,11 @@ public class DeviceDetailsController : ControllerBase
         return Ok(new { message = "Информация об устройстве успешно обновлена" });
     }
 
+    [HttpDelete("{id}")]
+    public IActionResult Delete(int id)
+    {
+        _deviceService.Delete(id);
+        return Ok(new { message = "Информация об устройстве успешно удалена" });
+    }
+
 }

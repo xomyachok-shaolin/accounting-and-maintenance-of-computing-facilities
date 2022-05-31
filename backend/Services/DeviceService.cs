@@ -248,7 +248,8 @@ public class DeviceService : IDeviceService
     public void Delete(int id)
     {
         var Device = getDevice(id);
-        _context.Devices.Remove(Device);
+        Device.IsDeleted = true;
+        _context.Devices.Update(Device);
         _context.SaveChanges();
     }
     

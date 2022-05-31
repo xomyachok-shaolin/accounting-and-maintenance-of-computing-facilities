@@ -50,6 +50,7 @@ function useLocationActions () {
 
     // prefixed with underscored because delete is a reserved word in javascript
     function _delete(id) {
+        console.log(1)
         setLocations(locations => locations.map(x => {
             // add isDeleting prop to location being deleted
             if (x.id === id) 

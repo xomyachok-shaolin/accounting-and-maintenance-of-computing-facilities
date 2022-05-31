@@ -537,7 +537,7 @@ function List({ match }) {
     for (let i = 0; i < data.length; i++) {
       const node = data[i];
       const { key } = node;
-      dataList.push({ key, title: key });
+      dataList.push({ key, title: node.title });
       if (node.children) {
         generateList(node.children);
       }
@@ -574,6 +574,7 @@ function List({ match }) {
     const { value } = e.target;
     const newExpandedKeys = dataList
       .map((item) => {
+        console.log(item)
         if (item.title.indexOf(value) > -1) {
           return getParentKey(item.key, treeData);
         }
@@ -683,7 +684,9 @@ function List({ match }) {
       okText: "Да",
       cancelText: "Отмена",
       onOk() {
-        // userActions.deleteRole(id);
+        deviceDetailActions.delete(id);
+        setIsResetAll(true);
+        alertActions.success("Информация об устройстве удалена");
       },
       onCancel() {},
     });

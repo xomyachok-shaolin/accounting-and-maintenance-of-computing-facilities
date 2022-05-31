@@ -40,10 +40,11 @@ export { List };
 
 function List({ match }) {
   const [form] = Form.useForm();
+  const [form1] = Form.useForm();
 
   const alertActions = useAlertActions();
 
-  const [visible, setVisible] = useState(false);
+  const [visibleWS, setVisibleWS] = useState(false);
 
   const [mode, setMode] = useState(false);
   const [isResetAll, setIsResetAll] = useState(false);
@@ -88,6 +89,8 @@ function List({ match }) {
       <Space direction="vertical" style={{ padding: 8 }}>
         {(dataIndex == "inventoryNumber" ||
           dataIndex == "location" ||
+          dataIndex == "deviceModel" ||
+          dataIndex == "deviceType" ||
           dataIndex == "useType") && (
           <Input
             // ref={ searchInput }
@@ -96,8 +99,12 @@ function List({ match }) {
                 ? "инвентарному №"
                 : dataIndex == "location"
                 ? "местоположению"
+                : dataIndex == "deviceModel"
+                ? "модели"
                 : dataIndex == "useType"
                 ? "типу пользования"
+                : dataIndex == "deviceType"
+                ? "тип устройства"
                 : dataIndex
             }`}
             value={selectedKeys[0]}
@@ -328,7 +335,7 @@ function List({ match }) {
       sorter: (a, b) => a.ipAddress.localeCompare(b.ipAddress),
     },
     {
-      title: "Дата установки",
+      title: "Дата и время установки",
       dataIndex: "dateOfInstallation",
       id: "dateOfInstallation",
       ...getColumnSearchProps("dateOfInstallation"),
@@ -582,7 +589,7 @@ function List({ match }) {
     for (let i = 0; i < data.length; i++) {
       const node = data[i];
       const { key } = node;
-      dataList.push({ key, title: key });
+      dataList.push({ key, title: node.title });
       if (node.children) {
         generateList(node.children);
       }
@@ -633,7 +640,7 @@ function List({ match }) {
     });
 
   const showModal = () => {
-    setVisible(true);
+    setVisibleWS(true);
   };
   const showDeleteModal = (id) => {
     confirm({
@@ -665,7 +672,7 @@ function List({ match }) {
     // });
   };
 
-  const showAddModalDevice = () => {
+  const showAddModalWS = () => {
     setMode(false);
     form.setFieldsValue({
       username: "",
@@ -678,6 +685,7 @@ function List({ match }) {
     });
     showModal();
   };
+
   function createDevice(data) {
     console.log(data);
 
@@ -713,14 +721,14 @@ function List({ match }) {
     });
   }
   function onSubmit(values) {
-    setVisible(false);
+    setVisibleWS(false);
     setDisabledCascader(true);
 
     return !mode ? createDevice(values) : updateDevice(mode.id, values);
   }
 
   const handleCancel = () => {
-    setVisible(false);
+    setVisibleWS(false);
     setDisabledCascader(true);
     form.resetFields();
   };
@@ -787,7 +795,7 @@ function List({ match }) {
         <div>
           <Button
             type="primary"
-            onClick={showAddModalDevice}
+            onClick={showAddModalWS}
             style={{ marginBottom: 8 }}
           >
             Добавить рабочее место
@@ -818,7 +826,7 @@ function List({ match }) {
         <div>
           <Button
             type="primary"
-            onClick={showAddModalDevice}
+            onClick={showAddModalWS}
             style={{ marginBottom: 8 }}
           >
             Добавить устройство
@@ -841,105 +849,74 @@ function List({ match }) {
           <Spin size="large" />
         </div>
       )}
-      <Modal
-        title={!mode ? "Добавить устройство" : "Редактировать устройство"}
-        visible={visible}
-        onOk={form.submit}
-        onCancel={handleCancel}
-        okText="Сохранить"
-        cancelText="Отмена"
-      >
-        <>
-          <Form
-            {...formItemLayout}
-            form={form}
-            scrollToFirstError
-            name="formName"
-            onFinish={onSubmit}
+            <Modal
+            title={!mode ? "Добавить рабочее место" : "Редактировать раюбочее место"}
+            visible={visibleWS}
+            onOk={form1.submit}
+            onCancel={handleCancel}
+            okText="Сохранить"
+            cancelText="Отмена"
           >
-            <Form.Item
-              name="deviceType"
-              label="Тип устройства"
-              rules={[
-                {
-                  required: true,
-                  message: "Пожалуйста, выберите тип устройства!",
-                },
-              ]}
-            >
-              <Select
-                //defaultValue={selectedRoles?.map((r) => r.id)}
-                value={deviceTypes}
+            <>
+              <Form
+                {...formItemLayout}
+                form={form1}
+                scrollToFirstError
+                name="formName"
+                onFinish={onSubmit}
               >
-                {deviceTypes?.map((dt) => (
-                  <Select.Option value={dt.id} key={dt.id}>
-                    {dt.name}
-                  </Select.Option>
-                ))}
-              </Select>
-            </Form.Item>
-
-            <Form.Item
-              label="Модель"
-              name="deviceModel"
-              rules={[
-                {
-                  required: true,
-                  message: "Пожалуйста, введите модель устройства!",
-                },
-              ]}
-            >
-              <Input />
-            </Form.Item>
-
-            <Form.Item
-              label="Инвентарный №"
-              name="inventoryNumber"
-              rules={[
-                {
-                  required: true,
-                  message: "Пожалуйста, введите инвентарный №!",
-                },
-              ]}
-            >
-              <Input />
-            </Form.Item>
-
-            <Form.Item
-              name="useType"
-              label="Вид пользования"
-              rules={[
-                {
-                  required: true,
-                  message: "Пожалуйста, укажите вид пользования!",
-                },
-              ]}
-            >
-              <Radio.Group>
-                <Space direction="vertical" onChange={changeCascader}>
-                  <Radio value={1}>Общее пользование</Radio>
-                  <Radio value={2}>Резерв</Radio>
-                  <Radio value={3}>Рабочее место</Radio>
-                </Space>
-              </Radio.Group>
-            </Form.Item>
-
-            <Form.Item
-              name="location"
-              label="Местоположение"
-              rules={[
-                {
-                  required: true,
-                  message: "Пожалуйста, укажите местоположение!",
-                },
-              ]}
-            >
-              <Cascader
-                options={treeLocationsData}
-                disabled={disabledCascader}
-                showSearch={{ filter }}
-              ></Cascader>
-            </Form.Item>
+              <Form.Item
+                label="Регистрационный №"
+                name="registerNumber"
+                disabled
+                rules={[
+                  {
+                    required: true,
+                    message: "Пожалуйста, введите регистрационный №!",
+                  },
+                ]}
+              >
+                <Input />
+              </Form.Item>
+              <Form.Item
+                label="Сетевое имя"
+                name="networkName"
+                disabled
+                rules={[
+                  {
+                    required: true,
+                    message: "Пожалуйста, введите сетевое имя!",
+                  },
+                ]}
+              >
+                <Input />
+              </Form.Item>
+    
+                <Form.Item
+                  label="Модель"
+                  name="deviceModel"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Пожалуйста, введите модель устройства!",
+                    },
+                  ]}
+                >
+                  <Input />
+                </Form.Item>
+    
+                <Form.Item
+                  label="Значение"
+                  name="deviceParameterValue"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Пожалуйста, введите значение параметра!",
+                    },
+                  ]}
+                >
+                  <Input />
+                </Form.Item>
 
             {/* <div className="form-group">
                         <button type="submit" disabled={confirmLoading} className="btn btn-primary mr-2">

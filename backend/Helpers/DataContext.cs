@@ -167,6 +167,12 @@ public partial class DataContext : DbContext
             .HasForeignKey(d => d.IdWrittingOffAct)
             .OnDelete(DeleteBehavior.Restrict);
 
+        modelBuilder.Entity<Device>()
+           .Property("IsDeleted")
+           .HasDefaultValue(false);
+
+        modelBuilder.Entity<Device>().HasQueryFilter(d => !d.IsDeleted);
+
         // modelBuilder.Entity<TaskDeviceTransfer>().HasDiscriminator(dt => dt.UseType);
 
         OnModelCreatingPartial(modelBuilder);

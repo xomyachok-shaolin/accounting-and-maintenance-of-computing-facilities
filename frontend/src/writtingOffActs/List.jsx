@@ -98,7 +98,10 @@ function List({ match }) {
     }) => (
       <Space direction="vertical" style={{ padding: 8 }}>
         {(dataIndex == "inventoryNumber" ||
+          dataIndex == "deviceModel" ||
           dataIndex == "location" ||
+          dataIndex == "deviceType" ||
+          dataIndex == "name" ||
           dataIndex == "useType") && (
           <Input
             // ref={ searchInput }
@@ -107,8 +110,14 @@ function List({ match }) {
                 ? "инвентарному №"
                 : dataIndex == "location"
                 ? "местоположению"
+                : dataIndex == "name"
+                ? "наименованию"
+                : dataIndex == "deviceModel"
+                ? "модели"
                 : dataIndex == "useType"
-                ? "типу пользования"
+                ? "виду пользования"
+                : dataIndex == "deviceType"
+                ? "тип устройства"
                 : dataIndex
             }`}
             value={selectedKeys[0]}
@@ -119,9 +128,7 @@ function List({ match }) {
             style={{ marginBottom: 8, display: "block" }}
           />
         )}
-        {(dataIndex == "dateOfLastService" ||
-          dataIndex == "dateOfNextService" ||
-          dataIndex == "dateOfDebit") && (
+        {(dataIndex == "dateOfDebit") && (
           <DatePicker.RangePicker
             onChange={(date, dateString) => {
               setSelectedKeys(date ? [date] : []);
@@ -132,9 +139,7 @@ function List({ match }) {
           />
         )}
         <Space>
-          {dataIndex != "dateOfLastService" &&
-            dataIndex != "dateOfNextService" &&
-            dataIndex != "dateOfDebit" && (
+          {dataIndex != "dateOfDebit" && (
               <Button
                 type="primary"
                 onClick={() => handleSearch(selectedKeys, confirm, dataIndex)}

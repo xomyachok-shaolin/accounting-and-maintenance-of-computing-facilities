@@ -63,6 +63,11 @@ namespace WebApi.Migrations
                     b.Property<string>("InventoryNumber")
                         .HasColumnType("text");
 
+                    b.Property<bool?>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
                     b.HasKey("Id");
 
                     b.HasIndex("DeviceParameterId");
