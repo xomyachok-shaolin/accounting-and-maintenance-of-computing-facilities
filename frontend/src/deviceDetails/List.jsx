@@ -971,7 +971,7 @@ function List({ match }) {
         <>
           <Layout>
             <Sider theme="light">
-              <Space direction="vertical">
+              <div>
                 <Search
                   style={{ marginBottom: 8 }}
                   onChange={onChange}
@@ -988,7 +988,7 @@ function List({ match }) {
                   onSelect={onSelect}
                   style={{ marginBottom: 16, minWidth: 200 }}
                 />
-              </Space>
+              </div>
             </Sider>
             <Content style={{ paddingLeft: 20, backgroundColor: "white" }}>
               {!isDefaultEmpty && (

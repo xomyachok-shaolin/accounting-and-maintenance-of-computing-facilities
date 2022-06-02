@@ -1,5 +1,5 @@
 # pull the official base image
-FROM node:16.14
+FROM node:18
 # set working direction
 WORKDIR /app
 # add `/app/node_modules/.bin` to $PATH

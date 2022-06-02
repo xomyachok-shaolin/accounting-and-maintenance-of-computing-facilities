@@ -21,6 +21,8 @@ import {
   Tag,
   Radio,
   Tree,
+  Sider,
+  Layout
   Button,
   Cascader,
 } from "antd";
@@ -29,12 +31,14 @@ import moment from "moment";
 
 import { ExclamationCircleOutlined, FormOutlined } from "@ant-design/icons";
 
-import { deviceDetailsAtom, deviceTypesAtom, locationsAtom } from "_state";
+import { deviceDetailsAtom, employeesAtom, deviceTypesAtom, locationsAtom } from "_state";
 import React from "react";
 import Search from "antd/lib/input/Search";
 
 import Highlighter from "react-highlight-words";
 import { SearchOutlined, FilterOutlined } from "@ant-design/icons";
+
+import { TableTransfer } from "./TableTransfer";
 
 export { List };
 
@@ -53,6 +57,7 @@ function List({ match }) {
 
   const deviceTypes = useRecoilValue(deviceTypesAtom);
   const locations = useRecoilValue(locationsAtom);
+  const employees = useRecoilValue(employeesAtom);
 
   const deviceDetailActions = useDeviceDetailActions();
   const deviceTypeActions = useDeviceTypeActions();
@@ -65,6 +70,11 @@ function List({ match }) {
     deviceTypeActions.getAll();
     locationActions.getAll();
     return locationActions.resetLocations;
+  }, []);
+
+  useEffect(() => {
+    locationActions.getAllEmployees();
+    return locationActions.resetEmployees;
   }, []);
 
   useEffect(() => {
@@ -389,7 +399,7 @@ function List({ match }) {
   const [filterWorkstations, setfilterWorkstations] = useState([]);
 
   const [selectedRowKeys, setRowKeys] = useState([]);
-  const onSelect = (selectedKeys: React.Key[], info) => {
+  const onSelect = (selectedKeys, info) => {
     var node = info.node;
     let tempKey = null;
     var devices = [];
@@ -772,9 +782,141 @@ function List({ match }) {
     onChange: onSelectChange,
   };
 
+  const dateFormat = "YYYY/MM/DD";
+
+  const [filterDeviceTransfers, setFilterDeviceTransfers] = useState([]);
+
+  var devices = [];
+  if (filterDeviceTransfers.length == 0)
+    locations?.forEach((l) => {
+      l.workstationTransfers[0]?.workstation.deviceTransfers.forEach((dt) => {
+        let device = JSON.parse(JSON.stringify(dt.device));
+        device.useType = dt.useType;
+        device.location = l;
+        device.workstation = l.workstationTransfers[0]?.workstation;
+        if (device.workstation != null) {
+          devices.push(device);
+          setFilterDeviceTransfers(devices);
+        }
+      });
+      l.deviceTransfers.forEach((dt) => {
+        let device = JSON.parse(JSON.stringify(dt.device));
+        device.useType = dt.useType;
+        device.location = l;
+        device.workstation = l.workstationTransfers[0]?.workstation;
+
+        if (device.location != null) {
+          devices.push(device);
+          setFilterDeviceTransfers(devices);
+        }
+      });
+    });
+
+  const dataTransferDevices = Array.from(filterDeviceTransfers)?.map(function (row) {
+    console.log(row);
+    let useType = row.useType;
+    let location =
+      useType == "рабочее место"
+        ? row.location.house +
+          "/" +
+          row.location.room +
+          "/" +
+          row.workstation.registerNumber
+        : row.location.house + "/" + row.location.room;
+    return {
+      key: row.inventoryNumber,
+      inventoryNumber: row.inventoryNumber,
+      deviceModel: row.deviceModel.name,
+      deviceType: row.deviceModel.deviceType.name,
+      location: location,
+      useType: useType,
+      dateOfLastService: row.dateOfLastService,
+      dateOfNextService: row.dateOfNextService,
+    };
+  });
+
+  const originTargetKeys = dataTransferDevices;
+
+  const [targetKeys, setTargetKeys] = useState(originTargetKeys);
+
+  const onChangeTableTransfer = (nextTargetKeys) => {
+    setTargetKeys(nextTargetKeys);
+  };
+
+  const leftTableColumns = [
+    {
+      title: "Инвентарный №",
+      dataIndex: "inventoryNumber",
+      id: "inventoryNumber",
+      ...getColumnSearchProps("inventoryNumber"),
+      sorter: (a, b) => a.inventoryNumber.localeCompare(b.inventoryNumber),
+    },
+    {
+      title: "Модель",
+      dataIndex: "deviceModel",
+      id: "deviceModel",
+      ...getColumnSearchProps("deviceModel"),
+      sorter: (a, b) => a.deviceModel.localeCompare(b.deviceModel),
+    },
+    {
+      title: "Тип",
+      dataIndex: "deviceType",
+      id: "deviceType",
+      ...getColumnSearchProps("deviceType"),
+      sorter: (a, b) => a.deviceType.localeCompare(b.deviceType),
+    },
+    {
+      title: "Вид пользования",
+      dataIndex: "useType",
+      id: "useType",
+      filters: [
+        { text: "общее пользование", value: "общее пользование" },
+        { text: "резерв", value: "резерв" },
+        { text: "рабочее место", value: "рабочее место" },
+      ],
+      onFilter: (value, record) => record.useType === value,
+      render: (t, r) => (
+        <span>
+          <Tag color="geekblue">{t}</Tag>
+        </span>
+      ),
+    },
+    {
+      title: "Здание/Помещение/РМ",
+      dataIndex: "location",
+      id: "location",
+      ...getColumnSearchProps("location"),
+      sorter: (a, b) => a.location.localeCompare(b.location),
+    },
+  ];
+  const rightTableColumns = [
+    {
+      title: "Инвентарный №",
+      dataIndex: "inventoryNumber",
+      id: "inventoryNumber",
+      ...getColumnSearchProps("inventoryNumber"),
+      sorter: (a, b) => a.inventoryNumber.localeCompare(b.inventoryNumber),
+    },
+    {
+      title: "Модель",
+      dataIndex: "deviceModel",
+      id: "deviceModel",
+      ...getColumnSearchProps("deviceModel"),
+      sorter: (a, b) => a.deviceModel.localeCompare(b.deviceModel),
+    },
+    {
+      title: "Тип",
+      dataIndex: "deviceType",
+      id: "deviceType",
+      ...getColumnSearchProps("deviceType"),
+      sorter: (a, b) => a.deviceType.localeCompare(b.deviceType),
+    },
+  ];
+
   return (
     <>
       <Space>
+        <Sider>
         <div>
           <Search
             style={{ marginBottom: 8 }}
@@ -792,6 +934,7 @@ function List({ match }) {
             style={{ marginBottom: 16, minWidth: 200 }}
           />
         </div>
+        </Sider>
         <div>
           <Button
             type="primary"
@@ -892,31 +1035,56 @@ function List({ match }) {
                 <Input />
               </Form.Item>
     
-                <Form.Item
-                  label="Модель"
-                  name="deviceModel"
-                  rules={[
-                    {
-                      required: true,
-                      message: "Пожалуйста, введите модель устройства!",
-                    },
-                  ]}
+              <Form.Item
+                name="responsible"
+                label="Ответственный"
+              >
+                <Select
+                  notFoundContent="Сотрудник не найден"
+                  showSearch
+                  placeholder="Выберите ответственного за рабочее место"
+                  optionFilterProp="children"
+                    value={employees}
+                  allowClear
                 >
-                  <Input />
-                </Form.Item>
-    
-                <Form.Item
-                  label="Значение"
-                  name="deviceParameterValue"
-                  rules={[
-                    {
-                      required: true,
-                      message: "Пожалуйста, введите значение параметра!",
-                    },
-                  ]}
-                >
-                  <Input />
-                </Form.Item>
+                  {employees?.map((e) => (
+                    <Select value={e.id} key={e.id}>
+                      {e.personnelNumber} {e.lastName} {e.firstName} {e.patronymic} {e.department} {e.position}
+                    </Select>
+                  ))}
+                </Select>
+              </Form.Item>
+
+              <Form.Item
+              label="Списанные устройства"
+              name="decommissionedDevices"
+              rules={[
+                {
+                  required: true,
+                  message: "Пожалуйста, укажите списанные устройства",
+                },
+              ]}
+            >
+              {locations && (
+                <TableTransfer
+                  dataSource={dataTransferDevices}
+                  targetKeys={targetKeys}
+                  disabled={false}
+                  showSearch={true}
+                  onChange={onChangeTableTransfer}
+                  filterOption={(inputValue, item) =>
+                    item.inventoryNumber.indexOf(inputValue) !== -1 ||
+                    item.deviceModel.indexOf(inputValue) !== -1 ||
+                    item.deviceType.indexOf(inputValue) !== -1 ||
+                    item.useType.indexOf(inputValue) !== -1 ||
+                    item.location.indexOf(inputValue) !== -1
+                  }
+                  leftColumns={leftTableColumns}
+                  rightColumns={rightTableColumns}
+                />
+              )}
+            </Form.Item>
+
 
             {/* <div className="form-group">
                         <button type="submit" disabled={confirmLoading} className="btn btn-primary mr-2">

@@ -7,8 +7,6 @@ import { TableTransfer } from "./TableTransfer";
 import { UploadCustom } from "./UploadCustom";
 
 import {
-  useDeviceDetailActions,
-  useDeviceTypeActions,
   useAlertActions,
   useLocationActions,
   useWrittingOffActActions,
@@ -31,12 +29,9 @@ import {
 
 import moment from "moment";
 
-import { ExclamationCircleOutlined, FormOutlined } from "@ant-design/icons";
+import { ExclamationCircleOutlined } from "@ant-design/icons";
 import { writtingOffActAtom, writtingOffActsAtom } from "_state";
 import {
-  deviceDetailsAtom,
-  avatarAtom,
-  deviceTypesAtom,
   locationsAtom,
 } from "_state";
 import React from "react";

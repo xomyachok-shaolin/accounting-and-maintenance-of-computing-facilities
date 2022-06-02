@@ -15,7 +15,7 @@ RUN dotnet build "WebApi.csproj" -c Release -o /app/build
 FROM build AS publish
 COPY . .
 RUN dotnet publish "WebApi.csproj" -c Release -o /app/publish
-RUN cp -R Images /app/publish
+RUN cp -R Documents /app/publish
 
 FROM base AS final
 WORKDIR /app
