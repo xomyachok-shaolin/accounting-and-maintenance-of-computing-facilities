@@ -3,11 +3,14 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useRecoilValue, useRecoilState, DefaultValue } from "recoil";
 
+import MaskedInput from "antd-mask-input";
+
 import {
   useDeviceDetailActions,
   useDeviceTypeActions,
   useAlertActions,
   useLocationActions,
+  useWorkstationActions,
 } from "_actions";
 import {
   Form,
@@ -19,10 +22,11 @@ import {
   DatePicker,
   Space,
   Tag,
-  Radio,
   Tree,
-  Sider,
-  Layout
+  Descriptions,
+  Drawer,
+  Radio,
+  Layout,
   Button,
   Cascader,
 } from "antd";
@@ -31,7 +35,13 @@ import moment from "moment";
 
 import { ExclamationCircleOutlined, FormOutlined } from "@ant-design/icons";
 
-import { deviceDetailsAtom, employeesAtom, deviceTypesAtom, locationsAtom } from "_state";
+import {
+  filterDevicesAtom,
+  employeesAtom,
+  deviceTypesAtom,
+  locationsAtom,
+  workstationsAtom,
+} from "_state";
 import React from "react";
 import Search from "antd/lib/input/Search";
 
@@ -44,7 +54,11 @@ export { List };
 
 function List({ match }) {
   const [form] = Form.useForm();
-  const [form1] = Form.useForm();
+  const [formDrawer] = Form.useForm();
+  const { Header, Footer, Sider, Content } = Layout;
+
+  const DUMB_IP_MASK = "0[0][0].0[0][0].0[0][0].0[0][0]";
+  const [ipAddress, setIpAddress] = useState("");
 
   const alertActions = useAlertActions();
 
@@ -55,20 +69,28 @@ function List({ match }) {
 
   const { confirm } = Modal;
 
-  const deviceTypes = useRecoilValue(deviceTypesAtom);
   const locations = useRecoilValue(locationsAtom);
   const employees = useRecoilValue(employeesAtom);
+  const allWorkstations = useRecoilValue(workstationsAtom);
 
   const deviceDetailActions = useDeviceDetailActions();
   const deviceTypeActions = useDeviceTypeActions();
   const locationActions = useLocationActions();
+  const workstationActions = useWorkstationActions();
 
-  const [useMode, setUseMode] = useState(null);
+  const [visibleDrawer, setVisibleDrawer] = useState(false);
+  const [useModeDevice, setUseModeDevice] = useState(null);
+  const [disabledCascader, setDisabledCascader] = useState(true);
+  const [modeCascader, setModeCascader] = useState(true);
+
+  const [isEditWS, setIsEditWS] = useState(false);
+  const [editWS, setEditWS] = useState(null);
 
   useEffect(() => {
     deviceDetailActions.getAll();
     deviceTypeActions.getAll();
     locationActions.getAll();
+    workstationActions.getAll();
     return locationActions.resetLocations;
   }, []);
 
@@ -81,10 +103,118 @@ function List({ match }) {
     if (isResetAll) {
       deviceDetailActions.getAll();
       deviceTypeActions.getAll();
+      workstationActions.getAll();
       locationActions.getAll();
       setIsResetAll(false);
     }
   }, [isResetAll]);
+
+  const showDefaultDrawer = () => {
+    setVisibleDrawer(true);
+    formDrawer.setFieldsValue({
+      location: "",
+      useType: "",
+    });
+  };
+
+  const [moveDevices, setMoveDevices] = useState(null);
+  const [moveExcDevices, setMoveExcDevices] = useState(null);
+  const [titleDrawer, setTitleDrawer] = useState("");
+  const [isLocationDrawer, setIsLocationDrawer] = useState("");
+
+  function onSubmitDrawer() {
+    let data = formDrawer.getFieldsValue();
+
+    console.log(data, isLocationDrawer);
+    switch (data.useType) {
+      case 1:
+        data.isCommonUse = true;
+        data.isReserve = false;
+        data.location = isLocationDrawer[1];
+        break;
+      case 2:
+        data.isCommonUse = false;
+        data.isReserve = true;
+        data.location = isLocationDrawer[1];
+        break;
+      case 3:
+        data.location = isLocationDrawer[2];
+        break;
+    }
+    data.setOfDevices = moveExcDevices;
+    return workstationActions.updateDevices(data).then(() => {
+      setIsResetAll(true);
+      console.log(data);
+
+      let initial = initialTargetKeys;
+      moveExcDevices.forEach((d) => {
+        initial.pop(d);
+
+        filterDeviceTransfers.forEach((dt) => {
+          if (data.setOfDevices.includes(dt.inventoryNumber)) {
+            dt.useType = data.useType;
+
+            switch (data.useType) {
+              case 1:
+                dt.useType = "общее пользование";
+                locations.forEach((l) => {
+                  console.log(l);
+                  if (data.location == l.id) dt.location = l;
+                });
+                break;
+              case 2:
+                dt.useType = "резерв";
+                locations.forEach((l) => {
+                  if (data.location == l.id) dt.location = l;
+                });
+                break;
+              case 3:
+                dt.useType = "рабочее место";
+                locations.forEach((l) => {
+                  l.workstationTransfers.forEach((wt) => {
+                    if (wt.dateOfRemoval == null)
+                      if (data.location == wt.workstation.id) {
+                        dt.location = l;
+                        dt.workstation = wt.workstation;
+                      }
+                  });
+                });
+                break;
+            }
+
+            console.log(dt);
+          }
+        });
+      });
+      setInitialTargetKeys(initial);
+
+      setVisibleDrawer(false);
+      setDisabledCascader(true);
+      setTargetKeys(moveDevices);
+      // setIsResetAll(true);
+
+      alertActions.success("Информация об устройстве обновлена");
+    });
+  }
+
+  const onCloseDrawer = () => {
+    setVisibleDrawer(false);
+    setDisabledCascader(true);
+    setIsLocationDrawer("");
+  };
+  function changeCascader(e) {
+    setUseModeDevice(e.target.value);
+    setDisabledCascader(false);
+    setIsLocationDrawer("");
+    if (e.target.value == 3) setModeCascader(false);
+    else setModeCascader(true);
+    setDisabledCascader(false);
+  }
+
+  function onChangeLocationDrawer(e) {
+    console.log(e);
+    setIsLocationDrawer(e);
+  }
 
   const [searchText, setSearchText] = useState("");
   const [searchedColumn, setSearchedColumn] = useState("");
@@ -101,7 +231,11 @@ function List({ match }) {
           dataIndex == "location" ||
           dataIndex == "deviceModel" ||
           dataIndex == "deviceType" ||
-          dataIndex == "useType") && (
+          dataIndex == "useType" ||
+          dataIndex == "employee" ||
+          dataIndex == "registerNumber" ||
+          dataIndex == "networkName" ||
+          dataIndex == "ipAddress") && (
           <Input
             // ref={ searchInput }
             placeholder={`Поиск по ${
@@ -114,7 +248,15 @@ function List({ match }) {
                 : dataIndex == "useType"
                 ? "типу пользования"
                 : dataIndex == "deviceType"
-                ? "тип устройства"
+                ? "типу устройства"
+                : dataIndex == "employee"
+                ? "ответственному"
+                : dataIndex == "registerNumber"
+                ? "регистрационному №"
+                : dataIndex == "networkName"
+                ? "сетевому имени"
+                : dataIndex == "ipAddress"
+                ? "IP-адресу"
                 : dataIndex
             }`}
             value={selectedKeys[0]}
@@ -126,7 +268,9 @@ function List({ match }) {
           />
         )}
         {(dataIndex == "dateOfLastService" ||
-          dataIndex == "dateOfNextService" ) && (
+          dataIndex == "dateOfNextService" ||
+          dataIndex == "dateOfInstallation" ||
+          dataIndex == "dateOfRemoval") && (
           <DatePicker.RangePicker
             onChange={(date, dateString) => {
               setSelectedKeys(date ? [date] : []);
@@ -138,9 +282,10 @@ function List({ match }) {
           />
         )}
         <Space>
-          {dataIndex != "dateOfLastService" &&
-            dataIndex != "dateOfNextService" &&
-            dataIndex != "dateOfDebit" && (
+          {dataIndex != "dateOfNextService" &&
+            dataIndex != "dateOfLastService" &&
+            dataIndex != "dateOfInstallation" &&
+            dataIndex != "dateOfRemoval" && (
               <Button
                 type="primary"
                 onClick={() => handleSearch(selectedKeys, confirm, dataIndex)}
@@ -178,8 +323,7 @@ function List({ match }) {
       <SearchOutlined style={{ color: filtered ? "#1890ff" : undefined }} />
     ),
     onFilter: (value, record) => {
-      if (dataIndex == "dateOfLastService" ||
-          dataIndex == "dateOfNextService")
+      if (dataIndex == "dateOfLastService" || dataIndex == "dateOfNextService")
         return record[dataIndex]
           ? moment(value[0]).isBefore(
               moment(record[dataIndex]).format("YYYY-MM-DD")
@@ -266,7 +410,7 @@ function List({ match }) {
         <span>
           <Tag color="geekblue">{t}</Tag>
         </span>
-      )
+      ),
     },
     {
       title: "Здание/Помещение/РМ",
@@ -295,30 +439,15 @@ function List({ match }) {
       key: "dateOfNextService",
       id: "dateOfNextService",
       ...getColumnSearchProps("dateOfNextService"),
-      render: (t, r) => r.dateOfNextService ? moment(r.dateOfNextService).format("DD/MM/YYYY h:mm:ss"):"",
+      render: (t, r) =>
+        r.dateOfNextService
+          ? moment(r.dateOfNextService).format("DD/MM/YYYY h:mm:ss")
+          : "",
       sorter: (a, b) => {
         a = a.dateOfNextService || "";
         b = b.dateOfNextService || "";
         a.localeCompare(b);
       },
-    },
-    {
-      title: "",
-      key: "action",
-      render: (text, record) => (
-        <Space size="middle">
-          <Button onClick={() => showEditModal(record.key)}>
-            Редактировать
-          </Button>
-          <Button
-            danger
-            onClick={() => showDeleteModal(record.key)}
-            disabled={record.isDeleting}
-          >
-            {record.isDeleting ? <Spin /> : <span>Удалить</span>}
-          </Button>
-        </Space>
-      ),
     },
   ];
 
@@ -344,19 +473,23 @@ function List({ match }) {
       ...getColumnSearchProps("ipAddress"),
       sorter: (a, b) => a.ipAddress.localeCompare(b.ipAddress),
     },
+
     {
       title: "Дата и время установки",
       dataIndex: "dateOfInstallation",
       id: "dateOfInstallation",
       ...getColumnSearchProps("dateOfInstallation"),
-      render: (t, r) => r.dateOfInstallation ? moment(r.dateOfInstallation).format("DD/MM/YYYY h:mm:ss"):"",
+      render: (t, r) =>
+        r.dateOfInstallation
+          ? moment(r.dateOfInstallation).format("DD/MM/YYYY h:mm:ss")
+          : "",
       sorter: (a, b) => {
         a = a.dateOfInstallation || "";
         b = b.dateOfInstallation || "";
         a.localeCompare(b);
       },
     },
-    Table.EXPAND_COLUMN,
+    //    Table.EXPAND_COLUMN,
     {
       title: "Отвественный",
       dataIndex: "employee",
@@ -387,7 +520,7 @@ function List({ match }) {
   const formItemLayout = {
     labelCol: {
       xs: { span: 24 },
-      sm: { span: 8 },
+      sm: { span: 4 },
     },
     wrapperCol: {
       xs: { span: 24 },
@@ -395,107 +528,209 @@ function List({ match }) {
     },
   };
 
-  const [filterDevices, setFilterDevices] = useState([]);
+  const [filterDevices, setFilterDevices] = useRecoilState(filterDevicesAtom);
   const [filterWorkstations, setfilterWorkstations] = useState([]);
 
-  const [selectedRowKeys, setRowKeys] = useState([]);
+  console.log(editWS);
   const onSelect = (selectedKeys, info) => {
-    var node = info.node;
-    let tempKey = null;
-    var devices = [];
+    setIsDefaultEmpty(false);
 
-    let regexp = /\d-\d-\d-\d/;
-    let regexp1 = /\d-\d-\d/;
-    if (regexp.test(node.pos)) {
+    var node = info.node;
+    var devices = [];
+    var workstations = [];
+
+    let regexpWS = /\d-\d-\d-\d/,
+      regexpRoom = /\d-\d-\d/;
+
+    if (regexpWS.test(node.pos)) {
+      setIsEditWS(true);
       locations.forEach((l) => {
-        l.workstationTransfers[0]?.workstation.deviceTransfers.forEach((dt) => {
+        l.workstationTransfers.forEach((wt) => {
+          console.log(wt);
+          if (wt.dateOfRemoval == null)
+            if (wt.workstation.id == node.key) {
+              let workstation = JSON.parse(JSON.stringify(wt.workstation));
+              workstation.wt = wt;
+              setEditWS(workstation);
+              console.log(workstation, node.key);
+              workstations.push({
+                key: workstation.id,
+                registerNumber: workstation.registerNumber,
+                networkName: workstation.networkName,
+                ipAddress: workstation.ipAddress,
+                dateOfInstallation: workstation.wt.dateOfInstallation,
+                wt: wt,
+              });
+            }
+        });
+
+        l.deviceTransfers.forEach((dt) => {
           let device = JSON.parse(JSON.stringify(dt.device));
+
+          console.log(dt);
           device.useType = dt.useType;
           device.location = l;
-          device.workstation = l.workstationTransfers[0]?.workstation;
 
-          if (device.workstation.id == node.key) devices.push(device);
+          if (dt.dateOfRemoval == null)
+            if (dt.idWorkstation == node.key) {
+              console.log(dt);
+              devices.push(device);
+              // l.workstationTransfers[0]?.workstation)
+            }
         });
       });
-    } else if (regexp1.test(node.pos)) {
+
+      allWorkstations.forEach((w) => {
+        w.deviceTransfers?.forEach((dt) => {
+          let device = JSON.parse(JSON.stringify(dt.device));
+          locations.forEach((l) => {
+            l.workstationTransfers.forEach((wt) => {
+              if (wt.dateOfRemoval == null)
+                if (wt.workstation.id == w.id) device.location = l;
+            });
+          });
+          device.useType = dt.useType;
+          device.workstation = w;
+          if (dt.dateOfRemoval == null)
+            if (dt.idWorkstation == node.key) {
+              // console.log(dt);
+              devices.push(device);
+            }
+        });
+      });
+    } else if (regexpRoom.test(node.pos)) {
+      setIsEditWS(false);
       locations.forEach((l) => {
         l.deviceTransfers.forEach((dt) => {
           let device = JSON.parse(JSON.stringify(dt.device));
           device.useType = dt.useType;
           device.location = l;
-          device.workstation = l.workstationTransfers[0]?.workstation;
+          if (dt.dateOfRemoval == null)
+            if (device.location.id == node.key.slice(12)) {
+              devices.push(device);
+            }
+        });
+      });
 
-          if (device.location.id == node.key.slice(12)) {
-            if (tempKey == null) tempKey = device.location.workstationTransfers;
-            devices.push(device);
-          }
+      allWorkstations.forEach((w) => {
+        w.deviceTransfers?.forEach((dt) => {
+          let device = JSON.parse(JSON.stringify(dt.device));
+          locations.forEach((l) => {
+            l.workstationTransfers.forEach((wt) => {
+              if (wt.dateOfRemoval == null)
+                if (wt.workstation.id == w.id) device.location = l;
+            });
+          });
+          device.useType = dt.useType;
+          device.workstation = w;
+            if (dt.dateOfRemoval == null)
+            if (device.location.id == node.key.slice(12)) {
+              devices.push(device);
+            }
+        });
+      });
+    } else {
+      locations.forEach((l) => {
+        setIsEditWS(false);
+        l.deviceTransfers.forEach((dt) => {
+          let device = JSON.parse(JSON.stringify(dt.device));
+          device.useType = dt.useType;
+          device.location = l;
+          if (dt.dateOfRemoval == null)
+            if (l.house == node.key) {
+              devices.push(device);
+            }
+        });
+      });
+
+      allWorkstations.forEach((w) => {
+        w.deviceTransfers?.forEach((dt) => {
+          let device = JSON.parse(JSON.stringify(dt.device));
+          locations.forEach((l) => {
+            l.workstationTransfers.forEach((wt) => {
+              if (wt.dateOfRemoval == null)
+                if (wt.workstation.id == w.id) device.location = l;
+            });
+          });
+          device.useType = dt.useType;
+          device.workstation = w;
+            if (dt.dateOfRemoval == null)
+            if (device.location.house == node.key) {
+              devices.push(device);
+            }
         });
       });
     }
 
+    console.log(devices);
     setFilterDevices(devices);
 
-    var parameters = [];
-    if (tempKey != null) {
-      
-      tempKey.forEach((wt) => {
-          parameters.push({
-            key: wt.id,
-            registerNumber: wt.workstation.registerNumber,
-            networkName: wt.workstation.networkName,
-            ipAddress: wt.workstation.ipAddress,
-            dateOfInstallation: wt.dateOfInstallation,
-            employee: wt.employee
+    locations.forEach((l) => {
+      if (typeof node.key == "string")
+        if (l.id == node.key.slice(12) || l.house == node.key)
+          l.workstationTransfers.forEach((wt) => {
+            console.log(wt);
+            if (wt.dateOfRemoval == null)
+              workstations.push({
+                key: wt.id,
+                registerNumber: wt.workstation.registerNumber,
+                networkName: wt.workstation.networkName,
+                ipAddress: wt.workstation.ipAddress,
+                dateOfInstallation: wt.dateOfInstallation,
+                wt: wt,
+              });
           });
-        });
-      }
-    console.log(parameters)
-    setfilterWorkstations(parameters);
+    });
+
+    console.log(workstations);
+    setfilterWorkstations(workstations);
 
     console.log(devices);
   };
 
   const dataDevices = filterDevices?.map(function (row) {
-    console.log(row);
+    // console.log(row);
     let useType = row.useType;
     let location =
       useType == "рабочее место"
-        ? row.location.house +
+        ? row.location?.house +
           "/" +
-          row.location.room +
+          row.location?.room +
           "/" +
-          row.workstation.registerNumber
-        : row.location.house + "/" + row.location.room;
+          row.workstation?.registerNumber
+        : row.location?.house + "/" + row.location?.room;
     return {
       key: row.id,
       inventoryNumber: row.inventoryNumber,
       deviceModel: row.deviceModel.name,
-      deviceType: row.deviceModel.deviceType.name,
+      deviceType: row.deviceModel.deviceType?.name,
       location: location,
       useType: useType,
       dateOfLastService: row.dateOfLastService,
       dateOfNextService: row.dateOfNextService,
+      deviceTransfers: row.deviceTransfers,
     };
   });
 
   const dataWorkstations = filterWorkstations?.map(function (row) {
+    let workstationTransfers = [];
+    allWorkstations.forEach((w) => {
+      w.workstationTransfers.forEach((wt) => {
+        console.log(wt, row);
+        if (row.wt?.idWorkstation == wt.idWorkstation)
+          workstationTransfers.push(wt);
+      });
+    });
+
+    console.log(row);
     return {
       key: row.key,
       registerNumber: row.registerNumber,
       networkName: row.networkName,
       ipAddress: row.ipAddress,
       dateOfInstallation: row.dateOfInstallation,
-      employee: row.employee?.personnelNumber,
-      description:
-        row.employee?.department +
-        ": " +
-        row.employee?.position +
-        " " +
-        row.employee?.lastName +
-        " " +
-        row.employee?.firstName +
-        " " +
-        row.employee?.patronymic,
+      employee: row.wt?.employee?.personnelNumber,
+      workstationTransfers: workstationTransfers,
     };
   });
 
@@ -535,7 +770,6 @@ function List({ match }) {
       if (map[key].length != 0)
         // eslint-disable-next-line no-loop-func
         map[key].forEach((r) => {
-          console.log(r);
           const childrenNode = {
             title: "Помещение " + r.title,
             key: "id_location:" + r.key,
@@ -549,7 +783,7 @@ function List({ match }) {
                 title: "РМ " + w.workstation.registerNumber,
                 key: w.workstation.id,
               };
-              childrenListWS.push(childrenNodeWS);
+              if (w.dateOfRemoval == null) childrenListWS.push(childrenNodeWS);
             });
 
             if (childrenListWS.length == 0) childrenNode.disabled = true;
@@ -567,8 +801,108 @@ function List({ match }) {
     return list;
   }
 
+  function cascaderDetailsLocations() {
+    const list = [];
+    const map = {};
+    locations?.forEach((l) => {
+      let arr = [],
+        room = l.room,
+        house = l.house,
+        workstations = l.workstationTransfers;
+
+      if (!map[house]) arr.push({ label: room, value: l.id, ws: workstations });
+      else {
+        arr = map[house];
+        arr.push({ label: room, value: l.id, ws: workstations });
+      }
+      map[house] = arr;
+    });
+
+    for (var key in map) {
+      const treeNode = {
+        label: "Здание " + key,
+        value: key,
+      };
+      const childrenList = [];
+      if (map[key].length != 0)
+        // eslint-disable-next-line no-loop-func
+        map[key].forEach((r) => {
+          const childrenNode = {
+            label: "Помещение " + r.label,
+            value: r.value,
+          };
+
+          childrenList.push(childrenNode);
+        });
+      treeNode.children = childrenList;
+
+      list.push(treeNode);
+    }
+
+    return list;
+  }
+
+  function cascaderDetailsLocationDevices() {
+    const list = [];
+    const map = {};
+    locations?.forEach((l) => {
+      let arr = [],
+        room = l.room,
+        house = l.house,
+        workstations = l.workstationTransfers;
+
+      if (!map[house]) arr.push({ label: room, value: l.id, ws: workstations });
+      else {
+        arr = map[house];
+        arr.push({ label: room, value: l.id, ws: workstations });
+      }
+      map[house] = arr;
+    });
+
+    for (var key in map) {
+      const treeNode = {
+        label: "Здание " + key,
+        value: key,
+      };
+      const childrenList = [];
+      if (map[key].length != 0)
+        // eslint-disable-next-line no-loop-func
+        map[key].forEach((r) => {
+          const childrenNode = {
+            label: "Помещение " + r.label,
+            value: r.value,
+          };
+
+          if (useModeDevice == 3) {
+            const childrenListWS = [];
+            r.ws.forEach((w) => {
+              if (w.dateOfRemoval == null) {
+                const childrenNodeWS = {
+                  label: "РМ " + w.workstation.registerNumber,
+                  value: w.workstation.id,
+                };
+                childrenListWS.push(childrenNodeWS);
+              }
+            });
+
+            if (childrenListWS.length == 0) childrenNode.disabled = true;
+            childrenNode.children = childrenListWS;
+          }
+
+          childrenList.push(childrenNode);
+        });
+      treeNode.children = childrenList;
+
+      list.push(treeNode);
+    }
+
+    return list;
+  }
+
   const treeData = detailsLocations();
-  const treeLocationsData = detailsLocations();
+  const treeLocationsData = cascaderDetailsLocations();
+  const treeLocationDevicesData = cascaderDetailsLocations();
+  const treeLocationDevicesWSData = cascaderDetailsLocationDevices();
 
   const getParentKey = (key, tree) => {
     let parentKey;
@@ -666,81 +1000,69 @@ function List({ match }) {
   };
 
   const showEditModal = (id) => {
-    // roles.forEach((role) => {
-    //   if (role.id === id) {
-    //     form.setFieldsValue({
-    //       name: role.name,
-    //       isWriteOff: role.isWriteOff,
-    //       isTransfer: role.isTransfer,
-    //       isUpgrade: role.isUpgrade,
-    //       isEditWS: role.isEditWS,
-    //       isEditTask: role.isEditTask,
-    //     });
-    //     setMode(role);
-    //     showModal();
-    //   }
-    // });
+    filterWorkstations.forEach((ws) => {
+      console.log(ws, id);
+      let location = "";
+      if (ws.key === id) {
+        console.log(ws);
+        setMode(ws);
+        locations.forEach((l) => {
+          if (l.id == ws.wt.idLocation)
+            location = "Здание " + l.house + " / Помещение " + l.room;
+        });
+        form.setFieldsValue({
+          registerNumber: ws.registerNumber,
+          networkName: ws.networkName,
+          responsible: ws.wt.employee?.id,
+          location: location,
+          ipAddress: ws.ipAddress,
+        });
+
+        showModal();
+        return;
+      }
+    });
   };
 
   const showAddModalWS = () => {
     setMode(false);
-    form.setFieldsValue({
-      username: "",
-      password: "",
-      firstName: "",
-      lastName: "",
-      mail: "",
-      patronymic: "",
-      roles: [],
-    });
+    setInitialTargetKeys([]);
+    setTargetKeys([]);
+
+    form.resetFields();
     showModal();
   };
 
   function createDevice(data) {
     console.log(data);
 
-    switch (data.useType) {
-      case 1:
-        data.isCommonUse = true;
-        data.isReserve = false;
-        data.location = data.location[1];
-        break;
-      case 2:
-        data.isCommonUse = false;
-        data.isReserve = true;
-        data.location = data.location[1];
-        break;
-      case 3:
-        data.isCommonUse = false;
-        data.isReserve = false;
-        data.location = data.location[2];
-        break;
-    }
+    data.location = data.location[1];
 
-    return deviceDetailActions.create(data).then(() => {
+    return workstationActions.create(data).then(() => {
       setIsResetAll(true);
-      alertActions.success("Устройство добавлено");
+      setIpAddress("");
+      alertActions.success("Рабочее место добавлено");
     });
   }
 
   function updateDevice(id, data) {
-    //data.imageFile = avatar.imageFile;
-    return deviceTypeActions.update(id, data).then(() => {
+    console.log(data);
+    return workstationActions.update(id, data).then(() => {
       setIsResetAll(true);
-      alertActions.success("Информация об устройстве обновлена");
+      setIpAddress("");
+      alertActions.success("Информация о рабочем месте обновлена");
     });
   }
   function onSubmit(values) {
     setVisibleWS(false);
-    setDisabledCascader(true);
 
     return !mode ? createDevice(values) : updateDevice(mode.id, values);
   }
 
   const handleCancel = () => {
     setVisibleWS(false);
-    setDisabledCascader(true);
-    form.resetFields();
+    setMode(false);
+    setIpAddress("");
   };
 
   function filter(inputValue, path) {
@@ -750,69 +1072,48 @@ function List({ match }) {
     );
   }
 
-  const [disabledCascader, setDisabledCascader] = useState(true);
+  const [filterDeviceTransfers, setFilterDeviceTransfers] = useState([]);
+  function dataFilterDeviceTransfers() {
+    var devices = [];
+    if (filterDeviceTransfers.length == 0) {
+      locations?.forEach((l) => {
+        l.deviceTransfers.forEach((dt) => {
+          let device = JSON.parse(JSON.stringify(dt.device));
+          device.useType = dt.useType;
+          device.location = l;
 
-  function changeCascader(e) {
-    setUseMode(e.target.value);
-    setDisabledCascader(false);
-  }
+          if (dt.dateOfRemoval == null)
+            if (device.location != null) {
+              devices.push(device);
+            }
+        });
+      });
 
-  const onSelectChange = (selectedRowKeys) => {
-    setRowKeys(selectedRowKeys);
+      allWorkstations?.forEach((w) => {
+        console.log(w);
+        w.deviceTransfers?.forEach((dt) => {
+          let device = JSON.parse(JSON.stringify(dt.device));
+          device.workstation = w;
+          device.useType = dt.useType;
 
-    var parameters = [];
-    if (filterDevices.length != 0) {
-      filterDevices.forEach((d) => {
-        if (d.id == selectedRowKeys[0]) {
-          d.deviceParameterValues.forEach((dp) => {
-            parameters.push({
-              key: dp.deviceParameter.id,
-              name: dp.deviceParameter.name,
-              description: dp.value,
+          locations.forEach((l) => {
+            l.workstationTransfers.forEach((wt) => {
+              if (wt.dateOfRemoval == null)
+                if (wt.workstation.id == w.id) device.location = l;
             });
           });
-        }
+
+          if (dt.dateOfRemoval == null) devices.push(device);
+        });
       });
+      console.log(devices);
+      setFilterDeviceTransfers(devices);
     }
-    setfilterWorkstations(parameters);
-  };
+  }
 
-  const rowSelection = {
-    selectedRowKeys,
-    onChange: onSelectChange,
-  };
-
-  const dateFormat = "YYYY/MM/DD";
-
-  const [filterDeviceTransfers, setFilterDeviceTransfers] = useState([]);
-
-  var devices = [];
-  if (filterDeviceTransfers.length == 0)
-    locations?.forEach((l) => {
-      l.workstationTransfers[0]?.workstation.deviceTransfers.forEach((dt) => {
-        let device = JSON.parse(JSON.stringify(dt.device));
-        device.useType = dt.useType;
-        device.location = l;
-        device.workstation = l.workstationTransfers[0]?.workstation;
-        if (device.workstation != null) {
-          devices.push(device);
-          setFilterDeviceTransfers(devices);
-        }
-      });
-      l.deviceTransfers.forEach((dt) => {
-        let device = JSON.parse(JSON.stringify(dt.device));
-        device.useType = dt.useType;
-        device.location = l;
-        device.workstation = l.workstationTransfers[0]?.workstation;
-
-        if (device.location != null) {
-          devices.push(device);
-          setFilterDeviceTransfers(devices);
-        }
-      });
-    });
-
-  const dataTransferDevices = Array.from(filterDeviceTransfers)?.map(function (row) {
+  const dataTransferDevices = Array.from(filterDeviceTransfers)?.map(function (
+    row
+  ) {
     console.log(row);
     let useType = row.useType;
     let location =
@@ -835,12 +1136,65 @@ function List({ match }) {
     };
   });
 
-  const originTargetKeys = dataTransferDevices;
+  const [targetKeys, setTargetKeys] = useState([]);
+  const [initialTargetKeys, setInitialTargetKeys] = useState([]);
 
-  const [targetKeys, setTargetKeys] = useState(originTargetKeys);
+  const getMock = () => {
+    const originTargetKeys = [];
+    console.log(mode);
+    if (mode)
+      allWorkstations.forEach((w) => {
+        w.deviceTransfers?.forEach((dt) => {
+          console.log(mode, dt.idWorkstation);
+          if (dt.dateOfRemoval == null)
+            if (mode.wt.idWorkstation == dt.idWorkstation)
+              originTargetKeys.push(dt.device.inventoryNumber);
+        });
+      });
 
-  const onChangeTableTransfer = (nextTargetKeys) => {
-    setTargetKeys(nextTargetKeys);
+    setInitialTargetKeys(originTargetKeys);
+    setTargetKeys(originTargetKeys);
+  };
+
+  useEffect(() => {
+    if (mode) {
+      dataFilterDeviceTransfers();
+      getMock();
+      setIpAddress(mode.ipAddress);
+    }
+  }, [mode]);
+
+  const onChangeTableTransfer = (nextTargetKeys, direction, moveKeys) => {
+    if (direction === "left") {
+      let exc = [];
+      console.log(initialTargetKeys);
+      if (initialTargetKeys.length != 0)
+        initialTargetKeys?.forEach((k) => {
+          if (moveKeys.includes(k)) {
+            exc.push(k);
+          }
+        });
+      console.log(exc);
+      if (exc.length != 0) {
+        let title = 'Редактировать местоположение устройств "';
+        if (exc.length == 1)
+          title = 'Редактировать местоположение устройства "';
+        for (let i = 0; i < exc.length; i++) {
+          title += exc[i];
+          if (i == exc.length - 1) title += '"';
+          else title += '", "';
+        }
+        setMoveExcDevices(exc);
+        setTitleDrawer(title);
+        setMoveDevices(nextTargetKeys);
+        showDefaultDrawer();
+      } else {
+        setTargetKeys(nextTargetKeys);
+      }
+    } else {
+      setTargetKeys(nextTargetKeys);
+    }
+    console.log(targetKeys);
   };
 
   const leftTableColumns = [
@@ -913,158 +1267,413 @@ function List({ match }) {
     },
   ];
 
+  const expandedRowRender = (record) => {
+    // console.log(record);
+    let columns = [],
+      data = [];
+    if (record.inventoryNumber != null) {
+      columns = [
+        {
+          title: "Дата и время установки",
+          dataIndex: "dateOfInstallation",
+          id: "dateOfInstallation",
+          ...getColumnSearchProps("dateOfInstallation"),
+          render: (t, r) =>
+            r.dateOfInstallation
+              ? moment(r.dateOfInstallation).format("DD/MM/YYYY hh:mm:ss")
+              : "",
+          sorter: (a, b) => {
+            a = a.dateOfInstallation || "";
+            b = b.dateOfInstallation || "";
+            a.localeCompare(b);
+          },
+        },
+        {
+          title: "Вид пользования",
+          dataIndex: "useType",
+          id: "useType",
+          filters: [
+            { text: "общее пользование", value: "общее пользование" },
+            { text: "резерв", value: "резерв" },
+            { text: "рабочее место", value: "рабочее место" },
+          ],
+          onFilter: (value, record) => record.useType === value,
+          render: (t, r) => (
+            <span>
+              <Tag color="geekblue">{t}</Tag>
+            </span>
+          ),
+        },
+
+        {
+          title: "Здание/Помещение/РМ",
+          dataIndex: "location",
+          id: "location",
+          ...getColumnSearchProps("location"),
+          sorter: (a, b) => a.location.localeCompare(b.location),
+        },
+        {
+          title: "Дата снятия",
+          dataIndex: "dateOfRemoval",
+          id: "dateOfRemoval",
+          ...getColumnSearchProps("dateOfRemoval"),
+          render: (t, r) =>
+            r.dateOfRemoval
+              ? moment(r.dateOfRemoval).format("DD/MM/YYYY hh:mm:ss")
+              : "",
+          sorter: (a, b) => {
+            a = a.dateOfRemoval || "";
+            b = b.dateOfRemoval || "";
+            a.localeCompare(b);
+          },
+        },
+      ];
+      console.log(record);
+
+      locations?.forEach((l) => {
+        l.deviceTransfers.forEach((dt) => {
+          if (dt.device.inventoryNumber == record.inventoryNumber)
+            data.push({
+              key: dt.id,
+              dateOfInstallation: dt.dateOfInstallation,
+              useType: dt.useType,
+              location: l.house + "/" + l.room,
+              dateOfRemoval: dt.dateOfRemoval,
+            });
+        });
+      });
+
+      allWorkstations?.forEach((w) => {
+        w.deviceTransfers.forEach((dt) => {
+          if (dt.device.inventoryNumber == record.inventoryNumber) {
+            let location = "";
+            locations?.forEach((l) => {
+              l.workstationTransfers.forEach((wt) => {
+                if (wt.dateOfRemoval == null)
+                  if (wt.idWorkstation == w.id) location = l;
+              });
+            });
+
+            data.push({
+              key: dt.id,
+              dateOfInstallation: dt.dateOfInstallation,
+              useType: dt.useType,
+              location:
+                location.house + "/" + location.room + "/" + w.registerNumber,
+              dateOfRemoval: dt.dateOfRemoval,
+            });
+          }
+        });
+      });
+    }
+    if (record.registerNumber != null) {
+      columns = [
+        {
+          title: "Дата и время установки",
+          dataIndex: "dateOfInstallation",
+          id: "dateOfInstallation",
+          ...getColumnSearchProps("dateOfInstallation"),
+          render: (t, r) =>
+            r.dateOfInstallation
+              ? moment(r.dateOfInstallation).format("DD/MM/YYYY hh:mm:ss")
+              : "",
+          sorter: (a, b) => {
+            a = a.dateOfInstallation || "";
+            b = b.dateOfInstallation || "";
+            a.localeCompare(b);
+          },
+        },
+
+        {
+          title: "Здание/Помещение/РМ",
+          dataIndex: "location",
+          id: "location",
+          ...getColumnSearchProps("location"),
+          sorter: (a, b) => a.location.localeCompare(b.location),
+        },
+        Table.EXPAND_COLUMN,
+        {
+          title: "Отвественный",
+          dataIndex: "employee",
+          id: "employee",
+          ...getColumnSearchProps("employee"),
+          sorter: (a, b) => a.employee.localeCompare(b.employee),
+        },
+        {
+          title: "Дата и время снятия",
+          dataIndex: "dateOfRemoval",
+          id: "dateOfRemoval",
+          ...getColumnSearchProps("dateOfRemoval"),
+          render: (t, r) =>
+            r.dateOfRemoval
+              ? moment(r.dateOfRemoval).format("DD/MM/YYYY hh:mm:ss")
+              : "",
+          sorter: (a, b) => {
+            a = a.dateOfRemoval || "";
+            b = b.dateOfRemoval || "";
+            a.localeCompare(b);
+          },
+        },
+      ];
+
+      console.log(record);
+      if (record.workstationTransfers)
+        record.workstationTransfers.forEach((wt) => {
+          let location, employee;
+          locations.forEach((l) => {
+            if (wt.idLocation == l.id) location = l.house + "/" + l.room;
+          });
+          employees.forEach((e) => {
+            if (wt.idEmployee == e.id) employee = e;
+          });
+          data.push({
+            key: wt.id,
+            dateOfInstallation: wt.dateOfInstallation,
+            dateOfRemoval: wt.dateOfRemoval,
+            location: location,
+            employee: employee?.personnelNumber,
+            description:
+              employee?.department +
+              ": " +
+              employee?.position +
+              " " +
+              employee?.lastName +
+              " " +
+              employee?.firstName +
+              " " +
+              employee?.patronymic,
+          });
+        });
+    }
+    return record.registerNumber != null ? (
+      <Table
+        columns={columns}
+        expandable={{
+          expandedRowRender: (record) => {
+            if (record.employee)
+              return <p style={{ margin: 0 }}>{record.description}</p>;
+            else
+              return (
+                <p style={{ margin: 0 }}>
+                  Ответственный за рабочее место не определен
+                </p>
+              );
+          },
+        }}
+        bordered
+        dataSource={data}
+        pagination={true}
+      />
+    ) : (
+      <Table columns={columns} bordered dataSource={data} pagination={true} />
+    );
+  };
+
+  const [isDefaultEmpty, setIsDefaultEmpty] = useState(true);
+
   return (
     <>
-      <Space>
-        <Sider>
-        <div>
-          <Search
-            style={{ marginBottom: 8 }}
-            onChange={onChange}
-            placeholder="Поиск"
-          />
-          <Tree
-            onExpand={onExpand}
-            expandedKeys={expandedKeys}
-            autoExpandParent={autoExpandParent}
-            treeData={loop(treeData)}
-            showLine={{ hideLeafIcon: true }}
-            showIcon={false}
-            onSelect={onSelect}
-            style={{ marginBottom: 16, minWidth: 200 }}
-          />
-        </div>
+      <Layout>
+        <Sider theme="light">
+          <div>
+            <Search
+              style={{ marginBottom: 8 }}
+              onChange={onChange}
+              placeholder="Поиск"
+            />
+            <Tree
+              onExpand={onExpand}
+              expandedKeys={expandedKeys}
+              autoExpandParent={autoExpandParent}
+              treeData={loop(treeData)}
+              showLine={{ hideLeafIcon: true }}
+              showIcon={false}
+              onSelect={onSelect}
+              style={{ marginBottom: 16, minWidth: 200 }}
+            />
+          </div>
         </Sider>
-        <div>
-          <Button
-            type="primary"
-            onClick={showAddModalWS}
-            style={{ marginBottom: 8 }}
-          >
-            Добавить рабочее место
-          </Button>
-          {detailsLocations && (
-            <Table
-              pagination={false}
-              bordered
-              columns={columnsParameters}
-              dataSource={dataWorkstations}
-              expandable={{
-                expandedRowRender: (record) => {
-                  if (record.employee)
-                    return <p style={{ margin: 0 }}>{record.description}</p>;
-                  else
-                    return (
-                      <p style={{ margin: 0 }}>
-                        Ответственный за помещение не определен
-                      </p>
-                    );
-                },
-              }}
-            ></Table>
+
+        <Content style={{ paddingLeft: 20, backgroundColor: "white" }}>
+          {!isDefaultEmpty && !isEditWS && (
+            <div>
+              <Button
+                type="primary"
+                onClick={showAddModalWS}
+                style={{ marginBottom: 8 }}
+              >
+                Добавить рабочее место
+              </Button>
+              {detailsLocations && (
+                <Table
+                  pagination={false}
+                  bordered
+                  columns={columnsParameters}
+                  dataSource={dataWorkstations}
+                  scroll={{ x: 800 }}
+                  expandable={{ expandedRowRender }}
+                ></Table>
+              )}
+            </div>
           )}
-        </div>
-      </Space>
-      {detailsLocations && (
-        <div>
-          <Button
-            type="primary"
-            onClick={showAddModalWS}
-            style={{ marginBottom: 8 }}
-          >
-            Добавить устройство
-          </Button>
-          <Table
-            scroll={{ x: 800 }}
-            bordered
-            columns={columnsDevices}
-            dataSource={dataDevices}
-            rowSelection={{
-              type: "radio",
-              ...rowSelection,
-            }}
-          ></Table>
-        </div>
+          {!isDefaultEmpty && isEditWS && (
+            <Descriptions
+              title={"Информация о рабочем месте " + editWS.registerNumber}
+            >
+              <Descriptions.Item label="Регистрационный №">
+                {editWS.registerNumber}
+              </Descriptions.Item>
+              <Descriptions.Item label="Сетевое имя">
+                {editWS.networkName}
+              </Descriptions.Item>
+              <Descriptions.Item label="IP-адрес">
+                {editWS.ipAddress}
+              </Descriptions.Item>
+              <Descriptions.Item label="Дата установки">
+                {editWS.wt.dateOfInstallation}
+              </Descriptions.Item>
+              <Descriptions.Item label="Ответственный">
+                {editWS.wt.employee
+                  ? editWS.wt.employee.personnelNumber +
+                    " " +
+                    editWS.wt.employee.department +
+                    " " +
+                    editWS.wt.employee.position +
+                    " " +
+                    editWS.wt.employee.lastName +
+                    " " +
+                    editWS.wt.employee.firstName +
+                    " " +
+                    editWS.wt.employee.patronymic
+                  : "не назначен"}
+              </Descriptions.Item>
+            </Descriptions>
+          )}
+        </Content>
+      </Layout>
+      {!isDefaultEmpty && (
+        <>
+          {detailsLocations && (
+            <div>
+              {isEditWS && (
+                <Button
+                  type="primary"
+                  onClick={() => showEditModal(editWS.id)}
+                  style={{ marginBottom: 8 }}
+                >
+                  Редактировать рабочее место
+                </Button>
+              )}
+              <Table
+                scroll={{ x: 800 }}
+                bordered
+                columns={columnsDevices}
+                dataSource={dataDevices}
+                expandable={{ expandedRowRender }}
+                style={{ marginTop: 16 }}
+              ></Table>
+            </div>
+          )}
+        </>
       )}
 
-      {!detailsLocations && (
+      {!detailsLocations && !getMock && (
         <div className="text-center p-3">
           <Spin size="large" />
         </div>
       )}
-            <Modal
-            title={!mode ? "Добавить рабочее место" : "Редактировать раюбочее место"}
-            visible={visibleWS}
-            onOk={form1.submit}
-            onCancel={handleCancel}
-            okText="Сохранить"
-            cancelText="Отмена"
+      <Modal
+        forceRender
+        title={!mode ? "Добавить рабочее место" : "Редактировать рабочее место"}
+        visible={visibleWS}
+        onOk={form.submit}
+        onCancel={handleCancel}
+        okText="Сохранить"
+        cancelText="Отмена"
+      >
+        <>
+          <Form
+            {...formItemLayout}
+            form={form}
+            scrollToFirstError
+            name="formName"
+            onFinish={onSubmit}
+            ref={(val) => (window.formRef = val)}
           >
-            <>
-              <Form
-                {...formItemLayout}
-                form={form1}
-                scrollToFirstError
-                name="formName"
-                onFinish={onSubmit}
-              >
-              <Form.Item
-                label="Регистрационный №"
-                name="registerNumber"
-                disabled
-                rules={[
-                  {
-                    required: true,
-                    message: "Пожалуйста, введите регистрационный №!",
-                  },
-                ]}
-              >
-                <Input />
-              </Form.Item>
-              <Form.Item
-                label="Сетевое имя"
-                name="networkName"
-                disabled
-                rules={[
-                  {
-                    required: true,
-                    message: "Пожалуйста, введите сетевое имя!",
-                  },
-                ]}
-              >
-                <Input />
-              </Form.Item>
-    
-              <Form.Item
-                name="responsible"
-                label="Ответственный"
-              >
-                <Select
-                  notFoundContent="Сотрудник не найден"
-                  showSearch
-                  placeholder="Выберите ответственного за рабочее место"
-                  optionFilterProp="children"
-                    value={employees}
-                  allowClear
-                >
-                  {employees?.map((e) => (
-                    <Select value={e.id} key={e.id}>
-                      {e.personnelNumber} {e.lastName} {e.firstName} {e.patronymic} {e.department} {e.position}
-                    </Select>
-                  ))}
-                </Select>
-              </Form.Item>
-
-              <Form.Item
-              label="Списанные устройства"
-              name="decommissionedDevices"
+            <Form.Item
+              label="Регистрационный №"
+              name="registerNumber"
               rules={[
                 {
                   required: true,
-                  message: "Пожалуйста, укажите списанные устройства",
+                  message: "Пожалуйста, введите регистрационный №!",
                 },
               ]}
             >
+              <Input />
+            </Form.Item>
+            <Form.Item
+              label="Сетевое имя"
+              name="networkName"
+              rules={[
+                {
+                  required: true,
+                  message: "Пожалуйста, введите сетевое имя!",
+                },
+              ]}
+            >
+              <Input />
+            </Form.Item>
+
+            <Form.Item
+              label="IP-адрес"
+              name="IpAddress"
+              initialValue={editWS?.ipAddress}
+              rules={[
+                {
+                  required: true,
+                  message: "Пожалуйста, введите ip-адрес!",
+                },
+              ]}
+            >
+              <MaskedInput mask={DUMB_IP_MASK} />
+            </Form.Item>
+
+            <Form.Item
+              name="location"
+              label="Местоположение"
+              rules={[
+                {
+                  required: true,
+                  message: "Пожалуйста, укажите местоположение!",
+                },
+              ]}
+            >
+              <Cascader
+                options={treeLocationsData}
+                showSearch={{ filter }}
+              ></Cascader>
+            </Form.Item>
+
+            <Form.Item name="responsible" label="Ответственный">
+              <Select
+                notFoundContent="Сотрудники не найдены"
+                showSearch
+                placeholder="Укажите ответственного за рабочее место"
+                optionFilterProp="children"
+                value={employees}
+                allowClear
+              >
+                {employees?.map((e: T) => (
+                  <Select.Option value={e.id} key={e.id}>
+                    {e.personnelNumber} {e.lastName} {e.firstName}{" "}
+                    {e.patronymic} {e.department} {e.position}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
+
+            <Form.Item label="Набор устройств" name="setOfDevices">
               {locations && (
                 <TableTransfer
                   dataSource={dataTransferDevices}
@@ -1083,8 +1692,88 @@ function List({ match }) {
                   rightColumns={rightTableColumns}
                 />
               )}
-            </Form.Item>
 
+              <Drawer
+                title={titleDrawer}
+                placement="right"
+                onClose={onCloseDrawer}
+                visible={visibleDrawer}
+                width={600}
+                extra={
+                  <Space>
+                    <Button onClick={onCloseDrawer}>Отмена</Button>
+                    <Button
+                      type="primary"
+                      disabled={isLocationDrawer == ""}
+                      onClick={onSubmitDrawer}
+                    >
+                      Подтвердить
+                    </Button>
+                  </Space>
+                }
+              >
+                <Form form={formDrawer} layout="vertical">
+                  <Form.Item
+                    name="useType"
+                    label="Вид пользования"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Пожалуйста, укажите вид пользования!",
+                      },
+                    ]}
+                  >
+                    <Radio.Group style={{ marginLeft: 10 }}>
+                      <Space direction="vertical" onChange={changeCascader}>
+                        <Radio value={1}>Общее пользование</Radio>
+                        <Radio value={2}>Резерв</Radio>
+                        <Radio value={3}>Рабочее место</Radio>
+                      </Space>
+                    </Radio.Group>
+                  </Form.Item>
+
+                  {modeCascader && (
+                    <Form.Item
+                      name="location"
+                      label="Местоположение"
+                      rules={[
+                        {
+                          required: true,
+                          message: "Пожалуйста, укажите местоположение!",
+                        },
+                      ]}
+                    >
+                      <Cascader
+                        options={treeLocationDevicesData}
+                        disabled={disabledCascader}
+                        showSearch={{ filter }}
+                        onChange={onChangeLocationDrawer}
+                      ></Cascader>{" "}
+                    </Form.Item>
+                  )}
+
+                  {!modeCascader && (
+                    <Form.Item
+                      name="locationWS"
+                      label="Местоположение"
+                      rules={[
+                        {
+                          required: true,
+                          message: "Пожалуйста, укажите местоположение!",
+                        },
+                      ]}
+                    >
+                      <Cascader
+                        options={treeLocationDevicesWSData}
+                        disabled={disabledCascader}
+                        showSearch={{ filter }}
+                        onChange={onChangeLocationDrawer}
+                      ></Cascader>{" "}
+                    </Form.Item>
+                  )}
+                </Form>
+              </Drawer>
+            </Form.Item>
 
             {/* <div className="form-group">
                         <button type="submit" disabled={confirmLoading} className="btn btn-primary mr-2">

@@ -62,6 +62,13 @@ public class WorkstationsController : ControllerBase
         return Ok(new { message = "Информация о рабочем месте успешно обновлена" });
     }
 
+    [HttpPost("update/devices")]
+    public ActionResult<WorkstationDeviceUpdateRequest> UpdateDevices(int id, WorkstationDeviceUpdateRequest model)
+    {
+        _workstationService.UpdateDevices(model);
+        return Ok(new { message = "Информация об устройствах успешно обновлена" });
+    }
+
     [HttpDelete("{id}")]
     public IActionResult Delete(int id)
     {

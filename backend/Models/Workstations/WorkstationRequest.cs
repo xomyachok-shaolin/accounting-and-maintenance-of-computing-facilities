@@ -7,11 +7,11 @@ public class WorkstationRequest
     [Required]
     public string RegisterNumber { get; set; }
     [Required]
-    public string IpAddrress{ get; set; }
+    public string IpAddress{ get; set; }
     [Required]
     public string NetworkName { get; set; }
     [Required]
     public int Location { get; set; }
-    [Required]
     public int Responsible { get; set; }
+    public ICollection<string> SetOfDevices { get; set; }
 }

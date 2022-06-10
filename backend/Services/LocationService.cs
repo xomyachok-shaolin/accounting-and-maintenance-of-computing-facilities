@@ -35,18 +35,14 @@ public class LocationService : ILocationService
     public IEnumerable<Location> GetAll()
     {
         return _context.Locations
-            .Include(l => l.DeviceTransfers.Where(dt => dt.DateOfRemoval == null))
+            .Include(l => l.DeviceTransfers)
                 .ThenInclude(dt => dt.Device)
-                    .ThenInclude(d => d.DeviceModel)
-                        .ThenInclude(dm => dm.DeviceType)
-            .Include(l => l.Employee)
-            .Include(l => l.WorkstationTransfers.Where(wt => wt.DateOfRemoval == null))
-                .ThenInclude(wt => wt.Workstation)
-                    .ThenInclude(w => w.DeviceTransfers.Where(dt => dt.DateOfRemoval == null))
-                        .ThenInclude(dt => dt.Device)
                             .ThenInclude(d => d.DeviceModel)
                                 .ThenInclude(dm => dm.DeviceType)
-             .Include(l => l.WorkstationTransfers.Where(wt => wt.DateOfRemoval == null))
+            .Include(l => l.Employee)
+            .Include(l => l.WorkstationTransfers)
+                .ThenInclude(wt => wt.Workstation)
+            .Include(l => l.WorkstationTransfers)
                 .ThenInclude(wt => wt.Employee);
     }
 

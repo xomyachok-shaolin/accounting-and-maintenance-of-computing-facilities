@@ -111,6 +111,8 @@ function List({ match }) {
   const [searchText, setSearchText] = useState("");
   const [searchedColumn, setSearchedColumn] = useState("");
 
+  const [isDefaultEmpty, setIsDefaultEmpty] = useState(true);
+
   const getColumnSearchProps = (dataIndex) => ({
     filterDropdown: ({
       setSelectedKeys,
@@ -282,11 +284,16 @@ function List({ match }) {
         { text: "рабочее место", value: "рабочее место" },
       ],
       onFilter: (value, record) => record.useType === value,
-      render: (t, r) => (
-        <span>
-          <Tag color="geekblue">{t}</Tag>
-        </span>
-      ),
+      render: (t, r) =>
+        r.dateOfDebit == null ? (
+          <span>
+            <Tag color="geekblue">{t}</Tag>
+          </span>
+        ) : (
+          <span>
+            <Tag color="volcano">списано</Tag>
+          </span>
+        ),
     },
     {
       title: "Здание/Помещение/РМ",
@@ -341,20 +348,21 @@ function List({ match }) {
     {
       title: "",
       key: "action",
-      render: (text, record) => (
-        <Space size="middle">
-          <Button onClick={() => showEditModal(record.key)}>
-            Редактировать
-          </Button>
-          <Button
-            danger
-            onClick={() => showDeleteModal(record.key)}
-            disabled={record.isDeleting}
-          >
-            {record.isDeleting ? <Spin /> : <span>Удалить</span>}
-          </Button>
-        </Space>
-      ),
+      render: (text, record) =>
+        record.dateOfDebit == null && (
+          <Space size="middle">
+            <Button onClick={() => showEditModal(record.key)}>
+              Редактировать
+            </Button>
+            <Button
+              danger
+              onClick={() => showDeleteModal(record.key)}
+              disabled={record.isDeleting}
+            >
+              {record.isDeleting ? <Spin /> : <span>Удалить</span>}
+            </Button>
+          </Space>
+        ),
     },
   ];
 
@@ -401,7 +409,7 @@ function List({ match }) {
   };
 
   const onSelect = (selectedKeys, info) => {
-    setIsDefaultEmpty(false)
+    setIsDefaultEmpty(false);
 
     var node = info.node;
 
@@ -422,6 +430,7 @@ function List({ match }) {
             tempKey = dm;
           }
         } else {
+          if (node.key == dt.name)
           setSelectedModel({
             deviceType: dt.name,
           });
@@ -466,17 +475,24 @@ function List({ match }) {
   const dataDevices = filterDevices?.map(function (row) {
     let useType,
       location = null;
+
     row.deviceTransfers.forEach((dt) => {
-      if (dt.dateOfRemoval == null) {
-        useType = dt.useType;
-        location =
-          useType == "рабочее место"
-            ? dt.workstation.workstationTransfers[0].location.house +
-              "/" +
-              dt.workstation.workstationTransfers[0].location.room +
-              "/" +
-              dt.workstation.registerNumber
-            : dt.location.house + "/" + dt.location.room;
+      if (dt?.dateOfRemoval == null) {
+        if (dt?.useType == "рабочее место") {
+          locations?.forEach((l) => {
+            l.workstationTransfers.forEach((wt) => {
+              if (wt.workstation.id == dt.idWorkstation)
+                location =
+                  l.house + "/" + l.room + "/" + wt.workstation.registerNumber;
+            });
+          });
+        } else {
+          locations?.forEach((l) => {
+            if (l.id == dt?.idLocation) location = l.house + "/" + l.room;
+          });
+        }
+
+        useType = dt?.useType;
       }
     });
 
@@ -574,7 +590,7 @@ function List({ match }) {
     const { value } = e.target;
     const newExpandedKeys = dataList
       .map((item) => {
-        console.log(item)
+        console.log(item);
         if (item.title.indexOf(value) > -1) {
           return getParentKey(item.key, treeData);
         }
@@ -645,14 +661,56 @@ function List({ match }) {
             value: r.value,
           };
 
+          childrenList.push(childrenNode);
+        });
+      treeNode.children = childrenList;
+
+      list.push(treeNode);
+    }
+
+    return list;
+  }
+
+  function detailsLocationsWS() {
+    const list = [];
+    const map = {};
+    locations?.forEach((l) => {
+      let arr = [],
+        room = l.room,
+        house = l.house,
+        workstations = l.workstationTransfers;
+
+      if (!map[house]) arr.push({ label: room, value: l.id, ws: workstations });
+      else {
+        arr = map[house];
+        arr.push({ label: room, value: l.id, ws: workstations });
+      }
+      map[house] = arr;
+    });
+
+    for (var key in map) {
+      const treeNode = {
+        label: "Здание " + key,
+        value: key,
+      };
+      const childrenList = [];
+      if (map[key].length != 0)
+        // eslint-disable-next-line no-loop-func
+        map[key].forEach((r) => {
+          const childrenNode = {
+            label: "Помещение " + r.label,
+            value: r.value,
+          };
           if (useMode == 3) {
             const childrenListWS = [];
             r.ws.forEach((w) => {
-              const childrenNodeWS = {
-                label: "РМ " + w.workstation.registerNumber,
-                value: w.workstation.id,
-              };
-              childrenListWS.push(childrenNodeWS);
+              if (w.dateOfRemoval == null) {
+                const childrenNodeWS = {
+                  label: "РМ " + w.workstation.registerNumber,
+                  value: w.workstation.id,
+                };
+                childrenListWS.push(childrenNodeWS);
+              }
             });
 
             if (childrenListWS.length == 0) childrenNode.disabled = true;
@@ -670,6 +728,7 @@ function List({ match }) {
   }
 
   const treeLocationsData = detailsLocations();
+  const treeLocationsWSData = detailsLocationsWS();
 
   const showModal = () => {
     setVisible(true);
@@ -821,7 +880,9 @@ function List({ match }) {
       data.deviceType instanceof String
     )
       data.deviceType = -1;
+
     console.log(id, data);
+
     return deviceDetailActions.update(id, data).then(() => {
       setIsResetAll(true);
 
@@ -852,6 +913,7 @@ function List({ match }) {
   function onSubmitParameter(values) {
     setVisibleParameter(false);
     setDisabledCascader(true);
+    form.resetFields();
     form1.resetFields();
 
     return !mode ? createParameter(values) : updateParameter(mode.key, values);
@@ -872,21 +934,23 @@ function List({ match }) {
   }
 
   const [disabledCascader, setDisabledCascader] = useState(true);
+  const [modeCascader, setModeCascader] = useState(true);
 
   function changeCascader(e) {
-    setUseMode(e.target.value);
-    setDisabledCascader(false);
-
     form.setFieldsValue({
       location: "",
     });
+    if (e.target.value == 3) setModeCascader(false);
+    else setModeCascader(true);
+    setUseMode(e.target.value);
+    setDisabledCascader(false);
   }
 
   const expandedRowRender = (record) => {
-    console.log(record);
+    // console.log(record);
     const columns = [
       {
-        title: "Дата установки",
+        title: "Дата и время установки",
         dataIndex: "dateOfInstallation",
         id: "dateOfInstallation",
         ...getColumnSearchProps("dateOfInstallation"),
@@ -925,7 +989,7 @@ function List({ match }) {
         sorter: (a, b) => a.location.localeCompare(b.location),
       },
       {
-        title: "Дата снятия",
+        title: "Дата и время снятия",
         dataIndex: "dateOfRemoval",
         id: "dateOfRemoval",
         ...getColumnSearchProps("dateOfRemoval"),
@@ -942,14 +1006,20 @@ function List({ match }) {
     ];
     const data = [];
     record.deviceTransfers.forEach((dt) => {
-      let location =
-        dt.useType == "рабочее место"
-          ? dt.workstation.workstationTransfers[0].location.house +
-            "/" +
-            dt.workstation.workstationTransfers[0].location.room +
-            "/" +
-            dt.workstation.registerNumber
-          : dt.location.house + "/" + dt.location.room;
+      let location = "";
+      if (dt.useType == "рабочее место") {
+        locations?.forEach((l) => {
+          l.workstationTransfers.forEach((wt) => {
+            if (wt.workstation.id == dt.idWorkstation)
+              location =
+                l.house + "/" + l.room + "/" + wt.workstation.registerNumber;
+          });
+        });
+      } else {
+        locations?.forEach((l) => {
+          if (l.id == dt.idLocation) location = l.house + "/" + l.room;
+        });
+      }
       data.push({
         key: dt.id,
         dateOfInstallation: dt.dateOfInstallation,
@@ -962,8 +1032,6 @@ function List({ match }) {
       <Table columns={columns} bordered dataSource={data} pagination={true} />
     );
   };
-
-  const [isDefaultEmpty, setIsDefaultEmpty] = useState(true);
 
   return (
     <>
@@ -1036,32 +1104,32 @@ function List({ match }) {
             </Content>
           </Layout>
           {!isDefaultEmpty && (
-                <>
-          {selectedModel?.dm && (
-            <div direction="vertical">
-              <Button
-                type="primary"
-                onClick={showAddModalDevice}
-                style={{ marginBottom: 8 }}
-              >
-                Добавить устройство
-              </Button>
-              <Table
-                scroll={{ x: 800 }}
-                bordered
-                columns={columnsDevices}
-                dataSource={dataDevices}
-                expandable={{ expandedRowRender }}
-              ></Table>
-            </div>
+            <>
+              {selectedModel?.dm && (
+                <div direction="vertical">
+                  <Button
+                    type="primary"
+                    onClick={showAddModalDevice}
+                    style={{ marginBottom: 8 }}
+                  >
+                    Добавить устройство
+                  </Button>
+                  <Table
+                    scroll={{ x: 800 }}
+                    bordered
+                    columns={columnsDevices}
+                    dataSource={dataDevices}
+                    expandable={{ expandedRowRender }}
+                  ></Table>
+                </div>
+              )}
+            </>
           )}
-          </>
-          )}
-
         </>
       )}
       {!deviceDetails && <Spin size="large" />}
       <Modal
+        forceRender
         title={!mode ? "Добавить устройство" : "Редактировать устройство"}
         visible={visible}
         onOk={form.submit}
@@ -1146,30 +1214,42 @@ function List({ match }) {
               </Radio.Group>
             </Form.Item>
 
-            <Form.Item
-              name="location"
-              label="Местоположение"
-              rules={[
-                {
-                  required: true,
-                  message: "Пожалуйста, укажите местоположение!",
-                },
-              ]}
-            >
-              <Cascader
-                options={treeLocationsData}
-                disabled={disabledCascader}
-                showSearch={{ filter }}
-              ></Cascader>
-            </Form.Item>
-
-            {/* <div className="form-group">
-                        <button type="submit" disabled={confirmLoading} className="btn btn-primary mr-2">
-                            {confirmLoading && <span className="spinner-border spinner-border-sm mr-1"></span>}
-                            Сохранить
-                        </button>
-                        <Link to="/users" className="btn btn-link">Отмена</Link>
-                    </div> */}
+            {modeCascader && (
+              <Form.Item
+                name="location"
+                label="Местоположение"
+                rules={[
+                  {
+                    required: true,
+                    message: "Пожалуйста, укажите местоположение!",
+                  },
+                ]}
+              >
+                <Cascader
+                  options={treeLocationsData}
+                  disabled={disabledCascader}
+                  showSearch={{ filter }}
+                ></Cascader>
+              </Form.Item>
+            )}
+            {!modeCascader && (
+              <Form.Item
+                name="location"
+                label="Местоположение"
+                rules={[
+                  {
+                    required: true,
+                    message: "Пожалуйста, укажите местоположение!",
+                  },
+                ]}
+              >
+                <Cascader
+                  options={treeLocationsWSData}
+                  disabled={disabledCascader}
+                  showSearch={{ filter }}
+                ></Cascader>
+              </Form.Item>
+            )}
           </Form>
         </>
       </Modal>
@@ -1258,14 +1338,6 @@ function List({ match }) {
             >
               <Input />
             </Form.Item>
-
-            {/* <div className="form-group">
-                        <button type="submit" disabled={confirmLoading} className="btn btn-primary mr-2">
-                            {confirmLoading && <span className="spinner-border spinner-border-sm mr-1"></span>}
-                            Сохранить
-                        </button>
-                        <Link to="/users" className="btn btn-link">Отмена</Link>
-                    </div> */}
           </Form>
         </>
       </Modal>

@@ -72,7 +72,7 @@ public class WrittingOffActsController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    public async Task<ActionResult<UpdateRequest>>Update(int id, WrittingOffActRequest model)
+    public async Task<ActionResult<WrittingOffActRequest>>Update(int id, WrittingOffActRequest model)
     {
 
         foreach (var file in model.Files)

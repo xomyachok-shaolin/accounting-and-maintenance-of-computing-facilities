@@ -5,3 +5,4 @@ export * from './deviceParameter.actions';
 export * from './deviceType.actions';
 export * from './deviceDetail.actions';
 export * from './writtingOffAct.actions';
+export * from './workstation.actions';

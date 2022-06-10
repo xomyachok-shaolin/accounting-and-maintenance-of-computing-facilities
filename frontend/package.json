@@ -6,6 +6,8 @@
         "@types/moment": "^2.13.0",
         "antd": "^4.19.2",
         "antd-img-crop": "^4.2.0",
+        "antd-mask-input": "^2.0.7",
+        "antd-masked-input": "^1.0.1",
         "axios": "^0.27.2",
         "history": "^4.10.1",
         "moment": "^2.29.3",

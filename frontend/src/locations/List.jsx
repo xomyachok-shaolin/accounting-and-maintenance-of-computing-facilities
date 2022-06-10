@@ -239,17 +239,17 @@ function List({ match }) {
                 label="Ответственный"
               >
                 <Select
-                  notFoundContent="Сотрудник не найден"
+                  notFoundContent="Сотрудники не найдены"
                   showSearch
-                  placeholder="Выберите ответственного за помещение"
+                  placeholder="Укажите ответственного за помещение"
                   optionFilterProp="children"
                     value={employees}
                   allowClear
                 >
                   {employees?.map((e) => (
-                    <Select value={e.id} key={e.id}>
+                    <Select.Option value={e.id} key={e.id}>
                       {e.personnelNumber} {e.lastName} {e.firstName} {e.patronymic} {e.department} {e.position}
-                    </Select>
+                    </Select.Option>
                   ))}
                 </Select>
               </Form.Item>

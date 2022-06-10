@@ -37,7 +37,19 @@ function useDeviceDetailActions() {
 
   function getAll() {
     return fetchWrapper.get(baseUrl).then((dd) => {
+
       setDeviceDetails(dd);
+
+      dd.forEach((dt) => {
+        dt.deviceModels.forEach((dm) => {
+          const d = JSON.parse(JSON.stringify(dm.devices));
+            d.forEach(device => {
+                device.deviceModel = dm.name
+            });
+            
+            setFilterDevices(d);
+        })
+    })
 
       var selected = null;
       dd.forEach((dt) => {
