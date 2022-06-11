@@ -1,7 +1,7 @@
-import { useSetRecoilState, useResetRecoilState } from 'recoil';
+import { useSetRecoilState, useRecoilValue,useRecoilState, useResetRecoilState } from 'recoil';
 
 import { useFetchWrapper } from '_helpers';
-import { locationsAtom, locationAtom, employeesAtom } from '_state';
+import { locationsAtom, workstationsAtom, flagUpdateAtom,filterWorkstationsAtom,selectedModelAtom, locationAtom, employeesAtom } from '_state';
 
 export { useLocationActions };
 
@@ -12,6 +12,10 @@ function useLocationActions () {
     const setLocations = useSetRecoilState(locationsAtom);
     const setLocation = useSetRecoilState(locationAtom);
     const setEmployees = useSetRecoilState(employeesAtom);
+    const [selectedModel, setSelectedModel] = useRecoilState(selectedModelAtom);
+    const setfilterWorkstations = useSetRecoilState(filterWorkstationsAtom);
+    const [flagUpdate, setFlagUpdate] = useRecoilState(flagUpdateAtom);
+    const allWorkstations = useRecoilValue(workstationsAtom);
 
     return {
         getAll,
@@ -32,7 +36,16 @@ function useLocationActions () {
 
 
     function getAll() {
-        return fetchWrapper.get(baseUrl).then(setLocations);
+        return fetchWrapper.get(baseUrl).then((locations) => {
+       setLocations(locations)
+       let l = JSON.parse(JSON.stringify(locations));
+            l.status = true        
+            setLocations(l)
+            if (allWorkstations != null)
+            if (allWorkstations.status != false)
+            setFlagUpdate(true)
+
+        });
     }
     function getAllEmployees() {
         return fetchWrapper.get(baseUrlEmp).then(setEmployees);

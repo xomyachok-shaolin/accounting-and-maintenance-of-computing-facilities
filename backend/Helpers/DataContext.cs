@@ -37,25 +37,25 @@ public partial class DataContext : DbContext
             .HasMany(l => l.TaskWorkstationTransfers)
             .WithOne(w => w.Location)
             .HasForeignKey(w => w.IdLocation)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.SetNull);
 
         modelBuilder.Entity<Location>()
             .HasMany(l => l.TaskDeviceTransfers)
             .WithOne(w => w.Location)
             .HasForeignKey(w => w.IdLocation)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.SetNull);
 
         modelBuilder.Entity<Location>()
             .HasMany(l => l.DeviceTransfers)
             .WithOne(w => w.Location)
             .HasForeignKey(w => w.IdLocation)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.SetNull);
 
         modelBuilder.Entity<Location>()
             .HasMany(l => l.WorkstationTransfers)
             .WithOne(d => d.Location)
             .HasForeignKey(d => d.IdLocation)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.SetNull);
 
         modelBuilder.Entity<DeviceType>()
             .HasMany(dt => dt.DeviceModels)
@@ -128,13 +128,13 @@ public partial class DataContext : DbContext
             .HasMany(w => w.DeviceTransfers)
             .WithOne(t => t.Workstation)
             .HasForeignKey(t => t.IdWorkstation)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.SetNull);
 
         modelBuilder.Entity<Workstation>()
             .HasMany(w => w.TaskDeviceTransfers)
             .WithOne(t => t.Workstation)
             .HasForeignKey(t => t.IdWorkstation)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.SetNull);
 
         modelBuilder.Entity<Device>()
             .HasMany(d => d.DeviceTransfers)

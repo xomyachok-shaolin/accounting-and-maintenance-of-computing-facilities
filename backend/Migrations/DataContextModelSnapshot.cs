@@ -63,7 +63,7 @@ namespace WebApi.Migrations
                     b.Property<string>("InventoryNumber")
                         .HasColumnType("text");
 
-                    b.Property<bool?>("IsDeleted")
+                    b.Property<bool>("IsDeleted")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
                         .HasDefaultValue(false);
@@ -638,12 +638,12 @@ namespace WebApi.Migrations
                     b.HasOne("WebApi.Entities.Location", "Location")
                         .WithMany("DeviceTransfers")
                         .HasForeignKey("IdLocation")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.HasOne("WebApi.Entities.Workstation", "Workstation")
                         .WithMany("DeviceTransfers")
                         .HasForeignKey("IdWorkstation")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Device");
 
@@ -692,7 +692,7 @@ namespace WebApi.Migrations
                     b.HasOne("WebApi.Entities.Location", "Location")
                         .WithMany("TaskDeviceTransfers")
                         .HasForeignKey("IdLocation")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.HasOne("WebApi.Entities.Task", "Task")
                         .WithMany("TaskDeviceTransfers")
@@ -703,7 +703,7 @@ namespace WebApi.Migrations
                     b.HasOne("WebApi.Entities.Workstation", "Workstation")
                         .WithMany("TaskDeviceTransfers")
                         .HasForeignKey("IdWorkstation")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Device");
 
@@ -724,7 +724,7 @@ namespace WebApi.Migrations
                     b.HasOne("WebApi.Entities.Location", "Location")
                         .WithMany("TaskWorkstationTransfers")
                         .HasForeignKey("IdLocation")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.SetNull)
                         .IsRequired();
 
                     b.HasOne("WebApi.Entities.Task", "Task")
@@ -758,7 +758,7 @@ namespace WebApi.Migrations
                     b.HasOne("WebApi.Entities.Location", "Location")
                         .WithMany("WorkstationTransfers")
                         .HasForeignKey("IdLocation")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.SetNull)
                         .IsRequired();
 
                     b.HasOne("WebApi.Entities.Workstation", "Workstation")

@@ -196,8 +196,6 @@ public class DeviceService : IDeviceService
 
         _context.Devices.Update(device);
 
-        
-
 
         Location location = null;
         Workstation workstation = null;

@@ -9,12 +9,13 @@ using WebApi.Models.Workstations;
 
 public interface IWorkstationService
 {
-    IEnumerable<Workstation> GetAll();
+    IEnumerable<DeviceTransfer> GetAllDT();
+    IEnumerable<WorkstationTransfer> GetAllWT();
     Workstation GetById(int id);
     void Create(WorkstationRequest model);
-    void Update(int id, WorkstationRequest model);
+    void Update(string id, WorkstationRequest model);
     void UpdateDevices(WorkstationDeviceUpdateRequest model);
-    void Delete(int id);
+    void Delete(string id);
 }
 
 public class WorkstationService : IWorkstationService
@@ -33,19 +34,21 @@ public class WorkstationService : IWorkstationService
         _mapper = mapper;
     }
 
-    public IEnumerable<Workstation> GetAll()
+    public IEnumerable<DeviceTransfer> GetAllDT()
     {
-        return _context.Workstations
-            .Include(w => w.WorkstationTransfers)
-                .ThenInclude(wt => wt.Employee)
-            .Include(w => w.WorkstationTransfers)
-                    .ThenInclude(wt => wt.Location)
-            .Include(w => w.DeviceTransfers)
-                .ThenInclude(dt => dt.Location)
-            .Include(w => w.DeviceTransfers)
-                .ThenInclude(dt => dt.Device)
-                            .ThenInclude(d => d.DeviceModel)
-                                .ThenInclude(dm => dm.DeviceType);
+        return _context.DeviceTransfers
+                .Include(dt => dt.Location)
+                .Include(dt => dt.Workstation)
+                .Include(dt => dt.Device)
+                      .ThenInclude(d => d.DeviceModel)
+                        .ThenInclude(dm => dm.DeviceType);
+    }
+    public IEnumerable<WorkstationTransfer> GetAllWT()
+    {
+        return _context.WorkstationTransfers
+            .Include(wt => wt.Workstation)
+            .Include(wt => wt.Employee)
+            .Include(wt => wt.Location);
     }
     public Workstation GetById(int id)
     {
@@ -55,8 +58,7 @@ public class WorkstationService : IWorkstationService
     public void Create(WorkstationRequest model)
     {
         // validate
-        if (_context.Workstations.Any(x => x.RegisterNumber == model.RegisterNumber)
-            && _context.Workstations.Any(x => x.IsDisassembled == false))
+        if (_context.Workstations.Any(x => x.RegisterNumber == model.RegisterNumber && x.IsDisassembled == false))
             throw new AppException("Регистрационный № для рабочего места уже занят");
 
         Employee employee = _context.Employees.Where(e => e.Id == model.Responsible).FirstOrDefault();
@@ -91,6 +93,8 @@ public class WorkstationService : IWorkstationService
 
                 DeviceTransfer dt = _context.DeviceTransfers.Where(dt => dt.DateOfRemoval == null)
                     .Include(dt => dt.Device).Where(d => d.Device.InventoryNumber == device).SingleOrDefault();
+
+
                 dt.DateOfRemoval = DateTime.UtcNow;
                 _context.DeviceTransfers.Update(dt);
 
@@ -102,7 +106,7 @@ public class WorkstationService : IWorkstationService
                     UseType = "рабочее место"
                 };
 
-                device1.DeviceTransfers.Add(transfer);
+                _context.DeviceTransfers.Add(transfer);
             }
 
         _context.SaveChanges();
@@ -148,39 +152,98 @@ public class WorkstationService : IWorkstationService
                     UseType = "рабочее место"
                 };
             }
-            device.DeviceTransfers.Add(transfer);
+            _context.DeviceTransfers.Add(transfer);
         }
 
         _context.SaveChanges();
     }
 
-    public void Update(int id, WorkstationRequest model)
+    public void Update(string id, WorkstationRequest model)
     {
-        var Workstation = getWorkstation(id);
+        Workstation workstation = _context.Workstations.Where(w => w.RegisterNumber == id && w.IsDisassembled == false).SingleOrDefault();
 
         // validate
-        if (Workstation.RegisterNumber != model.RegisterNumber)
+        if (workstation.RegisterNumber != model.RegisterNumber)
             if (_context.Workstations.Any(x => x.RegisterNumber == model.RegisterNumber))
                 throw new AppException("Регистрационный № для рабочего места уже занят");
 
-        Employee employee = _context.Employees.Where(e => e.Id == model.Responsible).FirstOrDefault();
-        Location location = _context.Locations.Where(e => e.Id == model.Location).FirstOrDefault();
+        Location location = _context.Locations.Where(l => l.Id == model.Location).FirstOrDefault();
 
-        Workstation.RegisterNumber = model.RegisterNumber;
-        Workstation.NetworkName = model.NetworkName;
-        Workstation.IpAddress = model.IpAddress;
+            
+            Employee employee = _context.Employees.Where(e => e.Id == model.Responsible).FirstOrDefault();
 
-        // Workstation.Location = location;
-        // Workstation.Employee = employee;
+            WorkstationTransfer wt = _context.WorkstationTransfers.Where(wt => wt.IdWorkstation == workstation.Id
+                && wt.DateOfRemoval == null).FirstOrDefault();
+            wt.DateOfRemoval = DateTime.UtcNow;
+            _context.WorkstationTransfers.Update(wt);
+        if (model.Location == -1)
+            location = _context.Locations.Where(l => l.Id == wt.IdLocation).FirstOrDefault();
+        WorkstationTransfer transfer = new WorkstationTransfer
+            {
+                DateOfInstallation = DateTime.UtcNow,
+                Workstation = workstation,
+                Location = location,
+                Employee = employee
+            };
 
-        _context.Workstations.Update(Workstation);
+
+            _context.WorkstationTransfers.Add(transfer);
+
+
+        
+        workstation.RegisterNumber = model.RegisterNumber;
+        workstation.NetworkName = model.NetworkName;
+        workstation.IpAddress = model.IpAddress;
+
+        if (model.SetOfDevices.Count == 0)
+        {
+            if (workstation.DeviceTransfers != null)
+            foreach (var dt in workstation.DeviceTransfers) {
+                if (dt.DateOfRemoval == null)
+                {
+                    dt.DateOfRemoval = DateTime.UtcNow;
+                    _context.DeviceTransfers.Update(dt);
+                }
+            }
+        }
+ 
+        foreach (string invNumber in model.SetOfDevices)
+        {
+            Device device = _context.Devices.Where(d => d.InventoryNumber == invNumber).SingleOrDefault();
+
+            DeviceTransfer dt = _context.DeviceTransfers.Where(dt => dt.Device == device && dt.DateOfRemoval == null).FirstOrDefault();
+            dt.DateOfRemoval = DateTime.UtcNow;
+            _context.DeviceTransfers.Update(dt);
+
+            DeviceTransfer t = new DeviceTransfer
+                {
+                    DateOfInstallation = DateTime.UtcNow,
+                    Device = device,
+                    Workstation = workstation,
+                    UseType = "рабочее место"
+                };
+
+            _context.DeviceTransfers.Add(t);
+        }
+
+        _context.Workstations.Update(workstation);
         _context.SaveChanges();
     }
 
-    public void Delete(int id)
+    public void Delete(string id)
     {
-        var Workstation = getWorkstation(id);
-        _context.Workstations.Remove(Workstation);
+        Workstation workstation = _context.Workstations.Where(w => w.RegisterNumber == id && w.IsDisassembled == false).SingleOrDefault();
+        workstation.IsDisassembled = true;
+
+            if (_context.DeviceTransfers.Any(x => x.IdWorkstation == workstation.Id && x.DateOfRemoval == null))
+                throw new AppException("Для удаления рабочего места следует освободить набор устройств");
+
+        WorkstationTransfer wt =  _context.WorkstationTransfers.Where(wt => wt.DateOfRemoval == null && wt.IdWorkstation == workstation.Id).SingleOrDefault();
+        wt.DateOfRemoval = DateTime.UtcNow;
+
+        _context.WorkstationTransfers.Update(wt);
+        _context.Workstations.Update(workstation);
+
         _context.SaveChanges();
     }
 
@@ -189,6 +252,7 @@ public class WorkstationService : IWorkstationService
     private Workstation getWorkstation(int id)
     {
         var Workstation = _context.Workstations.Find(id);
+
         if (Workstation == null) throw new KeyNotFoundException("Рабочее место не найдено");
         return Workstation;
     }

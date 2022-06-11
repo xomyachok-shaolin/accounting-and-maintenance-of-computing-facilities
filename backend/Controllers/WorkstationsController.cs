@@ -39,10 +39,19 @@ public class WorkstationsController : ControllerBase
     }
 
     // [Authorize(Workstation.Admin)]
-    [HttpGet]
+    [HttpGet("deviceTransfers")]
     public IActionResult GetAll()
     {
-        var workstations = _workstationService.GetAll();
+        var workstations = _workstationService.GetAllDT();
+
+
+        return Ok(workstations);
+    }
+
+    [HttpGet("workstationTransfers")]
+    public IActionResult GetAllWT()
+    {
+        var workstations = _workstationService.GetAllWT();
 
 
         return Ok(workstations);
@@ -56,7 +65,7 @@ public class WorkstationsController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    public ActionResult<Workstation> Update(int id, WorkstationRequest model)
+    public ActionResult<Workstation> Update(string id, WorkstationRequest model)
     {
         _workstationService.Update(id, model);        
         return Ok(new { message = "Информация о рабочем месте успешно обновлена" });
@@ -70,7 +79,7 @@ public class WorkstationsController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    public IActionResult Delete(int id)
+    public IActionResult Delete(string id)
     {
         _workstationService.Delete(id);
         return Ok(new { message = "Информация о рабочем месте успешно удалена" });

@@ -1,18 +1,23 @@
-import { useSetRecoilState, useResetRecoilState } from 'recoil';
+import { useSetRecoilState,useRecoilValue,useRecoilState, useResetRecoilState } from 'recoil';
 
 import { useFetchWrapper } from '_helpers';
-import { workstationAtom, workstationsAtom } from '_state';
+import { deviceTransfersAtom, filterWorkstationsAtom,workstationTransfersAtom,locationsAtom,flagUpdateAtom,filterDevicesAtom,selectedModelAtom, locationAtom, workstationAtom, workstationsAtom } from '_state';
 
 export { useWorkstationActions };
 
 function useWorkstationActions () {
     const baseUrl = `${process.env.REACT_APP_API_URL}/workstations`;
+    const baseUrlWT = `${process.env.REACT_APP_API_URL}/workstations/workstationTransfers`;
+    const baseUrlDT = `${process.env.REACT_APP_API_URL}/workstations/deviceTransfers`;
     const fetchWrapper = useFetchWrapper();
     const setWorkstation = useSetRecoilState(workstationAtom);
-    const setWorkstations = useSetRecoilState(workstationsAtom);
-
+    const [workstationTransfers, setWorkstationTransfers] = useRecoilState(workstationTransfersAtom);
+    const [deviceTransfers, setDeviceTransfers] = useRecoilState(deviceTransfersAtom);
+     const [flagUpdate, setFlagUpdate] = useRecoilState(flagUpdateAtom);
+   
     return {
-        getAll,
+        getAllWT,
+        getAllDT,
         getById,
         create,
         update,
@@ -28,8 +33,27 @@ function useWorkstationActions () {
     }
 
 
-    function getAll() {
-        return fetchWrapper.get(baseUrl).then(setWorkstations);
+    function getAllWT() {
+        return fetchWrapper.get(baseUrlWT).then((wt) => {
+           let workstationTransfers = JSON.parse(JSON.stringify(wt));
+           workstationTransfers.status = true        
+            setWorkstationTransfers(workstationTransfers)
+            if (deviceTransfers != null)
+            if (deviceTransfers.status != false)
+            setFlagUpdate(true)
+        });
+    }
+
+    function getAllDT() {
+        return fetchWrapper.get(baseUrlDT).then((dt)=>{
+            let deviceTransfers = JSON.parse(JSON.stringify(dt));
+            deviceTransfers.status = true        
+             setDeviceTransfers(deviceTransfers)
+             if (workstationTransfers != null)
+             if (workstationTransfers.status != false)
+             setFlagUpdate(true)
+ 
+        });
     }
 
 
@@ -50,18 +74,10 @@ function useWorkstationActions () {
 
     // prefixed with underscored because delete is a reserved word in javascript
     function _delete(id) {
-        setWorkstation(workstations => workstations.map(x => {
-            // add isDeleting prop to deviceDetail being deleted
-            if (x.id === id) 
-                return { ...x, isDeleting: true };
-
-            return x;
-        }));
 
         return fetchWrapper.delete(`${baseUrl}/${id}`)
-            .then(() => {
-                // remove deviceDetail from list after deleting
-                setWorkstation(setWorkstations => setWorkstations.filter(x => x.id !== id));
-            });
+            .then((x) => {
+                return x;
+               });
     }
 }

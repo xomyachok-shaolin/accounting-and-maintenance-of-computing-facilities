@@ -10,7 +10,25 @@ const workstationAtom = atom({
     default: null
 });
 
+const filterWorkstationsAtom = atom({
+    key: 'filterWorkstations',
+    default: null
+});
+
+const deviceTransfersAtom = atom({
+    key: 'deviceTransfers',
+    default: null
+});
+
+const workstationTransfersAtom = atom({
+    key: 'workstationTransfers',
+    default: null
+});
+
 export { 
+    filterWorkstationsAtom,
     workstationsAtom,
-    workstationAtom
+    workstationAtom,
+    deviceTransfersAtom,
+    workstationTransfersAtom
 };

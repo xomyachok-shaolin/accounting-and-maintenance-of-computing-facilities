@@ -9,7 +9,7 @@ import { UploadCustom } from "./UploadCustom";
 import {
   useAlertActions,
   useLocationActions,
-  useWrittingOffActActions,
+  useWrittingOffActActions,useWorkstationActions,
 } from "_actions";
 import {
   Form,
@@ -30,7 +30,7 @@ import {
 import moment from "moment";
 
 import { ExclamationCircleOutlined } from "@ant-design/icons";
-import { writtingOffActAtom, writtingOffActsAtom } from "_state";
+import { writtingOffActAtom,deviceTransfersAtom, workstationTransfersAtom , writtingOffActsAtom } from "_state";
 import {
   locationsAtom,
 } from "_state";
@@ -54,9 +54,12 @@ function List({ match }) {
   const { confirm } = Modal;
 
   const writtingOffActs = useRecoilValue(writtingOffActsAtom);
+  const workstationTransfers = useRecoilValue(workstationTransfersAtom);
+  const deviceTransfers = useRecoilValue(deviceTransfersAtom);
 
   const locationActions = useLocationActions();
   const writtingOffActActions = useWrittingOffActActions();
+  const workstationActions = useWorkstationActions();
 
   const [writtingOffAct, setWrittingOffAct] =
     useRecoilState(writtingOffActAtom);
@@ -70,6 +73,8 @@ function List({ match }) {
 
   useEffect(() => {
     locationActions.getAll();
+    workstationActions.getAllWT();
+    workstationActions.getAllDT();
     return locationActions.resetLocations;
   }, []);
 
@@ -77,6 +82,8 @@ function List({ match }) {
     if (isResetAll) {
       writtingOffActActions.getAll();
       locationActions.getAll();
+      workstationActions.getAllWT();
+      workstationActions.getAllDT();
       setIsResetAll(false);
     }
   }, [isResetAll]);
@@ -384,17 +391,8 @@ function List({ match }) {
 
   const showAddModalDevice = () => {
     setMode(false);
-    form.setFieldsValue({
-      username: "",
-      password: "",
-      firstName: "",
-      lastName: "",
-      mail: "",
-      patronymic: "",
-      imageFile: "",
-      imageName: "",
-      roles: [],
-    });
+    
+    dataFilterDeviceTransfers();
     showModal();
   };
   function createDevice(data) {
@@ -435,44 +433,46 @@ function List({ match }) {
   const dateFormat = "YYYY/MM/DD";
 
   const [filterDevices, setFilterDevices] = useState([]);
+  function dataFilterDeviceTransfers() {
+    var devices = [];
+    if (filterDevices.length == 0) {
+      deviceTransfers.forEach((dt) => {
+          let device = JSON.parse(JSON.stringify(dt.device));
+          device.useType = dt.useType;
+console.log(dt)
+          if (dt.dateOfRemoval == null)
+            if (dt.location != null) {
+              device.location = dt.location;
+              devices.push(device);
+            } else {
+              workstationTransfers.forEach((wt) => {  
+                if (wt.dateOfRemoval == null)
+                    if (wt.workstation.id == dt.idWorkstation){
+                       device.location = wt.location;
+                      device.workstation = wt.workstation  
+                    }
+                });
+                
+              devices.push(device);
+            }
+        });
 
-  var devices = [];
-  if (filterDevices.length == 0)
-    locations?.forEach((l) => {
-      l.workstationTransfers[0]?.workstation.deviceTransfers.forEach((dt) => {
-        let device = JSON.parse(JSON.stringify(dt.device));
-        device.useType = dt.useType;
-        device.location = l;
-        device.workstation = l.workstationTransfers[0]?.workstation;
-        if (device.workstation != null) {
-          devices.push(device);
-          setFilterDevices(devices);
-        }
-      });
-      l.deviceTransfers.forEach((dt) => {
-        let device = JSON.parse(JSON.stringify(dt.device));
-        device.useType = dt.useType;
-        device.location = l;
-        device.workstation = l.workstationTransfers[0]?.workstation;
-
-        if (device.location != null) {
-          devices.push(device);
-          setFilterDevices(devices);
-        }
-      });
-    });
+      
+      setFilterDevices(devices);
+    }
+  }
 
   const dataTransferDevices = Array.from(filterDevices)?.map(function (row) {
     console.log(row);
     let useType = row.useType;
     let location =
       useType == "рабочее место"
-        ? row.location.house +
+        ? row.location?.house +
           "/" +
-          row.location.room +
+          row.location?.room +
           "/" +
-          row.workstation.registerNumber
-        : row.location.house + "/" + row.location.room;
+          row.workstation?.registerNumber
+        : row.location?.house + "/" + row.location?.room;
     return {
       key: row.inventoryNumber,
       inventoryNumber: row.inventoryNumber,

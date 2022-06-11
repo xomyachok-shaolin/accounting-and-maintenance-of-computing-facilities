@@ -1,7 +1,7 @@
 /* eslint-disable default-case */
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { useRecoilValue, useRecoilState, DefaultValue } from "recoil";
+import { useRecoilValue, useRecoilState, useSetRecoilState } from "recoil";
 
 import MaskedInput from "antd-mask-input";
 
@@ -38,9 +38,12 @@ import { ExclamationCircleOutlined, FormOutlined } from "@ant-design/icons";
 import {
   filterDevicesAtom,
   employeesAtom,
-  deviceTypesAtom,
+  filterWorkstationsAtom,
+  selectedModelAtom,
   locationsAtom,
-  workstationsAtom,
+  flagUpdateAtom,
+  deviceTransfersAtom,
+  workstationTransfersAtom,
 } from "_state";
 import React from "react";
 import Search from "antd/lib/input/Search";
@@ -71,7 +74,9 @@ function List({ match }) {
 
   const locations = useRecoilValue(locationsAtom);
   const employees = useRecoilValue(employeesAtom);
-  const allWorkstations = useRecoilValue(workstationsAtom);
+
+  const workstationTransfers = useRecoilValue(workstationTransfersAtom);
+  const deviceTransfers = useRecoilValue(deviceTransfersAtom);
 
   const deviceDetailActions = useDeviceDetailActions();
   const deviceTypeActions = useDeviceTypeActions();
@@ -83,14 +88,22 @@ function List({ match }) {
   const [disabledCascader, setDisabledCascader] = useState(true);
   const [modeCascader, setModeCascader] = useState(true);
 
+  const [selectedModel, setSelectedModel] = useRecoilState(selectedModelAtom);
+  const [flagUpdate, setFlagUpdate] = useRecoilState(flagUpdateAtom);
+
   const [isEditWS, setIsEditWS] = useState(false);
   const [editWS, setEditWS] = useState(null);
 
+  const [filterDevices, setFilterDevices] = useRecoilState(filterDevicesAtom);
+  const [filterWorkstations, setfilterWorkstations] = useRecoilState(
+    filterWorkstationsAtom
+  );
+
   useEffect(() => {
-    deviceDetailActions.getAll();
     deviceTypeActions.getAll();
     locationActions.getAll();
-    workstationActions.getAll();
+    workstationActions.getAllWT();
+    workstationActions.getAllDT();
     return locationActions.resetLocations;
   }, []);
 
@@ -101,13 +114,24 @@ function List({ match }) {
 
   useEffect(() => {
     if (isResetAll) {
-      deviceDetailActions.getAll();
       deviceTypeActions.getAll();
-      workstationActions.getAll();
       locationActions.getAll();
+      workstationActions.getAllWT();
+      workstationActions.getAllDT();
       setIsResetAll(false);
     }
   }, [isResetAll]);
+
+  useEffect(() => {
+    if (deviceTransfers != null && workstationTransfers != null)
+      if (
+        deviceTransfers.status == true &&
+        workstationTransfers.status == true
+      ) {
+        deviceDetailActions.getAll();
+        setFlagUpdate(null);
+      }
+  }, [flagUpdate]);
 
   const showDefaultDrawer = () => {
     setVisibleDrawer(true);
@@ -144,7 +168,7 @@ function List({ match }) {
     data.setOfDevices = moveExcDevices;
     return workstationActions.updateDevices(data).then(() => {
       setIsResetAll(true);
-      console.log(data);
+      //  console.log(data);
 
       let initial = initialTargetKeys;
       moveExcDevices.forEach((d) => {
@@ -158,7 +182,7 @@ function List({ match }) {
               case 1:
                 dt.useType = "общее пользование";
                 locations.forEach((l) => {
-                  console.log(l);
+                  //      console.log(l);
                   if (data.location == l.id) dt.location = l;
                 });
                 break;
@@ -170,21 +194,33 @@ function List({ match }) {
                 break;
               case 3:
                 dt.useType = "рабочее место";
-                locations.forEach((l) => {
-                  l.workstationTransfers.forEach((wt) => {
-                    if (wt.dateOfRemoval == null)
-                      if (data.location == wt.workstation.id) {
-                        dt.location = l;
-                        dt.workstation = wt.workstation;
-                      }
-                  });
+                workstationTransfers.forEach((wt) => {
+                  if (wt.dateOfRemoval == null)
+                    if (data.location == wt.workstation.id) {
+                      dt.location = wt.location;
+                      dt.workstation = wt.workstation;
+                    }
                 });
+
                 break;
             }
 
-            console.log(dt);
+            // console.log(dt);
           }
         });
+        // filterDevices.forEach((dt) => {
+        //   if (data.setOfDevices.includes(dt.inventoryNumber)) {
+        //     locations.forEach((l) => {
+        //       l.workstationTransfers.forEach((wt) => {
+        //         if (wt.dateOfRemoval == null)
+        //           if (data.location == wt.workstation.id) {
+        //             dt.location = l;
+        //             dt.workstation = wt.workstation;
+        //           }
+        //       });
+        //     });
+        //   }
+        // })
       });
       setInitialTargetKeys(initial);
 
@@ -361,7 +397,7 @@ function List({ match }) {
   });
 
   const handleDatePickerChange = (date, dateString, id) => {
-    console.log(id, date, dateString);
+    // console.log(id, date, dateString);
   };
 
   const handleSearch = (selectedKeys, confirm, dataIndex) => {
@@ -507,7 +543,7 @@ function List({ match }) {
           </Button>
           <Button
             danger
-            onClick={() => showDeleteModal(record.key)}
+            onClick={() => showDeleteModal(record.registerNumber)}
             disabled={record.isDeleting}
           >
             {record.isDeleting ? <Spin /> : <span>Удалить</span>}
@@ -528,10 +564,7 @@ function List({ match }) {
     },
   };
 
-  const [filterDevices, setFilterDevices] = useRecoilState(filterDevicesAtom);
-  const [filterWorkstations, setfilterWorkstations] = useState([]);
-
-  console.log(editWS);
+  // console.log(editWS);
   const onSelect = (selectedKeys, info) => {
     setIsDefaultEmpty(false);
 
@@ -539,153 +572,119 @@ function List({ match }) {
     var devices = [];
     var workstations = [];
 
+    setSelectedModel({ key: node.key, pos: node.pos });
+
     let regexpWS = /\d-\d-\d-\d/,
       regexpRoom = /\d-\d-\d/;
 
     if (regexpWS.test(node.pos)) {
       setIsEditWS(true);
-      locations.forEach((l) => {
-        l.workstationTransfers.forEach((wt) => {
-          console.log(wt);
-          if (wt.dateOfRemoval == null)
-            if (wt.workstation.id == node.key) {
-              let workstation = JSON.parse(JSON.stringify(wt.workstation));
-              workstation.wt = wt;
-              setEditWS(workstation);
-              console.log(workstation, node.key);
-              workstations.push({
-                key: workstation.id,
-                registerNumber: workstation.registerNumber,
-                networkName: workstation.networkName,
-                ipAddress: workstation.ipAddress,
-                dateOfInstallation: workstation.wt.dateOfInstallation,
-                wt: wt,
-              });
-            }
-        });
 
-        l.deviceTransfers.forEach((dt) => {
-          let device = JSON.parse(JSON.stringify(dt.device));
-
-          console.log(dt);
-          device.useType = dt.useType;
-          device.location = l;
-
-          if (dt.dateOfRemoval == null)
-            if (dt.idWorkstation == node.key) {
-              console.log(dt);
-              devices.push(device);
-              // l.workstationTransfers[0]?.workstation)
-            }
-        });
+      workstationTransfers.forEach((wt) => {
+        // console.log(wt);
+        if (wt.dateOfRemoval == null)
+          if (wt.workstation.id == node.key) {
+            let workstation = JSON.parse(JSON.stringify(wt.workstation));
+            workstation.wt = wt;
+            setEditWS(workstation);
+            //   console.log(workstation, node.key);
+            workstations.push({
+              key: workstation.id,
+              registerNumber: workstation.registerNumber,
+              networkName: workstation.networkName,
+              ipAddress: workstation.ipAddress,
+              dateOfInstallation: workstation.wt.dateOfInstallation,
+              wt: wt,
+            });
+          }
       });
 
-      allWorkstations.forEach((w) => {
-        w.deviceTransfers?.forEach((dt) => {
-          let device = JSON.parse(JSON.stringify(dt.device));
-          locations.forEach((l) => {
-            l.workstationTransfers.forEach((wt) => {
-              if (wt.dateOfRemoval == null)
-                if (wt.workstation.id == w.id) device.location = l;
-            });
-          });
-          device.useType = dt.useType;
-          device.workstation = w;
-          if (dt.dateOfRemoval == null)
-            if (dt.idWorkstation == node.key) {
-              // console.log(dt);
-              devices.push(device);
-            }
+
+      deviceTransfers?.forEach((dt) => {
+        let device = JSON.parse(JSON.stringify(dt.device));
+        workstationTransfers.forEach((wt) => {
+          if (wt.dateOfRemoval == null)
+            if (wt.workstation.id == dt.idWorkstation)
+              device.location = wt.location;
         });
+        device.useType = dt.useType;
+        device.workstation = dt.workstation;
+        if (dt.dateOfRemoval == null)
+          if (dt.idWorkstation == node.key) {
+            // console.log(dt);
+            devices.push(device);
+          }
       });
     } else if (regexpRoom.test(node.pos)) {
       setIsEditWS(false);
-      locations.forEach((l) => {
-        l.deviceTransfers.forEach((dt) => {
-          let device = JSON.parse(JSON.stringify(dt.device));
-          device.useType = dt.useType;
-          device.location = l;
-          if (dt.dateOfRemoval == null)
-            if (device.location.id == node.key.slice(12)) {
-              devices.push(device);
-            }
-        });
-      });
+      deviceTransfers.forEach((dt) => {
+        let device = JSON.parse(JSON.stringify(dt.device));
+        device.useType = dt.useType;
+        device.location = dt.location;
+        device.workstation = dt.workstation;
 
-      allWorkstations.forEach((w) => {
-        w.deviceTransfers?.forEach((dt) => {
-          let device = JSON.parse(JSON.stringify(dt.device));
-          locations.forEach((l) => {
-            l.workstationTransfers.forEach((wt) => {
-              if (wt.dateOfRemoval == null)
-                if (wt.workstation.id == w.id) device.location = l;
-            });
-          });
-          device.useType = dt.useType;
-          device.workstation = w;
-            if (dt.dateOfRemoval == null)
-            if (device.location.id == node.key.slice(12)) {
+        if (dt.dateOfRemoval == null)
+          if (dt.location){
+            if (device.location.id == node.key.slice(12)) 
               devices.push(device);
+            } else {
+              workstationTransfers.forEach((wt) => {
+                if (wt.dateOfRemoval == null)
+                  if (wt.workstation.id == dt.idWorkstation)
+                    device.location = wt.location;
+              });
+              device.workstation = dt.workstation;
+
+              if (device.location.id == node.key.slice(12)) {
+                devices.push(device);
+              }
             }
-        });
       });
     } else {
-      locations.forEach((l) => {
-        setIsEditWS(false);
-        l.deviceTransfers.forEach((dt) => {
-          let device = JSON.parse(JSON.stringify(dt.device));
-          device.useType = dt.useType;
-          device.location = l;
-          if (dt.dateOfRemoval == null)
-            if (l.house == node.key) {
-              devices.push(device);
-            }
-        });
-      });
-
-      allWorkstations.forEach((w) => {
-        w.deviceTransfers?.forEach((dt) => {
-          let device = JSON.parse(JSON.stringify(dt.device));
-          locations.forEach((l) => {
-            l.workstationTransfers.forEach((wt) => {
-              if (wt.dateOfRemoval == null)
-                if (wt.workstation.id == w.id) device.location = l;
+      setIsEditWS(false);
+      deviceTransfers.forEach((dt) => {
+        let device = JSON.parse(JSON.stringify(dt.device));
+        device.useType = dt.useType;
+        device.location = dt.location;
+        if (dt.dateOfRemoval == null)
+          if (dt.location) {
+            if (dt.location.house == node.key) devices.push(device);
+          } else {
+            workstationTransfers.forEach((wt) => {
+              if (wt.dateOfRemoval == null) {
+                if (wt.workstation.id == dt.idWorkstation)
+                  device.location = wt.location;
+              }
             });
-          });
-          device.useType = dt.useType;
-          device.workstation = w;
-            if (dt.dateOfRemoval == null)
+            device.workstation = dt.workstation;
             if (device.location.house == node.key) {
               devices.push(device);
             }
-        });
+          }
       });
     }
 
-    console.log(devices);
     setFilterDevices(devices);
 
-    locations.forEach((l) => {
-      if (typeof node.key == "string")
-        if (l.id == node.key.slice(12) || l.house == node.key)
-          l.workstationTransfers.forEach((wt) => {
-            console.log(wt);
-            if (wt.dateOfRemoval == null)
-              workstations.push({
-                key: wt.id,
-                registerNumber: wt.workstation.registerNumber,
-                networkName: wt.workstation.networkName,
-                ipAddress: wt.workstation.ipAddress,
-                dateOfInstallation: wt.dateOfInstallation,
-                wt: wt,
-              });
-          });
-    });
+    if (typeof node.key == "string")
+      workstationTransfers.forEach((wt) => {
+        if (wt.dateOfRemoval == null)
+          if (
+            wt.location.id == node.key.slice(12) ||
+            wt.location.house == node.key
+          ) {
+            workstations.push({
+              key: wt.id,
+              registerNumber: wt.workstation.registerNumber,
+              networkName: wt.workstation.networkName,
+              ipAddress: wt.workstation.ipAddress,
+              dateOfInstallation: wt.dateOfInstallation,
+              wt: wt,
+            });
+          }
+      });
 
-    console.log(workstations);
     setfilterWorkstations(workstations);
-
-    console.log(devices);
   };
 
   const dataDevices = filterDevices?.map(function (row) {
@@ -713,16 +712,11 @@ function List({ match }) {
   });
 
   const dataWorkstations = filterWorkstations?.map(function (row) {
-    let workstationTransfers = [];
-    allWorkstations.forEach((w) => {
-      w.workstationTransfers.forEach((wt) => {
-        console.log(wt, row);
-        if (row.wt?.idWorkstation == wt.idWorkstation)
-          workstationTransfers.push(wt);
-      });
+    let ws = [];
+    workstationTransfers.forEach((wt) => {
+      if (row.wt.idWorkstation == wt.idWorkstation) ws.push(wt);
     });
-
-    console.log(row);
+    // console.log(row)
     return {
       key: row.key,
       registerNumber: row.registerNumber,
@@ -730,7 +724,7 @@ function List({ match }) {
       ipAddress: row.ipAddress,
       dateOfInstallation: row.dateOfInstallation,
       employee: row.wt?.employee?.personnelNumber,
-      workstationTransfers: workstationTransfers,
+      workstationTransfers: ws,
     };
   });
 
@@ -944,7 +938,7 @@ function List({ match }) {
 
   const onChange = (e) => {
     const { value } = e.target;
-    const expandedKeys = dataList
+    const newExpandedKeys = dataList
       .map((item) => {
         if (item.title.indexOf(value) > -1) {
           return getParentKey(item.key, treeData);
@@ -953,7 +947,7 @@ function List({ match }) {
       })
       .filter((item, i, self) => item && self.indexOf(item) === i);
 
-    setExpandedKeys(expandedKeys);
+    setExpandedKeys(newExpandedKeys);
     setSearchValue(value);
     setAutoExpandParent(autoExpandParent);
   };
@@ -986,14 +980,17 @@ function List({ match }) {
   const showModal = () => {
     setVisibleWS(true);
   };
-  const showDeleteModal = (id) => {
+  const showDeleteModal = (registerNumber) => {
     confirm({
       title: "Вы уверены что хотите удалить запись?",
       icon: <ExclamationCircleOutlined />,
       okText: "Да",
       cancelText: "Отмена",
       onOk() {
-        // userActions.deleteRole(id);
+        workstationActions.delete(registerNumber).then(() => {
+          setIsResetAll(true);
+          alertActions.success("Рабочее место удалено");
+        });
       },
       onCancel() {},
     });
@@ -1001,10 +998,9 @@ function List({ match }) {
 
   const showEditModal = (id) => {
     filterWorkstations.forEach((ws) => {
-      console.log(ws, id);
+      // console.log(ws, id);
       let location = "";
       if (ws.key === id) {
-        console.log(ws);
         setMode(ws);
         locations.forEach((l) => {
           if (l.id == ws.wt.idLocation)
@@ -1028,40 +1024,51 @@ function List({ match }) {
     setMode(false);
     setInitialTargetKeys([]);
     setTargetKeys([]);
+    dataFilterDeviceTransfers();
 
     form.resetFields();
     showModal();
   };
 
   function createDevice(data) {
-    console.log(data);
-
+    if (data.responsible === undefined) data.responsible = -1;
     data.location = data.location[1];
-
+    data.setOfDevices = targetKeys;
+    // console.log(data);
     return workstationActions.create(data).then(() => {
       setIsResetAll(true);
       setIpAddress("");
+
       alertActions.success("Рабочее место добавлено");
     });
   }
 
   function updateDevice(id, data) {
-    console.log(data);
+    data.setOfDevices = targetKeys;
+    if (data.location.length == 2) data.location = data.location[1];
+    else data.location = -1;
+
+    if (data.IpAddress === undefined) data.IpAddress = null;
+    console.log(id, data);
     return workstationActions.update(id, data).then(() => {
       setIsResetAll(true);
       setIpAddress("");
       alertActions.success("Информация о рабочем месте обновлена");
     });
   }
+
   function onSubmit(values) {
     setVisibleWS(false);
 
-    return !mode ? createDevice(values) : updateDevice(mode.id, values);
+    return !mode
+      ? createDevice(values)
+      : updateDevice(mode.registerNumber, values);
   }
 
   const handleCancel = () => {
     setVisibleWS(false);
     setMode(false);
+    setIsResetAll(true);
     setIpAddress("");
   };
 
@@ -1076,37 +1083,27 @@ function List({ match }) {
   function dataFilterDeviceTransfers() {
     var devices = [];
     if (filterDeviceTransfers.length == 0) {
-      locations?.forEach((l) => {
-        l.deviceTransfers.forEach((dt) => {
-          let device = JSON.parse(JSON.stringify(dt.device));
-          device.useType = dt.useType;
-          device.location = l;
+      deviceTransfers.forEach((dt) => {
+        let device = JSON.parse(JSON.stringify(dt.device));
+        device.useType = dt.useType;
 
-          if (dt.dateOfRemoval == null)
-            if (device.location != null) {
-              devices.push(device);
-            }
-        });
-      });
-
-      allWorkstations?.forEach((w) => {
-        console.log(w);
-        w.deviceTransfers?.forEach((dt) => {
-          let device = JSON.parse(JSON.stringify(dt.device));
-          device.workstation = w;
-          device.useType = dt.useType;
-
-          locations.forEach((l) => {
-            l.workstationTransfers.forEach((wt) => {
+        if (dt.dateOfRemoval == null)
+          if (dt.location != null) {
+            device.location = dt.location;
+            devices.push(device);
+          } else {
+            workstationTransfers.forEach((wt) => {
               if (wt.dateOfRemoval == null)
-                if (wt.workstation.id == w.id) device.location = l;
+                if (wt.workstation.id == dt.workstation.id) {
+                  device.location = wt.location;
+                  device.workstation = wt.workstation;
+                }
             });
-          });
 
-          if (dt.dateOfRemoval == null) devices.push(device);
-        });
+            devices.push(device);
+          }
       });
-      console.log(devices);
+
       setFilterDeviceTransfers(devices);
     }
   }
@@ -1114,7 +1111,7 @@ function List({ match }) {
   const dataTransferDevices = Array.from(filterDeviceTransfers)?.map(function (
     row
   ) {
-    console.log(row);
+    //   console.log(row);
     let useType = row.useType;
     let location =
       useType == "рабочее место"
@@ -1123,7 +1120,7 @@ function List({ match }) {
           row.location.room +
           "/" +
           row.workstation.registerNumber
-        : row.location.house + "/" + row.location.room;
+        : row.location?.house + "/" + row.location?.room;
     return {
       key: row.inventoryNumber,
       inventoryNumber: row.inventoryNumber,
@@ -1141,15 +1138,13 @@ function List({ match }) {
 
   const getMock = () => {
     const originTargetKeys = [];
-    console.log(mode);
+    //console.log(mode);
     if (mode)
-      allWorkstations.forEach((w) => {
-        w.deviceTransfers?.forEach((dt) => {
-          console.log(mode, dt.idWorkstation);
-          if (dt.dateOfRemoval == null)
-            if (mode.wt.idWorkstation == dt.idWorkstation)
-              originTargetKeys.push(dt.device.inventoryNumber);
-        });
+      deviceTransfers?.forEach((dt) => {
+        // console.log(mode, dt.idWorkstation);
+        if (dt.dateOfRemoval == null)
+          if (mode.wt.idWorkstation == dt.idWorkstation)
+            originTargetKeys.push(dt.device.inventoryNumber);
       });
 
     setInitialTargetKeys(originTargetKeys);
@@ -1328,30 +1323,25 @@ function List({ match }) {
           },
         },
       ];
-      console.log(record);
+      //console.log(record);
+      deviceTransfers.forEach((dt) => {
+        if (dt.device.inventoryNumber == record.inventoryNumber) {
+          let location = "";
 
-      locations?.forEach((l) => {
-        l.deviceTransfers.forEach((dt) => {
-          if (dt.device.inventoryNumber == record.inventoryNumber)
+          if (dt.location)
             data.push({
               key: dt.id,
               dateOfInstallation: dt.dateOfInstallation,
               useType: dt.useType,
-              location: l.house + "/" + l.room,
+              location: dt.location.house + "/" + dt.location.room,
               dateOfRemoval: dt.dateOfRemoval,
             });
-        });
-      });
-
-      allWorkstations?.forEach((w) => {
-        w.deviceTransfers.forEach((dt) => {
-          if (dt.device.inventoryNumber == record.inventoryNumber) {
-            let location = "";
-            locations?.forEach((l) => {
-              l.workstationTransfers.forEach((wt) => {
-                if (wt.dateOfRemoval == null)
-                  if (wt.idWorkstation == w.id) location = l;
-              });
+          else {
+            workstationTransfers.forEach((wt) => {
+              if (wt.dateOfRemoval == null)
+                if (wt.idWorkstation == dt.idWorkstation) {
+                  location = wt.location;
+                }
             });
 
             data.push({
@@ -1359,11 +1349,15 @@ function List({ match }) {
               dateOfInstallation: dt.dateOfInstallation,
               useType: dt.useType,
               location:
-                location.house + "/" + location.room + "/" + w.registerNumber,
+                location.house +
+                "/" +
+                location.room +
+                "/" +
+                dt.workstation?.registerNumber,
               dateOfRemoval: dt.dateOfRemoval,
             });
           }
-        });
+        }
       });
     }
     if (record.registerNumber != null) {
@@ -1418,30 +1412,23 @@ function List({ match }) {
 
       console.log(record);
       if (record.workstationTransfers)
-        record.workstationTransfers.forEach((wt) => {
-          let location, employee;
-          locations.forEach((l) => {
-            if (wt.idLocation == l.id) location = l.house + "/" + l.room;
-          });
-          employees.forEach((e) => {
-            if (wt.idEmployee == e.id) employee = e;
-          });
+        record.workstationTransfers?.forEach((wt) => {
           data.push({
             key: wt.id,
             dateOfInstallation: wt.dateOfInstallation,
             dateOfRemoval: wt.dateOfRemoval,
-            location: location,
-            employee: employee?.personnelNumber,
+            location: wt.location.house + "/" + wt.location.room,
+            employee: wt.employee?.personnelNumber,
             description:
-              employee?.department +
+              wt.employee?.department +
               ": " +
-              employee?.position +
+              wt.employee?.position +
               " " +
-              employee?.lastName +
+              wt.employee?.lastName +
               " " +
-              employee?.firstName +
+              wt.employee?.firstName +
               " " +
-              employee?.patronymic,
+              wt.employee?.patronymic,
           });
         });
     }
@@ -1473,111 +1460,111 @@ function List({ match }) {
 
   return (
     <>
-      <Layout>
-        <Sider theme="light">
-          <div>
-            <Search
-              style={{ marginBottom: 8 }}
-              onChange={onChange}
-              placeholder="Поиск"
-            />
-            <Tree
-              onExpand={onExpand}
-              expandedKeys={expandedKeys}
-              autoExpandParent={autoExpandParent}
-              treeData={loop(treeData)}
-              showLine={{ hideLeafIcon: true }}
-              showIcon={false}
-              onSelect={onSelect}
-              style={{ marginBottom: 16, minWidth: 200 }}
-            />
-          </div>
-        </Sider>
-
-        <Content style={{ paddingLeft: 20, backgroundColor: "white" }}>
-          {!isDefaultEmpty && !isEditWS && (
-            <div>
-              <Button
-                type="primary"
-                onClick={showAddModalWS}
-                style={{ marginBottom: 8 }}
-              >
-                Добавить рабочее место
-              </Button>
-              {detailsLocations && (
-                <Table
-                  pagination={false}
-                  bordered
-                  columns={columnsParameters}
-                  dataSource={dataWorkstations}
-                  scroll={{ x: 800 }}
-                  expandable={{ expandedRowRender }}
-                ></Table>
-              )}
-            </div>
-          )}
-          {!isDefaultEmpty && isEditWS && (
-            <Descriptions
-              title={"Информация о рабочем месте " + editWS.registerNumber}
-            >
-              <Descriptions.Item label="Регистрационный №">
-                {editWS.registerNumber}
-              </Descriptions.Item>
-              <Descriptions.Item label="Сетевое имя">
-                {editWS.networkName}
-              </Descriptions.Item>
-              <Descriptions.Item label="IP-адрес">
-                {editWS.ipAddress}
-              </Descriptions.Item>
-              <Descriptions.Item label="Дата установки">
-                {editWS.wt.dateOfInstallation}
-              </Descriptions.Item>
-              <Descriptions.Item label="Ответственный">
-                {editWS.wt.employee
-                  ? editWS.wt.employee.personnelNumber +
-                    " " +
-                    editWS.wt.employee.department +
-                    " " +
-                    editWS.wt.employee.position +
-                    " " +
-                    editWS.wt.employee.lastName +
-                    " " +
-                    editWS.wt.employee.firstName +
-                    " " +
-                    editWS.wt.employee.patronymic
-                  : "не назначен"}
-              </Descriptions.Item>
-            </Descriptions>
-          )}
-        </Content>
-      </Layout>
-      {!isDefaultEmpty && (
+      {deviceTransfers && workstationTransfers && (
         <>
-          {detailsLocations && (
-            <div>
-              {isEditWS && (
-                <Button
-                  type="primary"
-                  onClick={() => showEditModal(editWS.id)}
+          <Layout>
+            <Sider theme="light">
+              <div>
+                <Search
                   style={{ marginBottom: 8 }}
-                >
-                  Редактировать рабочее место
-                </Button>
+                  onChange={onChange}
+                  placeholder="Поиск"
+                />
+                <Tree
+                  onExpand={onExpand}
+                  expandedKeys={expandedKeys}
+                  autoExpandParent={autoExpandParent}
+                  treeData={loop(treeData)}
+                  showLine={{ hideLeafIcon: true }}
+                  showIcon={false}
+                  onSelect={onSelect}
+                  style={{ marginBottom: 16, minWidth: 200 }}
+                />
+              </div>
+            </Sider>
+
+            <Content style={{ paddingLeft: 20, backgroundColor: "white" }}>
+              {!isDefaultEmpty && !isEditWS && (
+                <div>
+                  <Button
+                    type="primary"
+                    onClick={showAddModalWS}
+                    style={{ marginBottom: 8 }}
+                  >
+                    Добавить рабочее место
+                  </Button>
+
+                  <Table
+                    pagination={false}
+                    bordered
+                    columns={columnsParameters}
+                    dataSource={dataWorkstations}
+                    scroll={{ x: 800 }}
+                    expandable={{ expandedRowRender }}
+                  ></Table>
+                </div>
               )}
-              <Table
-                scroll={{ x: 800 }}
-                bordered
-                columns={columnsDevices}
-                dataSource={dataDevices}
-                expandable={{ expandedRowRender }}
-                style={{ marginTop: 16 }}
-              ></Table>
-            </div>
+              {!isDefaultEmpty && isEditWS && (
+                <Descriptions
+                  title={"Информация о рабочем месте " + editWS.registerNumber}
+                >
+                  <Descriptions.Item label="Регистрационный №">
+                    {editWS.registerNumber}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Сетевое имя">
+                    {editWS.networkName}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="IP-адрес">
+                    {editWS.ipAddress}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Дата установки">
+                    {editWS.wt.dateOfInstallation}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Ответственный">
+                    {editWS.wt.employee
+                      ? editWS.wt.employee.personnelNumber +
+                        " " +
+                        editWS.wt.employee.department +
+                        " " +
+                        editWS.wt.employee.position +
+                        " " +
+                        editWS.wt.employee.lastName +
+                        " " +
+                        editWS.wt.employee.firstName +
+                        " " +
+                        editWS.wt.employee.patronymic
+                      : "не назначен"}
+                  </Descriptions.Item>
+                </Descriptions>
+              )}
+            </Content>
+          </Layout>
+          {!isDefaultEmpty && (
+            <>
+              <div>
+                {isEditWS && (
+                  <Button
+                    type="primary"
+                    onClick={() => showEditModal(editWS.id)}
+                    style={{ marginBottom: 8 }}
+                  >
+                    Редактировать рабочее место
+                  </Button>
+                )}
+                <Table
+                  scroll={{ x: 800 }}
+                  bordered
+                  columns={columnsDevices}
+                  dataSource={dataDevices}
+                  expandable={{ expandedRowRender }}
+                  style={{ marginTop: 16 }}
+                ></Table>
+              </div>
+            </>
           )}
         </>
       )}
-
-      {!detailsLocations && !getMock && (
+      {!deviceTransfers && !workstationTransfers && (
         <div className="text-center p-3">
           <Spin size="large" />
         </div>
@@ -1629,12 +1616,6 @@ function List({ match }) {
               label="IP-адрес"
               name="IpAddress"
               initialValue={editWS?.ipAddress}
-              rules={[
-                {
-                  required: true,
-                  message: "Пожалуйста, введите ip-адрес!",
-                },
-              ]}
             >
               <MaskedInput mask={DUMB_IP_MASK} />
             </Form.Item>
@@ -1674,7 +1655,7 @@ function List({ match }) {
             </Form.Item>
 
             <Form.Item label="Набор устройств" name="setOfDevices">
-              {locations && (
+              {deviceTransfers && workstationTransfers && (
                 <TableTransfer
                   dataSource={dataTransferDevices}
                   targetKeys={targetKeys}

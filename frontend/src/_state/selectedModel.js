@@ -5,4 +5,10 @@ const selectedModelAtom = atom({
     default: null
 });
 
-export { selectedModelAtom };
+
+const flagUpdateAtom = atom({
+    key: 'flagUpdate',
+    default: null
+});
+
+export { selectedModelAtom, flagUpdateAtom};

@@ -7,7 +7,7 @@ import {
   useDeviceTypeActions,
   useAlertActions,
   useLocationActions,
-  useDeviceParameterActions,
+  useDeviceParameterActions,useWorkstationActions,
 } from "_actions";
 import {
   Form,
@@ -38,8 +38,8 @@ import {
   deviceTypesAtom,
   locationsAtom,
   filterParametersAtom,
-  filterDevicesAtom,
-  deviceParametersAtom,
+  filterDevicesAtom,deviceTransfersAtom, workstationTransfersAtom,
+  deviceParametersAtom,flagUpdateAtom,
   selectedModelAtom,
 } from "_state";
 import React from "react";
@@ -81,17 +81,21 @@ function List({ match }) {
   const deviceDetailActions = useDeviceDetailActions();
   const deviceTypeActions = useDeviceTypeActions();
   const locationActions = useLocationActions();
+  const workstationActions = useWorkstationActions();
 
   const [selectedModel, setSelectedModel] = useRecoilState(selectedModelAtom);
 
   const [useMode, setUseMode] = useState(null);
+  const workstationTransfers = useRecoilValue(workstationTransfersAtom);
+  const deviceTransfers = useRecoilValue(deviceTransfersAtom);
 
-  const [isUpdateParameters, setIsUpdateParameters] = useState(false);
+  const [flagUpdate, setFlagUpdate] = useRecoilState(flagUpdateAtom);
 
   useEffect(() => {
-    deviceDetailActions.getAll();
     deviceTypeActions.getAll();
     locationActions.getAll();
+    workstationActions.getAllWT();
+    workstationActions.getAllDT();
     deviceParameterActions.getAll();
 
     return deviceDetailActions.resetDeviceDetails;
@@ -99,14 +103,24 @@ function List({ match }) {
 
   useEffect(() => {
     if (isResetAll) {
-      deviceDetailActions.getAll();
       deviceTypeActions.getAll();
       locationActions.getAll();
+      workstationActions.getAllWT();
+      workstationActions.getAllDT();
       deviceParameterActions.getAll();
 
       setIsResetAll(false);
     }
   }, [isResetAll]);
+
+
+  useEffect(() => {
+    if (deviceTransfers != null && workstationTransfers!= null)
+    if (deviceTransfers.status == true && workstationTransfers.status == true) {
+      deviceDetailActions.getAll();
+      setFlagUpdate(null);
+    }
+  }, [flagUpdate]);
 
   const [searchText, setSearchText] = useState("");
   const [searchedColumn, setSearchedColumn] = useState("");
@@ -590,7 +604,6 @@ function List({ match }) {
     const { value } = e.target;
     const newExpandedKeys = dataList
       .map((item) => {
-        console.log(item);
         if (item.title.indexOf(value) > -1) {
           return getParentKey(item.key, treeData);
         }

@@ -6,7 +6,6 @@ public class WorkstationRequest
 {
     [Required]
     public string RegisterNumber { get; set; }
-    [Required]
     public string IpAddress{ get; set; }
     [Required]
     public string NetworkName { get; set; }

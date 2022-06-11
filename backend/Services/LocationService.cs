@@ -35,15 +35,8 @@ public class LocationService : ILocationService
     public IEnumerable<Location> GetAll()
     {
         return _context.Locations
-            .Include(l => l.DeviceTransfers)
-                .ThenInclude(dt => dt.Device)
-                            .ThenInclude(d => d.DeviceModel)
-                                .ThenInclude(dm => dm.DeviceType)
             .Include(l => l.Employee)
-            .Include(l => l.WorkstationTransfers)
-                .ThenInclude(wt => wt.Workstation)
-            .Include(l => l.WorkstationTransfers)
-                .ThenInclude(wt => wt.Employee);
+            .Include(l => l.WorkstationTransfers).ThenInclude(wt => wt.Workstation);
     }
 
     public Location GetById(int id)
