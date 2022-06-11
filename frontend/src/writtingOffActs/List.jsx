@@ -6,10 +6,13 @@ import { useRecoilValue, useRecoilState, DefaultValue } from "recoil";
 import { TableTransfer } from "./TableTransfer";
 import { UploadCustom } from "./UploadCustom";
 
+import { CSVLink } from "react-csv";
+
 import {
   useAlertActions,
   useLocationActions,
-  useWrittingOffActActions,useWorkstationActions,
+  useWrittingOffActActions,
+  useWorkstationActions,
 } from "_actions";
 import {
   Form,
@@ -30,10 +33,13 @@ import {
 import moment from "moment";
 
 import { ExclamationCircleOutlined } from "@ant-design/icons";
-import { writtingOffActAtom,deviceTransfersAtom, workstationTransfersAtom , writtingOffActsAtom } from "_state";
 import {
-  locationsAtom,
+  writtingOffActAtom,
+  deviceTransfersAtom,
+  workstationTransfersAtom,
+  writtingOffActsAtom,
 } from "_state";
+import { locationsAtom } from "_state";
 import React from "react";
 
 import Highlighter from "react-highlight-words";
@@ -130,7 +136,7 @@ function List({ match }) {
             style={{ marginBottom: 8, display: "block" }}
           />
         )}
-        {(dataIndex == "dateOfDebit") && (
+        {dataIndex == "dateOfDebit" && (
           <DatePicker.RangePicker
             onChange={(date, dateString) => {
               setSelectedKeys(date ? [date] : []);
@@ -142,16 +148,16 @@ function List({ match }) {
         )}
         <Space>
           {dataIndex != "dateOfDebit" && (
-              <Button
-                type="primary"
-                onClick={() => handleSearch(selectedKeys, confirm, dataIndex)}
-                icon={<SearchOutlined />}
-                size="small"
-                style={{ width: 90 }}
-              >
-                Искать
-              </Button>
-            )}
+            <Button
+              type="primary"
+              onClick={() => handleSearch(selectedKeys, confirm, dataIndex)}
+              icon={<SearchOutlined />}
+              size="small"
+              style={{ width: 90 }}
+            >
+              Искать
+            </Button>
+          )}
           <Button
             onClick={() => handleReset(clearFilters)}
             size="small"
@@ -391,7 +397,7 @@ function List({ match }) {
 
   const showAddModalDevice = () => {
     setMode(false);
-    
+
     dataFilterDeviceTransfers();
     showModal();
   };
@@ -437,27 +443,26 @@ function List({ match }) {
     var devices = [];
     if (filterDevices.length == 0) {
       deviceTransfers.forEach((dt) => {
-          let device = JSON.parse(JSON.stringify(dt.device));
-          device.useType = dt.useType;
-console.log(dt)
-          if (dt.dateOfRemoval == null)
-            if (dt.location != null) {
-              device.location = dt.location;
-              devices.push(device);
-            } else {
-              workstationTransfers.forEach((wt) => {  
-                if (wt.dateOfRemoval == null)
-                    if (wt.workstation.id == dt.idWorkstation){
-                       device.location = wt.location;
-                      device.workstation = wt.workstation  
-                    }
-                });
-                
-              devices.push(device);
-            }
-        });
+        let device = JSON.parse(JSON.stringify(dt.device));
+        device.useType = dt.useType;
+        console.log(dt);
+        if (dt.dateOfRemoval == null)
+          if (dt.location != null) {
+            device.location = dt.location;
+            devices.push(device);
+          } else {
+            workstationTransfers.forEach((wt) => {
+              if (wt.dateOfRemoval == null)
+                if (wt.workstation.id == dt.idWorkstation) {
+                  device.location = wt.location;
+                  device.workstation = wt.workstation;
+                }
+            });
 
-      
+            devices.push(device);
+          }
+      });
+
       setFilterDevices(devices);
     }
   }
@@ -567,13 +572,28 @@ console.log(dt)
     <>
       {writtingOffActs && (
         <div>
-          <Button
-            type="primary"
-            onClick={showAddModalDevice}
-            style={{ marginBottom: 8 }}
-          >
-            Добавить акт списания
-          </Button>
+          <Space>
+            <Button
+              type="primary"
+              onClick={showAddModalDevice}
+              style={{ marginBottom: 8 }}
+            >
+              Добавить акт списания
+            </Button>{" "}
+            {dataWrittingOffActs && (
+              <Button type="primary" style={{ marginBottom: 8 }}>
+                <CSVLink
+                  filename={"dataWrittingOffActs.csv"}
+                  data={dataWrittingOffActs}
+                  onClick={() => {
+                    alertActions.success("Файл загружен");
+                  }}
+                >
+                  Экспорт в CSV
+                </CSVLink>
+              </Button>
+            )}
+          </Space>
           <Table
             scroll={{ x: 800 }}
             bordered

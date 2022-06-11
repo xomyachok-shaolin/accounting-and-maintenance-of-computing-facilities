@@ -32,6 +32,7 @@ import {
 } from "antd";
 
 import moment from "moment";
+import {CSVLink} from "react-csv"
 
 import { ExclamationCircleOutlined, FormOutlined } from "@ant-design/icons";
 
@@ -599,7 +600,6 @@ function List({ match }) {
           }
       });
 
-
       deviceTransfers?.forEach((dt) => {
         let device = JSON.parse(JSON.stringify(dt.device));
         workstationTransfers.forEach((wt) => {
@@ -624,21 +624,20 @@ function List({ match }) {
         device.workstation = dt.workstation;
 
         if (dt.dateOfRemoval == null)
-          if (dt.location){
-            if (device.location.id == node.key.slice(12)) 
-              devices.push(device);
-            } else {
-              workstationTransfers.forEach((wt) => {
-                if (wt.dateOfRemoval == null)
-                  if (wt.workstation.id == dt.idWorkstation)
-                    device.location = wt.location;
-              });
-              device.workstation = dt.workstation;
+          if (dt.location) {
+            if (device.location.id == node.key.slice(12)) devices.push(device);
+          } else {
+            workstationTransfers.forEach((wt) => {
+              if (wt.dateOfRemoval == null)
+                if (wt.workstation.id == dt.idWorkstation)
+                  device.location = wt.location;
+            });
+            device.workstation = dt.workstation;
 
-              if (device.location.id == node.key.slice(12)) {
-                devices.push(device);
-              }
+            if (device.location.id == node.key.slice(12)) {
+              devices.push(device);
             }
+          }
       });
     } else {
       setIsEditWS(false);
@@ -1486,6 +1485,7 @@ function List({ match }) {
             <Content style={{ paddingLeft: 20, backgroundColor: "white" }}>
               {!isDefaultEmpty && !isEditWS && (
                 <div>
+                <Space>
                   <Button
                     type="primary"
                     onClick={showAddModalWS}
@@ -1493,7 +1493,21 @@ function List({ match }) {
                   >
                     Добавить рабочее место
                   </Button>
-
+                  {dataWorkstations && (<Button
+                    type="primary"
+                    style={{ marginBottom: 8 }}
+                  >
+                 < CSVLink
+                  filename={"dataWorkstations.csv"}
+                  data={dataWorkstations}
+                  onClick={()=>{
+                    alertActions.success("Файл загружен");
+                  }}
+                >
+                  Экспорт в CSV
+                </CSVLink>
+                  </Button>)} 
+                  </Space>
                   <Table
                     pagination={false}
                     bordered
@@ -1543,14 +1557,44 @@ function List({ match }) {
             <>
               <div>
                 {isEditWS && (
+                  <Space>
                   <Button
                     type="primary"
                     onClick={() => showEditModal(editWS.id)}
-                    style={{ marginBottom: 8 }}
+                    style={{ marginTop: 8, }}
                   >
                     Редактировать рабочее место
                   </Button>
-                )}
+                  {dataDevices && (<Button
+                    type="primary"
+                    style={{ marginTop: 8, }}
+                  >
+                  <CSVLink
+                  filename={"dataDevices.csv"}
+                  data={dataDevices}
+                  onClick={()=>{
+                    alertActions.success("Файл загружен");
+                  }}
+                >
+                  Экспорт в CSV
+                </CSVLink>
+                  </Button>)} 
+                </Space>
+                  )}
+                  {dataDevices&& !isEditWS && (<Button
+                    type="primary"
+                    style={{ marginTop: 8,  }}
+                  >
+                  <CSVLink
+                  filename={"dataDevices.csv"}
+                  data={dataDevices}
+                  onClick={()=>{
+                    alertActions.success("Файл загружен");
+                  }}
+                >
+                  Экспорт в CSV
+                </CSVLink>
+                  </Button>)} 
                 <Table
                   scroll={{ x: 800 }}
                   bordered

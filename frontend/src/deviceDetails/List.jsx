@@ -31,6 +31,8 @@ import {
 
 import moment from "moment";
 
+import {CSVLink} from "react-csv"
+
 import { ExclamationCircleOutlined, FormOutlined } from "@ant-design/icons";
 
 import {
@@ -1096,13 +1098,28 @@ function List({ match }) {
                   )}
                   {!selectedModel?.dm && (
                     <div direction="vertical">
-                      <Button
+                    <Space><Button
                         type="primary"
                         onClick={showAddModalDevice}
                         style={{ marginBottom: 8 }}
                       >
                         Добавить устройство
                       </Button>
+                      {dataDevices && (<Button
+                        type="primary"
+                        style={{ marginBottom: 8 }}
+                      >
+                      <CSVLink
+                      filename={"dataDevices.csv"}
+                      data={dataDevices}
+                      onClick={()=>{
+                        alertActions.success("Файл загружен");
+                      }}
+                    >
+                      Экспорт в CSV
+                    </CSVLink>
+                      </Button>)} 
+                      </Space>
                       <Table
                         scroll={{ x: 800 }}
                         bordered
@@ -1120,13 +1137,27 @@ function List({ match }) {
             <>
               {selectedModel?.dm && (
                 <div direction="vertical">
-                  <Button
+                <Space><Button
                     type="primary"
                     onClick={showAddModalDevice}
                     style={{ marginBottom: 8 }}
                   >
                     Добавить устройство
-                  </Button>
+                  </Button>{dataDevices && (<Button
+                    type="primary"
+                    style={{ marginBottom: 8 }}
+                  >
+                  <CSVLink
+                  filename={"dataDevices.csv"}
+                  data={dataDevices}
+                  onClick={()=>{
+                    alertActions.success("Файл загружен");
+                  }}
+                >
+                  Экспорт в CSV
+                </CSVLink>
+                  </Button>)} 
+                  </Space>
                   <Table
                     scroll={{ x: 800 }}
                     bordered
