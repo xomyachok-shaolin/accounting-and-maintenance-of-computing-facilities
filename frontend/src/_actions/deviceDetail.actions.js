@@ -15,7 +15,7 @@ import {
   deviceTransfersAtom,
   workstationTransfersAtom,
   filterWorkstationsAtom,
-  selectedModelAtom,
+  selectedModelAtom,submitAtom,
 } from "_state";
 
 export { useDeviceDetailActions };
@@ -29,7 +29,8 @@ function useDeviceDetailActions() {
   const setFilterDevices = useSetRecoilState(filterDevicesAtom);
   const setFilterWorkstations = useSetRecoilState(filterWorkstationsAtom);
   const [selectedModel, setSelectedModel] = useRecoilState(selectedModelAtom);
-  const [workstationTransfers, setWorkstationTransfers] = useRecoilState(
+  const [submit, setSubmit] = useRecoilState(submitAtom);
+ const [workstationTransfers, setWorkstationTransfers] = useRecoilState(
     workstationTransfersAtom
   );
   const [deviceTransfers, setDeviceTransfers] =
@@ -52,17 +53,17 @@ function useDeviceDetailActions() {
 
   function getAll() {
     return fetchWrapper.get(baseUrl).then((dd) => {
+
       setDeviceDetails(dd);
 
       var selected = null;
 
-      if (selectedModel != null)
-        if (selectedModel.key == null) {
-          dd.forEach((dt) => {
-            dt.deviceModels.forEach((dm) => {
-              if (dm.id == selectedModel?.dm?.id) {
+        if (selectedModel?.key == null || submit == true) {
+          dd?.forEach((dt) => {
+            dt.deviceModels.$values.forEach((dm) => {
+              if (dm.id == selectedModel?.dm?.id || selectedModel?.deviceType == dt.name) {
                 selected = dm;
-                const d = JSON.parse(JSON.stringify(dm.devices));
+                const d = JSON.parse(JSON.stringify(dm.devices.$values));
                 d.forEach((device) => {
                   device.deviceModel = dm.name;
                 });
@@ -70,7 +71,7 @@ function useDeviceDetailActions() {
               }
             });
           });
-        }else {
+        } else {
           var devices = [];
           var workstations = [];
           let regexpWS = /\d-\d-\d-\d/,
@@ -78,7 +79,7 @@ function useDeviceDetailActions() {
 
           if (regexpWS.test(selectedModel.pos)) {
             //setIsEditWS(true);
-            workstationTransfers.forEach((wt) => {
+            workstationTransfers.$values.forEach((wt) => {
               // console.log(wt);
               if (wt.dateOfRemoval == null)
                 if (wt.workstation.id == selectedModel.key) {
@@ -96,7 +97,7 @@ function useDeviceDetailActions() {
                 }
             });
 
-            deviceTransfers?.forEach((dt) => {
+            deviceTransfers?.$values.forEach((dt) => {
               let device = JSON.parse(JSON.stringify(dt.device));
               workstationTransfers.forEach((wt) => {
                 if (wt.dateOfRemoval == null)
@@ -113,86 +114,87 @@ function useDeviceDetailActions() {
             });
           } else if (regexpRoom.test(selectedModel.pos)) {
             //setIsEditWS(false);
-            deviceTransfers.forEach((dt) => {
+            deviceTransfers.$values.forEach((dt) => {
               let device = JSON.parse(JSON.stringify(dt.device));
               device.useType = dt.useType;
               device.location = dt.location;
               device.workstation = dt.workstation;
-      
+
               if (dt.dateOfRemoval == null)
-                if (dt.location){
-                  if (device.location.id == selectedModel.key.slice(12)) 
+                if (dt.location) {
+                  if (dt.location.id == selectedModel.key.slice(12))
                     devices.push(device);
-                  } else {
-                    workstationTransfers.forEach((wt) => {
-                      if (wt.dateOfRemoval == null)
-                        if (wt.workstation.id == dt.idWorkstation)
-                          device.location = wt.location;
-                    });
-                    device.workstation = dt.workstation;
-      
-                    if (device.location.id == selectedModel.key.slice(12)) {
-                      devices.push(device);
-                    }
+                } else {
+                  workstationTransfers.$values.forEach((wt) => {
+                    if (wt.dateOfRemoval == null)
+                      if (wt.workstation.id == dt.idWorkstation)
+                        device.location = wt.location;
+                  });
+                  device.workstation = dt.workstation;
+
+                  if (device.location.id == selectedModel.key.slice(12)) {
+                    devices.push(device);
                   }
+                }
             });
           } else {
-            deviceTransfers.forEach((dt) => {
+            //console.log(deviceTransfers)
+            deviceTransfers.$values.forEach((dt) => {
               let device = JSON.parse(JSON.stringify(dt.device));
               device.useType = dt.useType;
               device.location = dt.location;
               if (dt.dateOfRemoval == null)
                 if (dt.location) {
-                  if (dt.location.house == selectedModel.key) devices.push(device);
+                  if (device.location.house == selectedModel.key)
+                    devices.push(device);
                 } else {
-                  workstationTransfers.forEach((wt) => {
+                  workstationTransfers.$values.forEach((wt) => {
                     if (wt.dateOfRemoval == null) {
                       if (wt.workstation.id == dt.idWorkstation)
                         device.location = wt.location;
                     }
                   });
                   device.workstation = dt.workstation;
-                  if (device.location.house == selectedModel.key) {
+                  if (device.location?.house == selectedModel.key) {
                     devices.push(device);
                   }
                 }
             });
           }
-      
+
           setFilterDevices(devices);
 
-            if (typeof selectedModel.key == "string")
-              workstationTransfers.forEach((wt) => {
-                if (wt.dateOfRemoval == null)
-                  if (
-                    wt.location.id == selectedModel.key.slice(12) ||
-                    wt.location.house == selectedModel.key
-                  ) {
-                    workstations.push({
-                      key: wt.id,
-                      registerNumber: wt.workstation.registerNumber,
-                      networkName: wt.workstation.networkName,
-                      ipAddress: wt.workstation.ipAddress,
-                      dateOfInstallation: wt.dateOfInstallation,
-                      wt: wt,
-                    });
-                  }
-              });
+          if (typeof selectedModel?.key == "string")
+            workstationTransfers.$values.forEach((wt) => {
+              if (wt.dateOfRemoval == null)
+                if (
+                  wt.location.id == selectedModel.key.slice(12) ||
+                  wt.location.house == selectedModel.key
+                ) {
+                  workstations.push({
+                    key: wt.id,
+                    registerNumber: wt.workstation.registerNumber,
+                    networkName: wt.workstation.networkName,
+                    ipAddress: wt.workstation.ipAddress,
+                    dateOfInstallation: wt.dateOfInstallation,
+                    wt: wt,
+                  });
+                }
+            });
 
-            setFilterWorkstations(workstations);
+          setFilterWorkstations(workstations);
 
-            let l = JSON.parse(JSON.stringify(deviceTransfers));
-            l.status = false;
-            setDeviceTransfers(l);
+          let l = JSON.parse(JSON.stringify(deviceTransfers));
+          l.status = false;
+          setDeviceTransfers(l);
 
-            let ws = JSON.parse(JSON.stringify(workstationTransfers));
-            ws.status = true;
-            setWorkstationTransfers(ws);
-          
-           }   // console.log(devices, selectedModel) 
+          let ws = JSON.parse(JSON.stringify(workstationTransfers));
+          ws.status = false;
+          setWorkstationTransfers(ws);
+        } // console.log(devices, selectedModel)
 
       var parameters = [];
-      selected?.deviceParameterValues.forEach((dp) => {
+      selected?.deviceParameterValues.$values.forEach((dp) => {
         parameters.push({
           key: dp.deviceParameter.id,
           name: dp.deviceParameter.name,
@@ -202,6 +204,7 @@ function useDeviceDetailActions() {
         });
       });
 
+      setSubmit(false)
       setFilterParameters(parameters);
     });
   }

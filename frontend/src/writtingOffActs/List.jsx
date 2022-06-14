@@ -262,7 +262,7 @@ function List({ match }) {
       },
     ];
     const data = [];
-    record.devices.forEach((device) => {
+    record.devices.$values.forEach((device) => {
       data.push({
         key: device.inventoryNumber,
         inventoryNumber: device.inventoryNumber,
@@ -302,7 +302,7 @@ function List({ match }) {
       dataIndex: "files",
       render: (files) => (
         <>
-          {files?.map((file) => {
+          {files?.$values.map((file) => {
             var name = file.fileName;
             var link = file.file;
             var color = "geekblue";
@@ -442,7 +442,7 @@ function List({ match }) {
   function dataFilterDeviceTransfers() {
     var devices = [];
     if (filterDevices.length == 0) {
-      deviceTransfers.forEach((dt) => {
+      deviceTransfers.$values.forEach((dt) => {
         let device = JSON.parse(JSON.stringify(dt.device));
         device.useType = dt.useType;
         console.log(dt);
@@ -451,7 +451,7 @@ function List({ match }) {
             device.location = dt.location;
             devices.push(device);
           } else {
-            workstationTransfers.forEach((wt) => {
+            workstationTransfers.$values.forEach((wt) => {
               if (wt.dateOfRemoval == null)
                 if (wt.workstation.id == dt.idWorkstation) {
                   device.location = wt.location;

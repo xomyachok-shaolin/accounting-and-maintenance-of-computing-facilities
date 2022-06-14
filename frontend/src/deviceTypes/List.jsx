@@ -79,8 +79,8 @@ function List({ match }) {
       ),
     },
   ];
-
-  const data = deviceTypes?.map(function (row) {
+console.log(deviceTypes)
+  const data = deviceTypes?.$values.map(function (row) {
     return {
       key: row.id,
       name: row.name,
@@ -116,7 +116,7 @@ function List({ match }) {
   };
 
   const showEditModal = (id) => {
-    deviceTypes.forEach((deviceType) => {
+    deviceTypes.$values.forEach((deviceType) => {
       if (deviceType.id === id) {
         form.setFieldsValue({
           name: deviceType.name,
@@ -220,10 +220,10 @@ function List({ match }) {
 
             </Form>
       </Modal>
-      {(deviceTypes) && <Table locale={{emptyText:"Нет данных"}} 
+      {(deviceTypes?.$values) && <Table locale={{emptyText:"Нет данных"}} 
         pagination={false} scroll={{ x: 800, }}
       bordered columns={columns} dataSource={data}></Table>}
-      {!deviceTypes && (
+      {!deviceTypes?.$values && (
         <div className="text-center p-3">
           <Spin size="large" />
         </div>

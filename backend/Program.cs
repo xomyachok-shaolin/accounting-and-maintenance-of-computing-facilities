@@ -6,6 +6,7 @@ using WebApi.Entities;
 using WebApi.Helpers;
 using WebApi.Services;
 using Microsoft.Extensions.FileProviders;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,7 +21,7 @@ var builder = WebApplication.CreateBuilder(args);
     services.AddControllers();
 
     services.AddControllers().AddJsonOptions(x =>
-                x.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles);
+                x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve);
     // configure automapper with all automapper profiles from this assembly
     services.AddAutoMapper(typeof(Program));
 

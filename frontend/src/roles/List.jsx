@@ -96,7 +96,7 @@ function List({ match }) {
     },
   ];
 
-  const data = roles?.map(function (row) {
+  const data = roles?.$values.map(function (row) {
     return {
       key: row.id,
       name: row.name,

@@ -32,7 +32,7 @@ import {
 } from "antd";
 
 import moment from "moment";
-import {CSVLink} from "react-csv"
+import { CSVLink } from "react-csv";
 
 import { ExclamationCircleOutlined, FormOutlined } from "@ant-design/icons";
 
@@ -124,10 +124,8 @@ function List({ match }) {
   }, [isResetAll]);
 
   useEffect(() => {
-    if (deviceTransfers != null && workstationTransfers != null)
-      if (
-        deviceTransfers.status == true &&
-        workstationTransfers.status == true
+       if (
+        flagUpdate == true
       ) {
         deviceDetailActions.getAll();
         setFlagUpdate(null);
@@ -580,8 +578,7 @@ function List({ match }) {
 
     if (regexpWS.test(node.pos)) {
       setIsEditWS(true);
-
-      workstationTransfers.forEach((wt) => {
+      workstationTransfers.$values.forEach((wt) => {
         // console.log(wt);
         if (wt.dateOfRemoval == null)
           if (wt.workstation.id == node.key) {
@@ -600,9 +597,9 @@ function List({ match }) {
           }
       });
 
-      deviceTransfers?.forEach((dt) => {
+      deviceTransfers?.$values.forEach((dt) => {
         let device = JSON.parse(JSON.stringify(dt.device));
-        workstationTransfers.forEach((wt) => {
+        workstationTransfers.$values.forEach((wt) => {
           if (wt.dateOfRemoval == null)
             if (wt.workstation.id == dt.idWorkstation)
               device.location = wt.location;
@@ -617,7 +614,7 @@ function List({ match }) {
       });
     } else if (regexpRoom.test(node.pos)) {
       setIsEditWS(false);
-      deviceTransfers.forEach((dt) => {
+      deviceTransfers.$values.forEach((dt) => {
         let device = JSON.parse(JSON.stringify(dt.device));
         device.useType = dt.useType;
         device.location = dt.location;
@@ -625,9 +622,9 @@ function List({ match }) {
 
         if (dt.dateOfRemoval == null)
           if (dt.location) {
-            if (device.location.id == node.key.slice(12)) devices.push(device);
+            if (dt.location.id == node.key.slice(12)) devices.push(device);
           } else {
-            workstationTransfers.forEach((wt) => {
+            workstationTransfers.$values.forEach((wt) => {
               if (wt.dateOfRemoval == null)
                 if (wt.workstation.id == dt.idWorkstation)
                   device.location = wt.location;
@@ -641,7 +638,9 @@ function List({ match }) {
       });
     } else {
       setIsEditWS(false);
-      deviceTransfers.forEach((dt) => {
+      
+      deviceTransfers.$values.forEach((dt) => {
+        // console.log(dt)
         let device = JSON.parse(JSON.stringify(dt.device));
         device.useType = dt.useType;
         device.location = dt.location;
@@ -649,14 +648,17 @@ function List({ match }) {
           if (dt.location) {
             if (dt.location.house == node.key) devices.push(device);
           } else {
-            workstationTransfers.forEach((wt) => {
+            workstationTransfers.$values.forEach((wt) => {
+             console.log(wt)
               if (wt.dateOfRemoval == null) {
-                if (wt.workstation.id == dt.idWorkstation)
+                if (wt.idWorkstation == dt.idWorkstation)
+                
                   device.location = wt.location;
+                
               }
             });
             device.workstation = dt.workstation;
-            if (device.location.house == node.key) {
+            if (device.location?.house == node.key) {
               devices.push(device);
             }
           }
@@ -666,10 +668,10 @@ function List({ match }) {
     setFilterDevices(devices);
 
     if (typeof node.key == "string")
-      workstationTransfers.forEach((wt) => {
+      workstationTransfers.$values.forEach((wt) => {
         if (wt.dateOfRemoval == null)
           if (
-            wt.location.id == node.key.slice(12) ||
+            wt.idLocation == node.key.slice(12) ||
             wt.location.house == node.key
           ) {
             workstations.push({
@@ -682,7 +684,6 @@ function List({ match }) {
             });
           }
       });
-
     setfilterWorkstations(workstations);
   };
 
@@ -700,8 +701,8 @@ function List({ match }) {
     return {
       key: row.id,
       inventoryNumber: row.inventoryNumber,
-      deviceModel: row.deviceModel.name,
-      deviceType: row.deviceModel.deviceType?.name,
+      deviceModel: row.deviceModel?.name,
+      deviceType: row.deviceModel?.deviceType?.name,
       location: location,
       useType: useType,
       dateOfLastService: row.dateOfLastService,
@@ -712,7 +713,8 @@ function List({ match }) {
 
   const dataWorkstations = filterWorkstations?.map(function (row) {
     let ws = [];
-    workstationTransfers.forEach((wt) => {
+    workstationTransfers.$values.forEach((wt) => {
+      
       if (row.wt.idWorkstation == wt.idWorkstation) ws.push(wt);
     });
     // console.log(row)
@@ -731,11 +733,12 @@ function List({ match }) {
   function detailsLocations() {
     const list = [];
     const map = {};
-    locations?.forEach((l) => {
-      let arr = [],
+    locations?.$values.forEach((l) => {
+      
+    let arr = [],
         room = l.room,
         house = l.house,
-        workstations = l.workstationTransfers;
+        workstations = l.workstationTransfers.$values;
 
       if (!map[house])
         arr.push({
@@ -767,17 +770,17 @@ function List({ match }) {
             title: "Помещение " + r.title,
             key: "id_location:" + r.key,
           };
-
           if (r.workstationTransfers.length != 0) {
             const childrenListWS = [];
 
             r.workstationTransfers.forEach((w) => {
+              if (w.workstation){
               const childrenNodeWS = {
                 title: "РМ " + w.workstation.registerNumber,
                 key: w.workstation.id,
               };
               if (w.dateOfRemoval == null) childrenListWS.push(childrenNodeWS);
-            });
+            }            });
 
             if (childrenListWS.length == 0) childrenNode.disabled = true;
 
@@ -797,7 +800,7 @@ function List({ match }) {
   function cascaderDetailsLocations() {
     const list = [];
     const map = {};
-    locations?.forEach((l) => {
+    locations?.$values.forEach((l) => {
       let arr = [],
         room = l.room,
         house = l.house,
@@ -838,7 +841,7 @@ function List({ match }) {
   function cascaderDetailsLocationDevices() {
     const list = [];
     const map = {};
-    locations?.forEach((l) => {
+    locations?.$values.forEach((l) => {
       let arr = [],
         room = l.room,
         house = l.house,
@@ -1082,7 +1085,7 @@ function List({ match }) {
   function dataFilterDeviceTransfers() {
     var devices = [];
     if (filterDeviceTransfers.length == 0) {
-      deviceTransfers.forEach((dt) => {
+      deviceTransfers.$values.forEach((dt) => {
         let device = JSON.parse(JSON.stringify(dt.device));
         device.useType = dt.useType;
 
@@ -1091,7 +1094,7 @@ function List({ match }) {
             device.location = dt.location;
             devices.push(device);
           } else {
-            workstationTransfers.forEach((wt) => {
+            workstationTransfers.$values.forEach((wt) => {
               if (wt.dateOfRemoval == null)
                 if (wt.workstation.id == dt.workstation.id) {
                   device.location = wt.location;
@@ -1110,7 +1113,7 @@ function List({ match }) {
   const dataTransferDevices = Array.from(filterDeviceTransfers)?.map(function (
     row
   ) {
-    //   console.log(row);
+       console.log(row);
     let useType = row.useType;
     let location =
       useType == "рабочее место"
@@ -1139,7 +1142,7 @@ function List({ match }) {
     const originTargetKeys = [];
     //console.log(mode);
     if (mode)
-      deviceTransfers?.forEach((dt) => {
+      deviceTransfers?.$values.forEach((dt) => {
         // console.log(mode, dt.idWorkstation);
         if (dt.dateOfRemoval == null)
           if (mode.wt.idWorkstation == dt.idWorkstation)
@@ -1323,7 +1326,7 @@ function List({ match }) {
         },
       ];
       //console.log(record);
-      deviceTransfers.forEach((dt) => {
+      deviceTransfers.$values.forEach((dt) => {
         if (dt.device.inventoryNumber == record.inventoryNumber) {
           let location = "";
 
@@ -1336,7 +1339,7 @@ function List({ match }) {
               dateOfRemoval: dt.dateOfRemoval,
             });
           else {
-            workstationTransfers.forEach((wt) => {
+            workstationTransfers.$values.forEach((wt) => {
               if (wt.dateOfRemoval == null)
                 if (wt.idWorkstation == dt.idWorkstation) {
                   location = wt.location;
@@ -1485,28 +1488,27 @@ function List({ match }) {
             <Content style={{ paddingLeft: 20, backgroundColor: "white" }}>
               {!isDefaultEmpty && !isEditWS && (
                 <div>
-                <Space>
-                  <Button
-                    type="primary"
-                    onClick={showAddModalWS}
-                    style={{ marginBottom: 8 }}
-                  >
-                    Добавить рабочее место
-                  </Button>
-                  {dataWorkstations && (<Button
-                    type="primary"
-                    style={{ marginBottom: 8 }}
-                  >
-                 < CSVLink
-                  filename={"dataWorkstations.csv"}
-                  data={dataWorkstations}
-                  onClick={()=>{
-                    alertActions.success("Файл загружен");
-                  }}
-                >
-                  Экспорт в CSV
-                </CSVLink>
-                  </Button>)} 
+                  <Space>
+                    <Button
+                      type="primary"
+                      onClick={showAddModalWS}
+                      style={{ marginBottom: 8 }}
+                    >
+                      Добавить рабочее место
+                    </Button>
+                    {dataWorkstations && (
+                      <Button type="primary" style={{ marginBottom: 8 }}>
+                        <CSVLink
+                          filename={"dataWorkstations.csv"}
+                          data={dataWorkstations}
+                          onClick={() => {
+                            alertActions.success("Файл загружен");
+                          }}
+                        >
+                          Экспорт в CSV
+                        </CSVLink>
+                      </Button>
+                    )}
                   </Space>
                   <Table
                     pagination={false}
@@ -1558,43 +1560,41 @@ function List({ match }) {
               <div>
                 {isEditWS && (
                   <Space>
-                  <Button
-                    type="primary"
-                    onClick={() => showEditModal(editWS.id)}
-                    style={{ marginTop: 8, }}
-                  >
-                    Редактировать рабочее место
+                    <Button
+                      type="primary"
+                      onClick={() => showEditModal(editWS.id)}
+                      style={{ marginTop: 8 }}
+                    >
+                      Редактировать рабочее место
+                    </Button>
+                    {dataDevices && (
+                      <Button type="primary" style={{ marginTop: 8 }}>
+                        <CSVLink
+                          filename={"dataDevices.csv"}
+                          data={dataDevices}
+                          onClick={() => {
+                            alertActions.success("Файл загружен");
+                          }}
+                        >
+                          Экспорт в CSV
+                        </CSVLink>
+                      </Button>
+                    )}
+                  </Space>
+                )}
+                {dataDevices && !isEditWS && (
+                  <Button type="primary" style={{ marginTop: 8 }}>
+                    <CSVLink
+                      filename={"dataDevices.csv"}
+                      data={dataDevices}
+                      onClick={() => {
+                        alertActions.success("Файл загружен");
+                      }}
+                    >
+                      Экспорт в CSV
+                    </CSVLink>
                   </Button>
-                  {dataDevices && (<Button
-                    type="primary"
-                    style={{ marginTop: 8, }}
-                  >
-                  <CSVLink
-                  filename={"dataDevices.csv"}
-                  data={dataDevices}
-                  onClick={()=>{
-                    alertActions.success("Файл загружен");
-                  }}
-                >
-                  Экспорт в CSV
-                </CSVLink>
-                  </Button>)} 
-                </Space>
-                  )}
-                  {dataDevices&& !isEditWS && (<Button
-                    type="primary"
-                    style={{ marginTop: 8,  }}
-                  >
-                  <CSVLink
-                  filename={"dataDevices.csv"}
-                  data={dataDevices}
-                  onClick={()=>{
-                    alertActions.success("Файл загружен");
-                  }}
-                >
-                  Экспорт в CSV
-                </CSVLink>
-                  </Button>)} 
+                )}
                 <Table
                   scroll={{ x: 800 }}
                   bordered

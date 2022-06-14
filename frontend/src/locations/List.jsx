@@ -92,7 +92,7 @@ function List({ match }) {
     },
   ];
 
-  const data = locations?.map(function (row) {
+  const data = locations?.$values.map(function (row) {
     return {
       key: row.id,
       house: row.house,

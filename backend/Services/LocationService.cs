@@ -36,7 +36,7 @@ public class LocationService : ILocationService
     {
         return _context.Locations
             .Include(l => l.Employee)
-            .Include(l => l.WorkstationTransfers).ThenInclude(wt => wt.Workstation);
+            .Include(l => l.WorkstationTransfers).ThenInclude(wt => wt.Workstation).AsNoTracking().ToList();
     }
 
     public Location GetById(int id)

@@ -32,7 +32,7 @@ public class RoleService : IRoleService
 
     public IEnumerable<Role> GetAll()
     {
-        return _context.Roles;
+        return _context.Roles.ToList();
     }
 
     public Role GetById(int id)

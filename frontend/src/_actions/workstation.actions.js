@@ -38,8 +38,8 @@ function useWorkstationActions () {
            let workstationTransfers = JSON.parse(JSON.stringify(wt));
            workstationTransfers.status = true        
             setWorkstationTransfers(workstationTransfers)
-            if (deviceTransfers != null)
-            if (deviceTransfers.status != false)
+
+          //  if (deviceTransfers?.status != false)
             setFlagUpdate(true)
         });
     }
@@ -49,8 +49,7 @@ function useWorkstationActions () {
             let deviceTransfers = JSON.parse(JSON.stringify(dt));
             deviceTransfers.status = true        
              setDeviceTransfers(deviceTransfers)
-             if (workstationTransfers != null)
-             if (workstationTransfers.status != false)
+            // if (workstationTransfers?.status != false)
              setFlagUpdate(true)
  
         });

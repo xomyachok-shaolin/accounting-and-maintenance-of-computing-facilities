@@ -39,7 +39,7 @@ import {
   deviceDetailsAtom,
   deviceTypesAtom,
   locationsAtom,
-  filterParametersAtom,
+  filterParametersAtom,submitAtom,
   filterDevicesAtom,deviceTransfersAtom, workstationTransfersAtom,
   deviceParametersAtom,flagUpdateAtom,
   selectedModelAtom,
@@ -66,7 +66,7 @@ function List({ match }) {
 
   const [mode, setMode] = useState(false);
   const [isResetAll, setIsResetAll] = useState(false);
-  const [isSubmit, setIsSubmit] = useState(false);
+  const [submit, setSubmit] = useRecoilState(submitAtom);
 
   const { confirm } = Modal;
 
@@ -99,7 +99,7 @@ function List({ match }) {
     workstationActions.getAllWT();
     workstationActions.getAllDT();
     deviceParameterActions.getAll();
-
+    setSelectedModel(null)
     return deviceDetailActions.resetDeviceDetails;
   }, []);
 
@@ -117,8 +117,7 @@ function List({ match }) {
 
 
   useEffect(() => {
-    if (deviceTransfers != null && workstationTransfers!= null)
-    if (deviceTransfers.status == true && workstationTransfers.status == true) {
+    if (flagUpdate == true){
       deviceDetailActions.getAll();
       setFlagUpdate(null);
     }
@@ -434,7 +433,7 @@ function List({ match }) {
     let regexp = /\d-\d-\d/;
 
     deviceDetails.forEach((dt) => {
-      dt.deviceModels.forEach((dm) => {
+      dt.deviceModels.$values.forEach((dm) => {
         if (regexp.test(node.pos)) {
           if (dm.id == node.key) {
             setSelectedModel({
@@ -452,7 +451,7 @@ function List({ match }) {
           });
         }
 
-        dm.devices.forEach((device) => {
+        dm.devices.$values.forEach((device) => {
           const d = JSON.parse(JSON.stringify(device));
           d.deviceModel = dm.name;
           d.deviceType = dt.name;
@@ -473,7 +472,7 @@ function List({ match }) {
     setFilterDevices(devices);
 
     var parameters = [];
-    tempKey?.deviceParameterValues.forEach((dp) => {
+    tempKey?.deviceParameterValues.$values.forEach((dp) => {
       parameters.push({
         key: dp.deviceParameter.id,
         name: dp.deviceParameter.name,
@@ -492,18 +491,18 @@ function List({ match }) {
     let useType,
       location = null;
 
-    row.deviceTransfers.forEach((dt) => {
+    row.deviceTransfers.$values.forEach((dt) => {
       if (dt?.dateOfRemoval == null) {
         if (dt?.useType == "рабочее место") {
-          locations?.forEach((l) => {
-            l.workstationTransfers.forEach((wt) => {
+          locations?.$values.forEach((l) => {
+            l.workstationTransfers.$values.forEach((wt) => {
               if (wt.workstation.id == dt.idWorkstation)
                 location =
                   l.house + "/" + l.room + "/" + wt.workstation.registerNumber;
             });
           });
         } else {
-          locations?.forEach((l) => {
+          locations?.$values.forEach((l) => {
             if (l.id == dt?.idLocation) location = l.house + "/" + l.room;
           });
         }
@@ -538,15 +537,17 @@ function List({ match }) {
   /* TREELIST */
   function details(path = "0", level = 1) {
     const list = [];
+    console.log(deviceDetails)
     deviceDetails?.forEach((dt) => {
       const key = `${dt.name}`;
       const treeNode = {
         title: dt.name,
         key,
       };
+      console.log(dt)
       if (dt.deviceModels) {
         const childrenList = [];
-        dt.deviceModels.forEach((dm) => {
+        dt.deviceModels.$values.forEach((dm) => {
           const key = dm.id;
           const childrenNode = {
             title: dm.name,
@@ -648,7 +649,7 @@ function List({ match }) {
   function detailsLocations() {
     const list = [];
     const map = {};
-    locations?.forEach((l) => {
+    locations?.$values.forEach((l) => {
       let arr = [],
         room = l.room,
         house = l.house,
@@ -689,11 +690,11 @@ function List({ match }) {
   function detailsLocationsWS() {
     const list = [];
     const map = {};
-    locations?.forEach((l) => {
+    locations?.$values.forEach((l) => {
       let arr = [],
         room = l.room,
         house = l.house,
-        workstations = l.workstationTransfers;
+        workstations = l.workstationTransfers.$values;
 
       if (!map[house]) arr.push({ label: room, value: l.id, ws: workstations });
       else {
@@ -858,6 +859,7 @@ function List({ match }) {
 
     return deviceDetailActions.create(data).then(() => {
       setIsResetAll(true);
+      setSubmit(true);
       alertActions.success("Устройство добавлено");
     });
   }
@@ -912,7 +914,7 @@ function List({ match }) {
     });
     console.log(data);
     return deviceParameterActions.updateDeviceParameter(id, data).then(() => {
-      setIsSubmit(true);
+      setSubmit(true);
       setIsResetAll(true);
 
       alertActions.success("Значение параметра модели обновлено");
@@ -1020,18 +1022,18 @@ function List({ match }) {
       },
     ];
     const data = [];
-    record.deviceTransfers.forEach((dt) => {
+    record.deviceTransfers.$values.forEach((dt) => {
       let location = "";
       if (dt.useType == "рабочее место") {
-        locations?.forEach((l) => {
-          l.workstationTransfers.forEach((wt) => {
+        locations?.$values.forEach((l) => {
+          l.workstationTransfers.$values.forEach((wt) => {
             if (wt.workstation.id == dt.idWorkstation)
               location =
                 l.house + "/" + l.room + "/" + wt.workstation.registerNumber;
           });
         });
       } else {
-        locations?.forEach((l) => {
+        locations?.$values.forEach((l) => {
           if (l.id == dt.idLocation) location = l.house + "/" + l.room;
         });
       }
@@ -1203,7 +1205,7 @@ function List({ match }) {
                 //defaultValue={selectedRoles?.map((r) => r.id)}
                 value={deviceTypes}
               >
-                {deviceTypes?.map((dt) => (
+                {deviceTypes?.$values.map((dt) => (
                   <Select.Option value={dt.id} key={dt.id}>
                     {dt.name}
                   </Select.Option>
@@ -1326,9 +1328,9 @@ function List({ match }) {
             >
               <Select
                 //defaultValue={selectedRoles?.map((r) => r.id)}
-                value={deviceTypes}
+                value={deviceTypes?.$values}
               >
-                {deviceTypes?.map((dt) => (
+                {deviceTypes?.$values.map((dt) => (
                   <Select.Option value={dt.id} key={dt.id}>
                     {dt.name}
                   </Select.Option>

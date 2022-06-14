@@ -81,15 +81,17 @@ function List({ match }) {
       dataIndex: "roles",
       render: roles => (
         <>
-          {roles?.map((role) => {
+          {
+            roles?.$values.map((role) => {
             var name = role.name;
             var color = "geekblue";
             if (name === "Администратор") {
               color = "volcano";
             }
+            if(name)
             return (
               <Tag color={color} key={name}>
-                {name.toUpperCase()}
+                {name?.toUpperCase()}
               </Tag>
             );
           })}
@@ -170,7 +172,7 @@ function List({ match }) {
           lastName: user.lastName,
           mail: user.mail,
           patronymic: user.patronymic,
-          roles: user.roles.map((r) => r.id),
+          roles: user.roles.$values.map((r) => r.id),
         });
         setMode(user);
 
@@ -333,10 +335,10 @@ function List({ match }) {
                 <Select
                   //defaultValue={selectedRoles?.map((r) => r.id)}
                   mode="multiple"
-                  value={rolesA}
+                  value={rolesA?.$values}
                   placeholder="Пожалуйста, выберите роли"
                 >
-                  {rolesA?.map((role) => (
+                  {rolesA?.$values?.map((role) => (
                     <Select.Option value={role.id} key={role.id}>
                       {role.name}
                     </Select.Option>

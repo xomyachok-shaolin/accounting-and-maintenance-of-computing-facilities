@@ -41,14 +41,14 @@ public class WorkstationService : IWorkstationService
                 .Include(dt => dt.Workstation)
                 .Include(dt => dt.Device)
                       .ThenInclude(d => d.DeviceModel)
-                        .ThenInclude(dm => dm.DeviceType);
+                        .ThenInclude(dm => dm.DeviceType).AsNoTracking().ToList(); 
     }
     public IEnumerable<WorkstationTransfer> GetAllWT()
     {
         return _context.WorkstationTransfers
             .Include(wt => wt.Workstation)
             .Include(wt => wt.Employee)
-            .Include(wt => wt.Location);
+            .Include(wt => wt.Location).AsNoTracking().ToList();
     }
     public Workstation GetById(int id)
     {
