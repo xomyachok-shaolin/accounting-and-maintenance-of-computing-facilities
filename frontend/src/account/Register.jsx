@@ -160,10 +160,6 @@ function Register({ history }) {
           <Input />
         </Form.Item>
 
-        <Form.Item label="Фотография профиля">
-          <Avatar />
-        </Form.Item>
-
         <Form.Item {...tailFormItemLayout}>
           <Space>
             {!isSubmitting && (

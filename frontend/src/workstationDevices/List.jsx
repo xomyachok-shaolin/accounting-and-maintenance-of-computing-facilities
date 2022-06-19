@@ -124,12 +124,10 @@ function List({ match }) {
   }, [isResetAll]);
 
   useEffect(() => {
-       if (
-        flagUpdate == true
-      ) {
-        deviceDetailActions.getAll();
-        setFlagUpdate(null);
-      }
+    if (flagUpdate == true) {
+      deviceDetailActions.getAll();
+      setFlagUpdate(null);
+    }
   }, [flagUpdate]);
 
   const showDefaultDrawer = () => {
@@ -187,13 +185,13 @@ function List({ match }) {
                 break;
               case 2:
                 dt.useType = "резерв";
-                locations.forEach((l) => {
+                locations.$values.forEach((l) => {
                   if (data.location == l.id) dt.location = l;
                 });
                 break;
               case 3:
                 dt.useType = "рабочее место";
-                workstationTransfers.forEach((wt) => {
+                workstationTransfers.$values.forEach((wt) => {
                   if (wt.dateOfRemoval == null)
                     if (data.location == wt.workstation.id) {
                       dt.location = wt.location;
@@ -201,8 +199,7 @@ function List({ match }) {
                     }
                 });
 
-                break;
-            }
+              }
 
             // console.log(dt);
           }
@@ -526,7 +523,7 @@ function List({ match }) {
     },
     //    Table.EXPAND_COLUMN,
     {
-      title: "Отвественный",
+      title: "Ответственный",
       dataIndex: "employee",
       id: "employee",
       ...getColumnSearchProps("employee"),
@@ -638,7 +635,7 @@ function List({ match }) {
       });
     } else {
       setIsEditWS(false);
-      
+
       deviceTransfers.$values.forEach((dt) => {
         // console.log(dt)
         let device = JSON.parse(JSON.stringify(dt.device));
@@ -649,12 +646,10 @@ function List({ match }) {
             if (dt.location.house == node.key) devices.push(device);
           } else {
             workstationTransfers.$values.forEach((wt) => {
-             console.log(wt)
+              // console.log(wt)
               if (wt.dateOfRemoval == null) {
                 if (wt.idWorkstation == dt.idWorkstation)
-                
                   device.location = wt.location;
-                
               }
             });
             device.workstation = dt.workstation;
@@ -714,7 +709,6 @@ function List({ match }) {
   const dataWorkstations = filterWorkstations?.map(function (row) {
     let ws = [];
     workstationTransfers.$values.forEach((wt) => {
-      
       if (row.wt.idWorkstation == wt.idWorkstation) ws.push(wt);
     });
     // console.log(row)
@@ -734,8 +728,7 @@ function List({ match }) {
     const list = [];
     const map = {};
     locations?.$values.forEach((l) => {
-      
-    let arr = [],
+      let arr = [],
         room = l.room,
         house = l.house,
         workstations = l.workstationTransfers.$values;
@@ -774,13 +767,15 @@ function List({ match }) {
             const childrenListWS = [];
 
             r.workstationTransfers.forEach((w) => {
-              if (w.workstation){
-              const childrenNodeWS = {
-                title: "РМ " + w.workstation.registerNumber,
-                key: w.workstation.id,
-              };
-              if (w.dateOfRemoval == null) childrenListWS.push(childrenNodeWS);
-            }            });
+              if (w.workstation) {
+                const childrenNodeWS = {
+                  title: "РМ " + w.workstation.registerNumber,
+                  key: w.workstation.id,
+                };
+                if (w.dateOfRemoval == null)
+                  childrenListWS.push(childrenNodeWS);
+              }
+            });
 
             if (childrenListWS.length == 0) childrenNode.disabled = true;
 
@@ -845,7 +840,7 @@ function List({ match }) {
       let arr = [],
         room = l.room,
         house = l.house,
-        workstations = l.workstationTransfers;
+        workstations = l.workstationTransfers.$values;
 
       if (!map[house]) arr.push({ label: room, value: l.id, ws: workstations });
       else {
@@ -1004,7 +999,7 @@ function List({ match }) {
       let location = "";
       if (ws.key === id) {
         setMode(ws);
-        locations.forEach((l) => {
+        locations.$values.forEach((l) => {
           if (l.id == ws.wt.idLocation)
             location = "Здание " + l.house + " / Помещение " + l.room;
         });
@@ -1113,7 +1108,7 @@ function List({ match }) {
   const dataTransferDevices = Array.from(filterDeviceTransfers)?.map(function (
     row
   ) {
-       console.log(row);
+    //    console.log(row);
     let useType = row.useType;
     let location =
       useType == "рабочее место"
@@ -1389,7 +1384,7 @@ function List({ match }) {
         },
         Table.EXPAND_COLUMN,
         {
-          title: "Отвественный",
+          title: "Ответственный",
           dataIndex: "employee",
           id: "employee",
           ...getColumnSearchProps("employee"),

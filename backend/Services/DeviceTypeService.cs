@@ -38,7 +38,6 @@ public class DeviceTypeService : IDeviceTypeService
     {
         return _context.DeviceTypeRequests
             .FromSqlRaw("select * from device_types_get()").ToList();
-            // DeviceTypes.Include(dt => dt.DeviceModels).ThenInclude(dm => dm.Devices);
     }
     
     public IEnumerable<Location> GetAllDetails()
@@ -49,7 +48,7 @@ public class DeviceTypeService : IDeviceTypeService
                     .ThenInclude(d => d.DeviceParameterValues)
                         .ThenInclude(dp => dp.DeviceParameter)
             .Include(l => l.DeviceTransfers.Where(dt => dt.DateOfRemoval == null))
-                .ThenInclude(t => t.Workstation);
+                .ThenInclude(t => t.Workstation).AsNoTracking().ToList();
     }
     
     public DeviceType GetById(int id)

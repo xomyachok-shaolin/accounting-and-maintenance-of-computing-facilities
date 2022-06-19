@@ -139,7 +139,7 @@ function List({ match }) {
   };
 
   const showEditModal = (id) => {
-    roles.forEach((role) => {
+    roles.$values.forEach((role) => {
       if (role.id === id) {
         form.setFieldsValue({
           name: role.name,

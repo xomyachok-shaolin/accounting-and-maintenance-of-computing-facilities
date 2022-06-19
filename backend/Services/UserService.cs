@@ -54,7 +54,7 @@ public class UserService : IUserService
     public IEnumerable<User> GetAll()
     {
         return _context.Users
-            .Include(ur => ur.Roles);
+            .Include(ur => ur.Roles).AsNoTracking().ToList();
     }
 
     public User GetById(int id)

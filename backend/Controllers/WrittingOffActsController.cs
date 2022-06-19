@@ -99,13 +99,13 @@ public class WrittingOffActsController : ControllerBase
         byte[] bytes = Convert.FromBase64String(file.Substring(file.LastIndexOf(',') + 1));
         MemoryStream stream = new MemoryStream(bytes);
         IFormFile IFile = new FormFile(stream, 0, bytes.Length, fileName, fileName);
-        string imageName = new String(Path.GetFileNameWithoutExtension(IFile.FileName).Take(10).ToArray()).Replace(' ', '-');
-        imageName += DateTime.Now.ToString("yymmssfff")+ Path.GetExtension(IFile.FileName);
-        var imagePath = Path.Combine(_webHostEnvironment.ContentRootPath,"Documents",imageName);
+        string newName = new String(Path.GetFileNameWithoutExtension(IFile.FileName).Take(10).ToArray()).Replace(' ', '-');
+        newName += DateTime.Now.ToString("yymmssfff")+ Path.GetExtension(IFile.FileName);
+        var imagePath = Path.Combine(_webHostEnvironment.ContentRootPath,"Documents",newName);
         using (var fileStream = new FileStream(imagePath, FileMode.Create))
         {
             await IFile.CopyToAsync(fileStream);
         }
-        return imageName;
+        return newName;
     }
 }

@@ -11,9 +11,8 @@ function Home() {
     return (
         <div className="p-4">
             <div className="container">
-                <h1>Привет {auth?.firstName}!</h1>
-                <p><Link to="/users">Управление пользователями</Link></p>
-            </div>
+                <h1>Привет {auth?.username}!</h1>
+                            </div>
         </div>
     );
 }

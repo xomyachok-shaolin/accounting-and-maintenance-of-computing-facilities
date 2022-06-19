@@ -2,10 +2,10 @@
 import { NavLink } from "react-router-dom";
 import { useRecoilValue } from "recoil";
 
-import { authAtom, adminAtom, collapseAtom } from "_state";
+import { authAtom, userRolesAtom, collapseAtom } from "_state";
 import { useUserActions } from "_actions";
 
-import { Button, Descriptions, Divider, Layout, Menu } from "antd";
+import { Layout, Menu } from "antd";
 import {
   DesktopOutlined,
   ContainerOutlined,
@@ -22,14 +22,9 @@ import {
   BookOutlined,
 } from "@ant-design/icons";
 
-import { Space } from "antd";
-import { Avatar } from "antd";
-import { Image } from "antd";
-import Title from "antd/lib/typography/Title";
 import { Link } from "react-router-dom";
 
 const { Sider } = Layout;
-const { SubMenu } = Menu;
 
 export { Nav };
 
@@ -37,9 +32,11 @@ function Nav() {
   const auth = useRecoilValue(authAtom);
   const userActions = useUserActions();
 
-  const isAdmin = useRecoilValue(adminAtom);
+  const userRoles = useRecoilValue(userRolesAtom);
   const collapsed = useRecoilValue(collapseAtom);
 
+  // {userRoles?.filter((r) => r.name === "Администратор").length > 0 && (
+  // console.log(userRoles);
   // only show nav when logged in
   if (!auth) return null;
 
@@ -62,8 +59,7 @@ function Nav() {
             Главная
           </NavLink>
         </Menu.Item>
-        {!isAdmin && (
-          <Menu.SubMenu
+                 <Menu.SubMenu
             key="sub1"
             icon={<SettingOutlined />}
             title="Администрирование"
@@ -75,33 +71,34 @@ function Nav() {
               <Link to="/roles">Роли</Link>
             </Menu.Item>
           </Menu.SubMenu>
-        )}
         
-        {!isAdmin && (<Menu.SubMenu key="sub3" icon={<BookOutlined />} title="Справочники">
-          <Menu.Item key="3" icon={<CompassOutlined />}>
-            <Link to="/locations">Местоположения</Link>
-          </Menu.Item>
-          <Menu.Item key="4" icon={<FilterOutlined />}>
-            <Link to="/deviceTypes">Виды устройств</Link>
-          </Menu.Item>
-          <Menu.Item key="5" icon={<ControlOutlined />}>
-            <Link to="/deviceParameters">Параметры устройств</Link>
-          </Menu.Item>
-        </Menu.SubMenu>
-        )}
+      
+
+              <Menu.SubMenu key="sub3" icon={<BookOutlined />} title="Справочники">
+            <Menu.Item key="3" icon={<CompassOutlined />}>
+              <Link to="/locations">Местоположения</Link>
+            </Menu.Item>
+            <Menu.Item key="4" icon={<FilterOutlined />}>
+              <Link to="/deviceTypes">Виды устройств</Link>
+            </Menu.Item>
+            <Menu.Item key="5" icon={<ControlOutlined />}>
+              <Link to="/deviceParameters">Параметры устройств</Link>
+            </Menu.Item>
+          </Menu.SubMenu>
+       
 
         <Menu.Item key="6" icon={<BuildOutlined />}>
           <Link to="/deviceDetails">Сведения об устройствах</Link>
         </Menu.Item>
         <Menu.Item key="7" icon={<DesktopOutlined />}>
-        <Link to="/workstationDevices">Оборудование на РМ</Link>
+          <Link to="/workstationDevices">Оборудование на РМ</Link>
         </Menu.Item>
         <Menu.Item key="8" icon={<ReadOutlined />}>
-        <Link to="/tasks">Журнал задач</Link>
+          <Link to="/tasks">Журнал задач</Link>
         </Menu.Item>
-        <Menu.Item key="9" icon={<ContainerOutlined />}>
-        <Link to="/writingOffActs">Акты списания</Link>
-        </Menu.Item>
+       <Menu.Item key="9" icon={<ContainerOutlined />}>
+            <Link to="/writingOffActs">Акты списания</Link>
+          </Menu.Item>
         <Menu.Item key="10" icon={<PoweroffOutlined />}>
           <Link to="" onClick={userActions.logout}>
             Выход
@@ -109,13 +106,5 @@ function Nav() {
         </Menu.Item>
       </Menu>
     </Sider>
-
-    // <nav className="navbar navbar-expand navbar-dark bg-dark">
-    //     <div className="navbar-nav">
-    //         <NavLink exact to="/" className="nav-item nav-link">Главная</NavLink>
-    //         {isAdmin && <NavLink to="/users" className="nav-item nav-link">Пользователи</NavLink>}
-    //         <a onClick={userActions.logout} className="nav-item nav-link">Выход</a>
-    //     </div>
-    // </nav>
   );
 }

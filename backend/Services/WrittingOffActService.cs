@@ -39,7 +39,7 @@ public class WrittingOffActService : IWrittingOffActService
             .Include(wa => wa.WrittingOffActFiles)
             .Include(wa => wa.Devices)
                 .ThenInclude(d => d.DeviceModel)
-                    .ThenInclude(dm => dm.DeviceType);
+                    .ThenInclude(dm => dm.DeviceType).AsNoTracking().ToList();
     }
 
     public WrittingOffAct GetById(int id)

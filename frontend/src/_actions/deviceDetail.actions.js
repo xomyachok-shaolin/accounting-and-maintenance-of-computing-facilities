@@ -52,8 +52,8 @@ function useDeviceDetailActions() {
   }
 
   function getAll() {
-    return fetchWrapper.get(baseUrl).then((dd) => {
-
+    return fetchWrapper.get(baseUrl).then((dd0) => {
+var dd = dd0.$values
       setDeviceDetails(dd);
 
       var selected = null;

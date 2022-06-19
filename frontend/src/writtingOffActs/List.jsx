@@ -350,7 +350,7 @@ function List({ match }) {
 
   const [selectedRowKeys, setRowKeys] = useState([]);
 
-  const dataWrittingOffActs = writtingOffActs?.map(function (row) {
+  const dataWrittingOffActs = writtingOffActs?.$values.map(function (row) {
     console.log(row);
 
     return {

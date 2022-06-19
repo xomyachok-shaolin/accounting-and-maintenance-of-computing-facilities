@@ -1,7 +1,7 @@
-import { useSetRecoilState, useRecoilValue,useRecoilState, useResetRecoilState } from 'recoil';
+import { useSetRecoilState, useResetRecoilState } from 'recoil';
 
 import { useFetchWrapper } from '_helpers';
-import { locationsAtom, workstationsAtom, flagUpdateAtom,filterWorkstationsAtom,selectedModelAtom, locationAtom, employeesAtom } from '_state';
+import { locationsAtom, locationAtom, employeesAtom } from '_state';
 
 export { useLocationActions };
 
@@ -12,10 +12,6 @@ function useLocationActions () {
     const setLocations = useSetRecoilState(locationsAtom);
     const setLocation = useSetRecoilState(locationAtom);
     const setEmployees = useSetRecoilState(employeesAtom);
-    const [selectedModel, setSelectedModel] = useRecoilState(selectedModelAtom);
-    const setfilterWorkstations = useSetRecoilState(filterWorkstationsAtom);
-    const [flagUpdate, setFlagUpdate] = useRecoilState(flagUpdateAtom);
-    const allWorkstations = useRecoilValue(workstationsAtom);
 
     return {
         getAll,
@@ -36,17 +32,10 @@ function useLocationActions () {
 
 
     function getAll() {
-        return fetchWrapper.get(baseUrl).then((locations) => {
-       setLocations(locations)
-       let l = JSON.parse(JSON.stringify(locations));
-            l.status = true        
-            setLocations(l)
-            if (allWorkstations != null)
-            if (allWorkstations.status != false)
-            setFlagUpdate(true)
+        return fetchWrapper.get(baseUrl).then(setLocations)
 
-        });
     }
+
     function getAllEmployees() {
         return fetchWrapper.get(baseUrlEmp).then(setEmployees);
     }
@@ -63,8 +52,7 @@ function useLocationActions () {
 
     // prefixed with underscored because delete is a reserved word in javascript
     function _delete(id) {
-        console.log(1)
-        setLocations(locations => locations.map(x => {
+        setLocations(locations => locations.$values.map(x => {
             // add isDeleting prop to location being deleted
             if (x.id === id) 
                 return { ...x, isDeleting: true };
@@ -75,7 +63,7 @@ function useLocationActions () {
         return fetchWrapper.delete(`${baseUrl}/${id}`)
             .then(() => {
                 // remove Location from list after deleting
-                setLocations(locations => locations.filter(x => x.id !== id));
+                setLocations(locations => locations.$values.filter(x => x.id !== id));
             });
     }
 }

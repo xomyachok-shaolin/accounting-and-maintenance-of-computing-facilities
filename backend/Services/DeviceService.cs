@@ -44,7 +44,7 @@ public class DeviceService : IDeviceService
                         .ThenInclude(dp => dp.DeviceParameter)
             .Include(dt => dt.DeviceModels)
                 .ThenInclude(dm => dm.Devices)
-                    .ThenInclude(d => d.WrittingOffAct);
+                    .ThenInclude(d => d.WrittingOffAct).AsNoTracking().ToList();
     }
 
     public Device GetById(int id)

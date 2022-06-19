@@ -1027,7 +1027,7 @@ function List({ match }) {
       if (dt.useType == "рабочее место") {
         locations?.$values.forEach((l) => {
           l.workstationTransfers.$values.forEach((wt) => {
-            if (wt.workstation.id == dt.idWorkstation)
+            if (wt.idWorkstation == dt.idWorkstation)
               location =
                 l.house + "/" + l.room + "/" + wt.workstation.registerNumber;
           });

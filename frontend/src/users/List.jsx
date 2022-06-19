@@ -82,7 +82,7 @@ function List({ match }) {
       render: roles => (
         <>
           {
-            roles?.$values.map((role) => {
+            roles?.map((role) => {
             var name = role.name;
             var color = "geekblue";
             if (name === "Администратор") {
@@ -118,7 +118,8 @@ function List({ match }) {
     },
   ];
 
-  const data = users?.map(function (row) {
+  const data = users?.$values.map(function (row) {
+    console.log(row)
     return {
       key: row.id,
       username: row.username,
@@ -126,7 +127,7 @@ function List({ match }) {
       firstName: row.firstName,
       patronymic: row.patronymic,
       mail: row.mail,
-      roles: row.roles,
+      roles: row.roles.$values,
     };
   });
 
@@ -163,8 +164,19 @@ function List({ match }) {
   };
 
   const showEditModal = (id) => {
-    users.forEach((user) => {
+    users.$values.forEach((user) => {
       if (user.id == id) {
+        if (user.roles.$values.length == 1) 
+        form.setFieldsValue({
+          username: user.username,
+          password: user.password,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          mail: user.mail,
+          patronymic: user.patronymic,
+          
+        });
+         else
         form.setFieldsValue({
           username: user.username,
           password: user.password,

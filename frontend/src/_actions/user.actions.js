@@ -1,7 +1,7 @@
 import { useRecoilState, useSetRecoilState, useResetRecoilState } from 'recoil';
 
 import { history, useFetchWrapper } from '_helpers';
-import { adminAtom, authAtom, usersAtom, userAtom, collapseAtom } from '_state';
+import { userRolesAtom, authAtom, usersAtom, userAtom, collapseAtom } from '_state';
 import { submitAtom } from '_state';
 import { rolesAtom } from '_state/roles';
 
@@ -14,7 +14,7 @@ function useUserActions () {
     const [auth, setAuth] = useRecoilState(authAtom);
     const [collapse, setCollapse] = useRecoilState(collapseAtom);
     const [submit, setSubmit] = useRecoilState(submitAtom);
-    const [admin, setAdmin] = useRecoilState(adminAtom);
+    const [userRoles, setUserRoles] = useRecoilState(userRolesAtom);
     const setUsers = useSetRecoilState(usersAtom);
     const setUser = useSetRecoilState(userAtom);
     const setRoles = useSetRecoilState(rolesAtom);
@@ -44,11 +44,7 @@ function useUserActions () {
                 // store user details and jwt token in local storage to keep user logged in between page refreshes
                 localStorage.setItem('user', JSON.stringify(user));
                 setAuth(user);
-
-                user.roles.forEach(r => {
-                    if (r.name === "Администратор")
-                        setAdmin(true);
-                });
+                setUserRoles(user.roles.$values);
 
                 // get return url from location state or default to home page
                 const { from } = history.location.state || { from: { pathname: '/' } };
@@ -72,7 +68,8 @@ function useUserActions () {
         // remove user from local storage, set auth state to null and redirect to login page
         localStorage.removeItem('user');
         setAuth(null);
-        setAdmin(null);
+        setUserRoles([])
+        
         history.push('/account/login');
     }
 
